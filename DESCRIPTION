@@ -1,0 +1,25 @@
+Package: strategyr
+Type: Package
+Title: Modular Trading Strategies for Quantitative Research and Execution
+Version: 0.1.0
+Author: Oliver Lee
+Maintainer: Oliver Lee <olee7149@gmail.com>
+Description: A collection of modular trading strategies and technical indicator utilities designed for systematic trading, backtesting, and live signal generation. Includes breakout logic with layered confirmation, zone-based entry strategies, dynamic support/resistance detection, and ARIMAX-based fan forecasting.
+License: MIT
+Encoding: UTF-8
+LazyData: true
+Depends: 
+    R (>= 3.6.0)
+Imports: 
+    data.table,
+    tibble,
+    dplyr,
+    TTR,
+    slider,
+    stats
+Suggests:
+    devtools,
+    testthat,
+    ggplot2
+RoxygenNote: 7.2.3
+
