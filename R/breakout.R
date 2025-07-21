@@ -55,15 +55,22 @@
 #' breakout_v1(trade_state, public_info, trade_pars)
 #'
 #' @export
-breakout_v1 <- function(trade_state, public_info, trade_pars) {
+breakout_v1 <- function(trade_state, public_info, trade_pars, unit_per_contract, min_digit) { 
+  # need to add unit_per_contract and min_digit here
+  # trade_state may only contain contracts (notional is an intermediate calculation)
+  # output is order with rounded contracts
   
   orders <- .new_order()
   
-  wallet_balance <- trade_state$wallet_balance
-  long_size <- trade_state$long_size
-  avg_long_price <- trade_state$avg_long_price
-  short_size <- trade_state$short_size
-  avg_short_price <- trade_state$avg_short_price
+  eq_budget <- trade_state$eq_budget
+  long_contracts <- trade_state$long_contracts
+  long_avg_entry_price <- trade_state$long_avg_entry_price
+  short_contracts <- trade_state$short_contracts
+  short_avg_entry_price <- trade_state$short_avg_entry_price
+  unrealized_pnl <- trade_state$unrealized_pnl
+  
+  long_notional <- long_contracts * unit_per_contract
+  short_notional <- short_contracts * unit_per_contract
   
   fast_ma <- public_info$ema_20
   slow_ma <- public_info$ema_50
@@ -80,7 +87,8 @@ breakout_v1 <- function(trade_state, public_info, trade_pars) {
                   trade_pars$breakout_layer4_mult)
   
   .append_order <- function(orders, side, layer, base_size, multiplier) {
-    pos_size <- base_size * multiplier
+    pos_size <- round(base_size * multiplier / unit_per_contract, min_digit)
+    if (pos_size <= 0) return(orders)
     label <- sprintf("breakout_layer%s_%s", layer, side)
     data.table::rbindlist(list(orders, list("OPEN", side, pos_size, 0, "MARKET", label)))
   }
@@ -109,29 +117,29 @@ breakout_v1 <- function(trade_state, public_info, trade_pars) {
   }
   
   # Exit logic
-  if (short_size > 0 && side == 'long') {
+  if (short_contracts > 0 && side == 'long') {
     if (layer_id <= 2) {
-      orders <- rbind(orders, list("CLOSE", "short", short_size, 0, "MARKET", "exit_short_zbreak"))
+      orders <- rbind(orders, list("CLOSE", "short", short_contracts, 0, "MARKET", "exit_short_zbreak"))
     } else {
       return(orders)
     }
   }
   
-  if (long_size > 0 && side == 'short') {
+  if (long_contracts > 0 && side == 'short') {
     if (layer_id <= 2) {
-      orders <- rbind(orders, list("CLOSE", "long", long_size, 0, "MARKET", "exit_long_zbreak"))
+      orders <- rbind(orders, list("CLOSE", "long", long_contracts, 0, "MARKET", "exit_long_zbreak"))
     } else {
       return(orders)
     }
   }
 
   # Adjusted position for new base size
-  adj_long <- if (side == "short") 0 else long_size
-  adj_short <- if (side == "long") 0 else short_size
+  adj_long <- if (side == "short") 0 else long_notional
+  adj_short <- if (side == "long") 0 else short_notional
 
-  base_size <- (wallet_balance * lever * pos_pct -
-                adj_long * avg_long_price -
-                adj_short * avg_short_price) / latest_close
+  base_size <- (eq_budget * lever * pos_pct -
+                adj_long * long_avg_entry_price -
+                adj_short * short_avg_entry_price) / latest_close
   
   if (base_size <= 0 || is.na(layer_id)) return(orders)
   
