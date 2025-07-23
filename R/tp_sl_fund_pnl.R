@@ -48,7 +48,7 @@ generate_tp_sl_orders <- function(trade_state, public_info, trade_pars, unit_per
   }
   
   if (long_contracts > 0) {
-    price_diff_long <- latest_close - long_avg_entry_price
+    price_diff_long <- (latest_close - long_avg_entry_price)/long_avg_entry_price
     if (pnl_ratio > risk_TP || price_diff_long > pct_TP) {
       orders <- data.table::rbindlist(list(orders, list(
         "CLOSE", "long", long_contracts, 0, "MARKET", "TP"
@@ -61,7 +61,7 @@ generate_tp_sl_orders <- function(trade_state, public_info, trade_pars, unit_per
   }
   
   if (short_contracts > 0) {
-    price_diff_short <- short_avg_entry_price - latest_close
+    price_diff_short <- (short_avg_entry_price - latest_close)/short_avg_entry_price
     if (pnl_ratio > risk_TP || price_diff_short > pct_TP) {
       orders <- data.table::rbindlist(list(orders, list(
         "CLOSE", "short", short_contracts, 0, "MARKET", "TP"
