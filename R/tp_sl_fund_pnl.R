@@ -1,11 +1,11 @@
-.new_order <- function() {
+.new_order <- function(type = character(), pos = character(), size = numeric(), price = numeric(), pricing_method = character(), trade_reason = character()) {
   data.table::data.table(
-    type           = character(),
-    pos            = character(),
-    size           = numeric(),
-    price          = numeric(),
-    pricing_method = character(),
-    trade_reason   = character()
+    type           = type,
+    pos            = pos,
+    size           = size,
+    price          = price,
+    pricing_method = pricing_method,
+    trade_reason   = trade_reason
   )  
 }
 

@@ -56,9 +56,6 @@
 #'
 #' @export
 breakout_v1 <- function(trade_state, public_info, trade_pars, unit_per_contract, min_digit) { 
-  # need to add unit_per_contract and min_digit here
-  # trade_state may only contain contracts (notional is an intermediate calculation)
-  # output is order with rounded contracts
   
   orders <- .new_order()
   
@@ -86,13 +83,6 @@ breakout_v1 <- function(trade_state, public_info, trade_pars, unit_per_contract,
                   trade_pars$breakout_layer3_mult,
                   trade_pars$breakout_layer4_mult)
   
-  .append_order <- function(orders, side, layer, base_size, multiplier) {
-    pos_size <- round(base_size * multiplier / unit_per_contract, min_digit)
-    if (pos_size <= 0) return(orders)
-    label <- sprintf("breakout_layer%s_%s", layer, side)
-    data.table::rbindlist(list(orders, list("OPEN", side, pos_size, 0, "MARKET", label)))
-  }
-  
   if (anyNA(c(fast_ma, slow_ma, latest_close, high_prev, low_prev, atr_rising))) return(orders)
   
   side <- NA_character_
@@ -114,12 +104,14 @@ breakout_v1 <- function(trade_state, public_info, trade_pars, unit_per_contract,
     side <- "short"; layer_id <- 3
   } else if (fast_ma < slow_ma) {
     side <- "short"; layer_id <- 4
+  } else {
+    return(orders) # So side and layer_id can't be NA in remaining codes
   }
   
   # Exit logic
   if (short_contracts > 0 && side == 'long') {
     if (layer_id <= 2) {
-      orders <- rbind(orders, list("CLOSE", "short", short_contracts, 0, "MARKET", "exit_short_zbreak"))
+      orders <- data.table::rbindlist(list(orders, .new_order("CLOSE", "short", short_contracts, 0, "MARKET", "exit_short_zbreak")))
     } else {
       return(orders)
     }
@@ -127,7 +119,7 @@ breakout_v1 <- function(trade_state, public_info, trade_pars, unit_per_contract,
   
   if (long_contracts > 0 && side == 'short') {
     if (layer_id <= 2) {
-      orders <- rbind(orders, list("CLOSE", "long", long_contracts, 0, "MARKET", "exit_long_zbreak"))
+      orders <- data.table::rbindlist(list(orders, .new_order("CLOSE", "short", short_contracts, 0, "MARKET", "exit_short_zbreak")))
     } else {
       return(orders)
     }
@@ -137,16 +129,13 @@ breakout_v1 <- function(trade_state, public_info, trade_pars, unit_per_contract,
   adj_long <- if (side == "short") 0 else long_notional
   adj_short <- if (side == "long") 0 else short_notional
 
-  base_size <- (eq_budget * lever * pos_pct -
+  pos_size_notional <- (eq_budget * lever * pos_pct * layer_mult[layer_id] -
                 adj_long * long_avg_entry_price -
                 adj_short * short_avg_entry_price) / latest_close
-  
-  if (base_size <= 0 || is.na(layer_id)) return(orders)
-  
-  # Place new order
-  if (layer_id %in% 1:4 && !is.na(side)) {
-    orders <- .append_order(orders, side, layer_id, base_size, layer_mult[layer_id])
-  }
+  pos_size <- round(pos_size_notional / unit_per_contract, min_digit)
+  if (pos_size <= 0) return(orders)
+  label <- sprintf("breakout_layer%s_%s", layer_id, side)
+  orders <- data.table::rbindlist(list(orders, .new_order("OPEN", side, pos_size, 0, "MARKET", label)))
   
   return(orders)
 }
