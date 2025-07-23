@@ -32,20 +32,28 @@ generate_tp_sl_orders <- function(trade_state, public_info, trade_pars, unit_per
   pnl_ratio <- unrealized_pnl / eq_budget # suppose only one net position at a time
 
   latest_close  <- public_info$latest_close
-  atr_now <- if (!is.na(public_info$atr_14)) public_info$atr_14 else Inf
+  atr_pct <- public_info$atr_pct
   
   risk_TP <- trade_pars$risk_TP
   risk_SL <- trade_pars$risk_SL
   pos_TP_atr_mult <- trade_pars$pos_TP_atr_mult
   pos_SL_atr_mult <- trade_pars$pos_SL_atr_mult
   
+  if (is.na(atr_pct)) {
+    pct_TP <- 0.05
+    pct_SL <- -0.02
+  } else {
+    pct_TP <- max(pos_TP_atr_mult*atr_pct, 0.05)
+    pct_SL <- min(pos_SL_atr_mult*atr_pct, -0.02)
+  }
+  
   if (long_contracts > 0) {
     price_diff_long <- latest_close - long_avg_entry_price
-    if (pnl_ratio > risk_TP || price_diff_long > pos_TP_atr_mult * atr_now) {
+    if (pnl_ratio > risk_TP || price_diff_long > pct_TP) {
       orders <- data.table::rbindlist(list(orders, list(
         "CLOSE", "long", long_contracts, 0, "MARKET", "TP"
       )))
-    } else if (pnl_ratio < risk_SL || price_diff_long < - pos_SL_atr_mult * atr_now) {
+    } else if (pnl_ratio < risk_SL || price_diff_long < pct_SL) {
       orders <- data.table::rbindlist(list(orders, list(
         "CLOSE", "long", long_contracts, 0, "MARKET", "SL"
       )))
@@ -54,11 +62,11 @@ generate_tp_sl_orders <- function(trade_state, public_info, trade_pars, unit_per
   
   if (short_contracts > 0) {
     price_diff_short <- short_avg_entry_price - latest_close
-    if (pnl_ratio > risk_TP || price_diff_short > pos_TP_atr_mult * atr_now) {
+    if (pnl_ratio > risk_TP || price_diff_short > pct_TP) {
       orders <- data.table::rbindlist(list(orders, list(
         "CLOSE", "short", short_contracts, 0, "MARKET", "TP"
       )))
-    } else if (pnl_ratio < risk_SL || price_diff_short < - pos_SL_atr_mult * atr_now) {
+    } else if (pnl_ratio < risk_SL || price_diff_short < pct_SL) {
       orders <- data.table::rbindlist(list(orders, list(
         "CLOSE", "short", short_contracts, 0, "MARKET", "SL"
       )))
