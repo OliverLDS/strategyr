@@ -37,6 +37,8 @@ inline void copy_posixct_attrs(NumericVector &target, const NumericVector &ref) 
   if (!Rf_isNull(tz)) target.attr("tzone") = tz;
 }
 
+// [[Rcpp::export]] DataFrame pivots_cpp(NumericVector high, NumericVector low, int span = 5) { int n = high.size(); LogicalVector is_pivot_high(n, false); LogicalVector is_pivot_low(n, false); for (int i = span; i < n - span; ++i) { if (!NumericVector::is_na(high[i]) && is_swing_high(high, i, span)) is_pivot_high[i] = true; if (!NumericVector::is_na(low[i]) && is_swing_low(low, i, span)) is_pivot_low[i] = true; } // output vectors IntegerVector idx; NumericVector pivot_price; CharacterVector type; for (int i = 0; i < n; i++) { if (is_pivot_high[i]) { idx.push_back(i + 1); // 1-based index for R pivot_price.push_back(high[i]); type.push_back("H"); } if (is_pivot_low[i]) { idx.push_back(i + 1); pivot_price.push_back(low[i]); type.push_back("L"); } } return DataFrame::create( _["idx"] = idx, _["price"] = pivot_price, _["type"] = type ); }
+
 // [[Rcpp::export]]
 DataFrame get_now_pivots_cpp(const NumericVector &high,
                              const NumericVector &low,
