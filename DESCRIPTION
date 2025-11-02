@@ -12,14 +12,34 @@ Depends:
     R (>= 3.6.0)
 Imports: 
     data.table,
-    tibble,
-    dplyr,
-    TTR,
-    slider,
-    stats
+    stats,
+    Rcpp
+LinkingTo:
+    Rcpp
 Suggests:
     devtools,
     testthat,
     ggplot2
+Collate:
+    'RcppExports.R'
+    'define_common_utils.R'
+    'gen_ind_utility.R'
+    'gen_ind_price_action.R'
+    'gen_ind_range.R'
+    'gen_ind_zone_pivot.R'
+    'gen_ind_zone_quantile.R'
+    'gen_ind_volume.R'
+    'gen_ind_volatility.R'
+    'gen_ind_band.R'
+    'gen_ind_momentum.R'
+    'gen_ind_trend.R'
+    'gen_evt_trend.R'
+    'gen_pos_trend.R'
+    'gen_ord_utility.R'
+    'gen_ord_tp_sl.R'
+    'gen_ord_breakout.R'
+    'gen_ind_dca_ladder.R'
+    'gen_pos_dca_ladder.R'
+    'gen_ord_dca_ladder.R'
 RoxygenNote: 7.2.3
 
