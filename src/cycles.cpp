@@ -1,5 +1,6 @@
 // [[Rcpp::depends(Rcpp)]]
 #include <Rcpp.h>
+#include <deque>
 using namespace Rcpp;
 
 // equality like R's identical() for doubles (exact match)
@@ -162,6 +163,58 @@ DataFrame get_now_cycles_cpp(const DataFrame &pivots,
     _["stringsAsFactors"] = false
   );
   return out;
+}
+
+
+// idx must be sorted ascending; ties OK.
+// datetime should be seconds since epoch (numeric).
+// cycle_N is the width in *idx units*.
+// we will get the most senior cycle within the rolling window
+// [[Rcpp::export]]
+List get_bt_cycles_cpp(IntegerVector idx,
+                  NumericVector price,
+                  NumericVector datetime,
+                  int cycle_N) {
+  int n = idx.size();
+  std::deque<int> qmin, qmax;
+  IntegerVector amin(n), amax(n);
+
+  for (int i = 0; i < n; ++i) {
+    int lo_idx = idx[i] - cycle_N + 1;
+
+    // drop out-of-window heads
+    while (!qmin.empty() && idx[qmin.front()] < lo_idx) qmin.pop_front();
+    while (!qmax.empty() && idx[qmax.front()] < lo_idx) qmax.pop_front();
+
+    // maintain nondecreasing min-queue (first min breaks ties)
+    while (!qmin.empty() && price[qmin.back()] >= price[i]) qmin.pop_back();
+    qmin.push_back(i);
+
+    // maintain nonincreasing max-queue (first max breaks ties)
+    while (!qmax.empty() && price[qmax.back()] <= price[i]) qmax.pop_back();
+    qmax.push_back(i);
+
+    amin[i] = qmin.front();
+    amax[i] = qmax.front();
+  }
+
+  NumericVector cstart(n), cend(n), pstart(n), pend(n);
+  for (int i = 0; i < n; ++i) {
+    int iMin = amin[i], iMax = amax[i];
+    if (datetime[iMin] <= datetime[iMax]) {
+      cstart[i] = datetime[iMin]; cend[i] = datetime[iMax];
+      pstart[i] = price[iMin];    pend[i] = price[iMax];
+    } else {
+      cstart[i] = datetime[iMax]; cend[i] = datetime[iMin];
+      pstart[i] = price[iMax];    pend[i] = price[iMin];
+    }
+  }
+
+  return List::create(
+    _["amin"] = amin, _["amax"] = amax,
+    _["cycle_start"] = cstart, _["cycle_end"] = cend,
+    _["cycle_bg_price"] = pstart, _["cycle_ed_price"] = pend
+  );
 }
 
 // [[Rcpp::export]]

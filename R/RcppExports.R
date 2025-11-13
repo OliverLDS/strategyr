@@ -21,6 +21,10 @@ get_now_cycles_cpp <- function(pivots, min_backward_bars = 360L, min_stable_pivo
     .Call(`_strategyr_get_now_cycles_cpp`, pivots, min_backward_bars, min_stable_pivots)
 }
 
+get_bt_cycles_cpp <- function(idx, price, datetime, cycle_N) {
+    .Call(`_strategyr_get_bt_cycles_cpp`, idx, price, datetime, cycle_N)
+}
+
 get_now_fresh_main_cycles_cpp <- function(pivots, min_backward_bars = 360L, min_stable_pivots = 7L) {
     .Call(`_strategyr_get_now_fresh_main_cycles_cpp`, pivots, min_backward_bars, min_stable_pivots)
 }
@@ -45,6 +49,22 @@ fib_all_vec_cpp <- function(bg, ed) {
     .Call(`_strategyr_fib_all_vec_cpp`, bg, ed)
 }
 
+get_fib_ladder_index_cpp <- function(close, bg, ed, center_idx = 9L) {
+    .Call(`_strategyr_get_fib_ladder_index_cpp`, close, bg, ed, center_idx)
+}
+
+pivots_cpp_slow <- function(high, low, span = 5L) {
+    .Call(`_strategyr_pivots_cpp_slow`, high, low, span)
+}
+
+pivots_cpp <- function(high, low, span = 5L) {
+    .Call(`_strategyr_pivots_cpp`, high, low, span)
+}
+
+zones_pivots_cpp <- function(high, low, atr, span = 2L, k = 6L, tol_mult = 0.15) {
+    .Call(`_strategyr_zones_pivots_cpp`, high, low, atr, span, k, tol_mult)
+}
+
 get_now_pivots_cpp <- function(high, low, datetime, span = 3L, latest_n = NULL, refined = TRUE, min_swing = 0.05) {
     .Call(`_strategyr_get_now_pivots_cpp`, high, low, datetime, span, latest_n, refined, min_swing)
 }
@@ -55,14 +75,6 @@ rsi_cpp <- function(price, n = 14L) {
 
 sma_cpp <- function(x, n) {
     .Call(`_strategyr_sma_cpp`, x, n)
-}
-
-pivots_cpp <- function(high, low, span = 5L) {
-    .Call(`_strategyr_pivots_cpp`, high, low, span)
-}
-
-zones_pivots_cpp <- function(high, low, atr, span = 2L, k = 6L, tol_mult = 0.15) {
-    .Call(`_strategyr_zones_pivots_cpp`, high, low, atr, span, k, tol_mult)
 }
 
 zones_quantile_fixed_cpp <- function(high, low, window = 20L) {

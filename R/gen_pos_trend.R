@@ -7,22 +7,36 @@
 }
 
 #' @export
-gen_pos_EMA_trend <- function(DT, ema_pairs = list(c(8, 21), c(10, 30), c(9, 50), c(20, 50), c(50, 200)), pos_modes = c('both', 'long', 'short')) {
+gen_pos_EMA_trend <- function(DT, ema_pairs = list(c(8, 21), c(10, 30), c(9, 50), c(20, 50), c(50, 200)), pos_modes = c('both', 'long', 'short'), weighted = FALSE) {
   for (pair in ema_pairs) {
     fast <- pair[1]
     slow <- pair[2]
     trend_sign_col <- sprintf("ema_trend_sign_%d_%d", fast, slow)
     trend_score_col <- sprintf("ema_trend_norm_score_%d_%d", fast, slow)
     stopifnot(all(c(trend_sign_col, trend_score_col) %in% names(DT)))
+    
+    trend_sign <- data.table::shift(DT[[trend_sign_col]], type = "lag")
+    trend_score <- data.table::shift(DT[[trend_score_col]], type = "lag")
+    
     for (mode in pos_modes) {
       strat_desc <- .gen_strat_desc_EMA_trend(mode, fast, slow)
       pos_col  <- paste0('pos_', strat_desc$strat_label)
-      if (mode == 'both') {
-        signal <- DT[[trend_sign_col]] * DT[[trend_score_col]]
-      } else if (mode == 'long') {
-        signal <- pmax(DT[[trend_sign_col]] * DT[[trend_score_col]], 0)
-      } else if (mode == 'short') {
-        signal <- pmin(DT[[trend_sign_col]] * DT[[trend_score_col]], 0)
+      if (weighted) {
+        if (mode == 'both') {
+          signal <- trend_sign * trend_score
+        } else if (mode == 'long') {
+          signal <- pmax(trend_sign * trend_score, 0)
+        } else if (mode == 'short') {
+          signal <- pmin(trend_sign * trend_score, 0)
+        }
+      } else {
+        if (mode == 'both') {
+          signal <- trend_sign
+        } else if (mode == 'long') {
+          signal <- pmax(trend_sign, 0)
+        } else if (mode == 'short') {
+          signal <- pmin(trend_sign, 0)
+        }
       }
       signal[is.na(signal)] <- 0
       data.table::set(DT, j = pos_col, value = signal)

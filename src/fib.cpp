@@ -1,5 +1,7 @@
 // [[Rcpp::depends(Rcpp)]]
 #include <Rcpp.h>
+#include <algorithm>
+#include <cmath>
 using namespace Rcpp;
 
 inline CharacterVector pct_labels(const NumericVector &v) {
@@ -143,38 +145,99 @@ List fib_all_cpp(double trend_start, double trend_end,
   );
 }
 
+// [[Rcpp::export]] 
+Rcpp::NumericMatrix fib_all_vec_cpp(const Rcpp::NumericVector& bg, const Rcpp::NumericVector& ed) { 
+	const int n = bg.size(); 
+	const int K = 19; 
+	Rcpp::NumericMatrix out(n, K); 
+	std::fill(out.begin(), out.end(), NA_REAL); 
+	for (int i = 0; i < n; ++i) { 
+		double b = bg[i], e = ed[i]; 
+		if (!R_finite(b) || !R_finite(e)) continue; 
+		Rcpp::List res = fib_all_cpp(b, e); 
+		if (!res.containsElementNamed("points")) continue; 
+		// explicit cast avoids ambiguous conversion 
+		Rcpp::DataFrame pts = Rcpp::as<Rcpp::DataFrame>(res["points"]); 
+		if (!pts.containsElementNamed("level")) continue; 
+		Rcpp::NumericVector lvl = pts["level"]; 
+		if (lvl.size() == 0) continue; // drop NAs (defensive), then sort ascending 
+		Rcpp::NumericVector good_lvl = lvl[!Rcpp::is_na(lvl)]; 
+		if (good_lvl.size() == 0) continue; 
+		Rcpp::NumericVector sorted = Rcpp::clone(good_lvl); 
+		std::sort(sorted.begin(), sorted.end()); // ascending 
+		const int m = std::min(K, static_cast<int>(sorted.size())); 
+		for (int k = 0; k < m; ++k) out(i, k) = sorted[k]; // remaining columns stay NA if m < K 
+	} 
+	return out; }
+
+// 19-point ladder (including extensions).
+static const double RATIO_DOWN[19] = {
+	-2.000, -1.618, -1.272, -1.000, -0.618, -0.272, // downwards extensions (continuous)
+	0.000, 0.236, 0.382, 0.500, 0.618, 0.786, 1.000, // retracements as resistance
+	1.272, 1.618, 2.000, 2.272, 2.618, 3.000 // upwards extensions (reversal)
+};
+
+// the retracements of up and down trends are different
+static const double RATIO_UP[19] = {
+	-2.000, -1.618, -1.272, -1.000, -0.618, -0.272, // downwards extensions (reversal)
+	0.000, 0.214, 0.382, 0.500, 0.618, 0.764, 1.000, // retracements as support
+	1.272, 1.618, 2.000, 2.272, 2.618, 3.000 // upwards extensions (continuous)
+};
+
+// center_idx (0-based): last index of the "lower" block (from w)
 // [[Rcpp::export]]
-Rcpp::NumericMatrix fib_all_vec_cpp(const Rcpp::NumericVector& bg,
-                                    const Rcpp::NumericVector& ed) {
-  const int n = bg.size();
-  const int K = 19;
-  Rcpp::NumericMatrix out(n, K);
-  std::fill(out.begin(), out.end(), NA_REAL);
+Rcpp::IntegerVector get_fib_ladder_index_cpp(const Rcpp::NumericVector& close,
+                                         const Rcpp::NumericVector& bg,
+                                         const Rcpp::NumericVector& ed,
+										 int center_idx = 9) {
+  const int n = close.size(), K = 19;
+  Rcpp::IntegerVector out(n, NA_INTEGER);
+  const double eps = 1e-12;
 
   for (int i = 0; i < n; ++i) {
-    double b = bg[i], e = ed[i];
-    if (!R_finite(b) || !R_finite(e)) continue;
+    const double b = bg[i], e = ed[i], c = close[i];
+    if (!R_finite(b) || !R_finite(e) || !R_finite(c)) continue;
+	
+	const double L = std::min(b, e), H = std::max(b, e), span = H - L;
+	if (!(span > 0)) continue;
 
-    Rcpp::List res = fib_all_cpp(b, e);
-    if (!res.containsElementNamed("points")) continue;
+    const bool is_down = (e < b);
+    const double* r = is_down ? RATIO_DOWN : RATIO_UP;
+	
+	const double t = (c - L) / span;     // normalize
+	
+	// check excat match
+	int exact_j = -1;
+	for (int k = 0; k < K; ++k) {
+	  if (std::fabs(r[k] - t) < eps) {   // exact match anywhere in ladder
+	    exact_j = k;
+	    break;
+	  }
+	}
+	if (exact_j >= 0) {
+	  out[i] = exact_j + 1;              // 1-based index for R
+	  continue;                          // skip to next row
+	}
 
-    // explicit cast avoids ambiguous conversion
-    Rcpp::DataFrame pts = Rcpp::as<Rcpp::DataFrame>(res["points"]);
-    if (!pts.containsElementNamed("level")) continue;
+	// if no exact hit found, continue with normal search logic
+	const double* it = std::lower_bound(r, r + K, t); 	// first r[j] >= t
+	int j = int(it - r); 								// 0..K
+	
+	// clamp if entirely outside
+    if (j <= 0) { out[i] = 1; continue; }                  // below smallest
+    if (j >= K) { out[i] = K; continue; }                  // above largest
 
-	Rcpp::NumericVector lvl = pts["level"];
-	    if (lvl.size() == 0) continue;
+    // exact level?
+    if (std::fabs(r[j] - t) <= eps) {
+      out[i] = j + 1;
+      continue;
+    }
 
-	    // drop NAs (defensive), then sort ascending
-	    Rcpp::NumericVector good_lvl = lvl[!Rcpp::is_na(lvl)];
-	    if (good_lvl.size() == 0) continue;
-
-	    Rcpp::NumericVector sorted = Rcpp::clone(good_lvl);
-	    std::sort(sorted.begin(), sorted.end());   // ascending
-
-	    const int m = std::min(K, static_cast<int>(sorted.size()));
-	    for (int k = 0; k < m; ++k) out(i, k) = sorted[k];
-	    // remaining columns stay NA if m < K
+    // inner-bound rule via center boundary
+    int pick = (j <= center_idx) ? j : (j - 1);            // j is interval's upper
+    if (pick < 0) pick = 0;
+    if (pick >= K) pick = K - 1;
+    out[i] = pick + 1;
   }
   return out;
 }
