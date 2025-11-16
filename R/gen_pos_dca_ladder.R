@@ -47,6 +47,7 @@
   } else if (dir == 'short') {
     out[out>0] <- 0L
   }
+  out[is.na(out)] <- 0L
   invisible(out)
 }
 
