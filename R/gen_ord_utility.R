@@ -74,6 +74,7 @@ get_all_cycle_fibs <- function(cycles, price_now, ema20, ema50, ema100) {
 
 #' @export
 get_sr_from_fibs <- function(fibs) {
+  fibs <- fibs[, .(score = sum(score, na.rm = TRUE)), by = .(level, sr)] # combine repeated levels due to different cycles
   resistance_pts <- fibs[sr == 'resistance',][order(-score),][1:3][order(level),]$level
   support_pts <- fibs[sr == 'support',][order(-score),][1:3][order(-level),]$level
   

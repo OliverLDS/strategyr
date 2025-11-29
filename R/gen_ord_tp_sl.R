@@ -64,8 +64,6 @@ gen_ord_tp_sl_fund_pnl <- function(trade_state, public_info, trade_pars, min_tp 
     risk_SL = trade_pars$risk_SL,
     pos_TP_atr_mult = trade_pars$pos_TP_atr_mult,
     pos_SL_atr_mult = trade_pars$pos_SL_atr_mult,
-    unit_per_contract = unit_per_contract,
-    min_digit = min_digit,
     min_tp = min_tp,
     min_sl = min_sl
   )
