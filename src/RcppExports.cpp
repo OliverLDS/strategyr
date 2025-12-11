@@ -10,34 +10,6 @@ Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
 Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
-// atr_cpp
-NumericVector atr_cpp(NumericVector high, NumericVector low, NumericVector close, int n);
-RcppExport SEXP _strategyr_atr_cpp(SEXP highSEXP, SEXP lowSEXP, SEXP closeSEXP, SEXP nSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericVector >::type high(highSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type low(lowSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type close(closeSEXP);
-    Rcpp::traits::input_parameter< int >::type n(nSEXP);
-    rcpp_result_gen = Rcpp::wrap(atr_cpp(high, low, close, n));
-    return rcpp_result_gen;
-END_RCPP
-}
-// atr_cpp2
-NumericVector atr_cpp2(NumericVector high, NumericVector low, NumericVector close, int n);
-RcppExport SEXP _strategyr_atr_cpp2(SEXP highSEXP, SEXP lowSEXP, SEXP closeSEXP, SEXP nSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericVector >::type high(highSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type low(lowSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type close(closeSEXP);
-    Rcpp::traits::input_parameter< int >::type n(nSEXP);
-    rcpp_result_gen = Rcpp::wrap(atr_cpp2(high, low, close, n));
-    return rcpp_result_gen;
-END_RCPP
-}
 // bbands_cpp
 List bbands_cpp(NumericVector x, int n, double sd);
 RcppExport SEXP _strategyr_bbands_cpp(SEXP xSEXP, SEXP nSEXP, SEXP sdSEXP) {
@@ -64,30 +36,60 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// get_now_cycles_cpp
-DataFrame get_now_cycles_cpp(const DataFrame& pivots, int min_backward_bars, int min_stable_pivots);
-RcppExport SEXP _strategyr_get_now_cycles_cpp(SEXP pivotsSEXP, SEXP min_backward_barsSEXP, SEXP min_stable_pivotsSEXP) {
+// cluster_price_levels
+Rcpp::DataFrame cluster_price_levels(const Rcpp::NumericVector& level, const Rcpp::NumericVector& score, const Rcpp::NumericVector& tolerance, int score_mode);
+RcppExport SEXP _strategyr_cluster_price_levels(SEXP levelSEXP, SEXP scoreSEXP, SEXP toleranceSEXP, SEXP score_modeSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type level(levelSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type score(scoreSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type tolerance(toleranceSEXP);
+    Rcpp::traits::input_parameter< int >::type score_mode(score_modeSEXP);
+    rcpp_result_gen = Rcpp::wrap(cluster_price_levels(level, score, tolerance, score_mode));
+    return rcpp_result_gen;
+END_RCPP
+}
+// merge_overlapping_zones
+Rcpp::DataFrame merge_overlapping_zones(const Rcpp::NumericVector& zone_low, const Rcpp::NumericVector& zone_high, const Rcpp::NumericVector& zone_score, const Rcpp::IntegerVector& zone_n, double gap_tolerance, int score_mode);
+RcppExport SEXP _strategyr_merge_overlapping_zones(SEXP zone_lowSEXP, SEXP zone_highSEXP, SEXP zone_scoreSEXP, SEXP zone_nSEXP, SEXP gap_toleranceSEXP, SEXP score_modeSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type zone_low(zone_lowSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type zone_high(zone_highSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type zone_score(zone_scoreSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::IntegerVector& >::type zone_n(zone_nSEXP);
+    Rcpp::traits::input_parameter< double >::type gap_tolerance(gap_toleranceSEXP);
+    Rcpp::traits::input_parameter< int >::type score_mode(score_modeSEXP);
+    rcpp_result_gen = Rcpp::wrap(merge_overlapping_zones(zone_low, zone_high, zone_score, zone_n, gap_tolerance, score_mode));
+    return rcpp_result_gen;
+END_RCPP
+}
+// detect_cycles_now_cpp
+DataFrame detect_cycles_now_cpp(const DataFrame& pivots, int min_backward_bars, int min_stable_pivots);
+RcppExport SEXP _strategyr_detect_cycles_now_cpp(SEXP pivotsSEXP, SEXP min_backward_barsSEXP, SEXP min_stable_pivotsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const DataFrame& >::type pivots(pivotsSEXP);
     Rcpp::traits::input_parameter< int >::type min_backward_bars(min_backward_barsSEXP);
     Rcpp::traits::input_parameter< int >::type min_stable_pivots(min_stable_pivotsSEXP);
-    rcpp_result_gen = Rcpp::wrap(get_now_cycles_cpp(pivots, min_backward_bars, min_stable_pivots));
+    rcpp_result_gen = Rcpp::wrap(detect_cycles_now_cpp(pivots, min_backward_bars, min_stable_pivots));
     return rcpp_result_gen;
 END_RCPP
 }
-// get_bt_cycles_cpp
-List get_bt_cycles_cpp(IntegerVector idx, NumericVector price, NumericVector datetime, int cycle_N);
-RcppExport SEXP _strategyr_get_bt_cycles_cpp(SEXP idxSEXP, SEXP priceSEXP, SEXP datetimeSEXP, SEXP cycle_NSEXP) {
+// detect_main_cycles_cpp
+Rcpp::DataFrame detect_main_cycles_cpp(const Rcpp::IntegerVector& idx, const Rcpp::NumericVector& price, const Rcpp::NumericVector& datetime, int cycle_N);
+RcppExport SEXP _strategyr_detect_main_cycles_cpp(SEXP idxSEXP, SEXP priceSEXP, SEXP datetimeSEXP, SEXP cycle_NSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< IntegerVector >::type idx(idxSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type price(priceSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type datetime(datetimeSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::IntegerVector& >::type idx(idxSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type price(priceSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type datetime(datetimeSEXP);
     Rcpp::traits::input_parameter< int >::type cycle_N(cycle_NSEXP);
-    rcpp_result_gen = Rcpp::wrap(get_bt_cycles_cpp(idx, price, datetime, cycle_N));
+    rcpp_result_gen = Rcpp::wrap(detect_main_cycles_cpp(idx, price, datetime, cycle_N));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -104,42 +106,29 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// ema_cpp
-NumericVector ema_cpp(NumericVector x, int n);
-RcppExport SEXP _strategyr_ema_cpp(SEXP xSEXP, SEXP nSEXP) {
+// twoline_cross
+Rcpp::DataFrame twoline_cross(const Rcpp::NumericVector& fast_line, const Rcpp::NumericVector& slow_line);
+RcppExport SEXP _strategyr_twoline_cross(SEXP fast_lineSEXP, SEXP slow_lineSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericVector >::type x(xSEXP);
-    Rcpp::traits::input_parameter< int >::type n(nSEXP);
-    rcpp_result_gen = Rcpp::wrap(ema_cpp(x, n));
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type fast_line(fast_lineSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type slow_line(slow_lineSEXP);
+    rcpp_result_gen = Rcpp::wrap(twoline_cross(fast_line, slow_line));
     return rcpp_result_gen;
 END_RCPP
 }
-// ema_cpp2
-NumericVector ema_cpp2(NumericVector x, int n);
-RcppExport SEXP _strategyr_ema_cpp2(SEXP xSEXP, SEXP nSEXP) {
+// event_score
+Rcpp::DataFrame event_score(const Rcpp::IntegerVector& event_id, const Rcpp::NumericVector& future_outcome, double h, double coef);
+RcppExport SEXP _strategyr_event_score(SEXP event_idSEXP, SEXP future_outcomeSEXP, SEXP hSEXP, SEXP coefSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericVector >::type x(xSEXP);
-    Rcpp::traits::input_parameter< int >::type n(nSEXP);
-    rcpp_result_gen = Rcpp::wrap(ema_cpp2(x, n));
-    return rcpp_result_gen;
-END_RCPP
-}
-// ema_metrics_cpp
-DataFrame ema_metrics_cpp(NumericVector ema_fast, NumericVector ema_slow, int slope_window, int rolling_window, double eps);
-RcppExport SEXP _strategyr_ema_metrics_cpp(SEXP ema_fastSEXP, SEXP ema_slowSEXP, SEXP slope_windowSEXP, SEXP rolling_windowSEXP, SEXP epsSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericVector >::type ema_fast(ema_fastSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type ema_slow(ema_slowSEXP);
-    Rcpp::traits::input_parameter< int >::type slope_window(slope_windowSEXP);
-    Rcpp::traits::input_parameter< int >::type rolling_window(rolling_windowSEXP);
-    Rcpp::traits::input_parameter< double >::type eps(epsSEXP);
-    rcpp_result_gen = Rcpp::wrap(ema_metrics_cpp(ema_fast, ema_slow, slope_window, rolling_window, eps));
+    Rcpp::traits::input_parameter< const Rcpp::IntegerVector& >::type event_id(event_idSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type future_outcome(future_outcomeSEXP);
+    Rcpp::traits::input_parameter< double >::type h(hSEXP);
+    Rcpp::traits::input_parameter< double >::type coef(coefSEXP);
+    rcpp_result_gen = Rcpp::wrap(event_score(event_id, future_outcome, h, coef));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -157,18 +146,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// fib_all_vec_cpp
-Rcpp::NumericMatrix fib_all_vec_cpp(const Rcpp::NumericVector& bg, const Rcpp::NumericVector& ed);
-RcppExport SEXP _strategyr_fib_all_vec_cpp(SEXP bgSEXP, SEXP edSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type bg(bgSEXP);
-    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type ed(edSEXP);
-    rcpp_result_gen = Rcpp::wrap(fib_all_vec_cpp(bg, ed));
-    return rcpp_result_gen;
-END_RCPP
-}
 // get_fib_ladder_index_cpp
 Rcpp::IntegerVector get_fib_ladder_index_cpp(const Rcpp::NumericVector& close, const Rcpp::NumericVector& bg, const Rcpp::NumericVector& ed, int center_idx);
 RcppExport SEXP _strategyr_get_fib_ladder_index_cpp(SEXP closeSEXP, SEXP bgSEXP, SEXP edSEXP, SEXP center_idxSEXP) {
@@ -183,86 +160,95 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// pivots_cpp_slow
-DataFrame pivots_cpp_slow(NumericVector high, NumericVector low, int span);
-RcppExport SEXP _strategyr_pivots_cpp_slow(SEXP highSEXP, SEXP lowSEXP, SEXP spanSEXP) {
+// detect_pivots_cpp
+Rcpp::DataFrame detect_pivots_cpp(const Rcpp::NumericVector& high, const Rcpp::NumericVector& low, const Rcpp::NumericVector& datetime, int span, Rcpp::Nullable<int> latest_n, bool refined, double min_swing);
+RcppExport SEXP _strategyr_detect_pivots_cpp(SEXP highSEXP, SEXP lowSEXP, SEXP datetimeSEXP, SEXP spanSEXP, SEXP latest_nSEXP, SEXP refinedSEXP, SEXP min_swingSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericVector >::type high(highSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type low(lowSEXP);
-    Rcpp::traits::input_parameter< int >::type span(spanSEXP);
-    rcpp_result_gen = Rcpp::wrap(pivots_cpp_slow(high, low, span));
-    return rcpp_result_gen;
-END_RCPP
-}
-// pivots_cpp
-DataFrame pivots_cpp(NumericVector high, NumericVector low, int span);
-RcppExport SEXP _strategyr_pivots_cpp(SEXP highSEXP, SEXP lowSEXP, SEXP spanSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericVector >::type high(highSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type low(lowSEXP);
-    Rcpp::traits::input_parameter< int >::type span(spanSEXP);
-    rcpp_result_gen = Rcpp::wrap(pivots_cpp(high, low, span));
-    return rcpp_result_gen;
-END_RCPP
-}
-// zones_pivots_cpp
-DataFrame zones_pivots_cpp(NumericVector high, NumericVector low, NumericVector atr, int span, int k, double tol_mult);
-RcppExport SEXP _strategyr_zones_pivots_cpp(SEXP highSEXP, SEXP lowSEXP, SEXP atrSEXP, SEXP spanSEXP, SEXP kSEXP, SEXP tol_multSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericVector >::type high(highSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type low(lowSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type atr(atrSEXP);
-    Rcpp::traits::input_parameter< int >::type span(spanSEXP);
-    Rcpp::traits::input_parameter< int >::type k(kSEXP);
-    Rcpp::traits::input_parameter< double >::type tol_mult(tol_multSEXP);
-    rcpp_result_gen = Rcpp::wrap(zones_pivots_cpp(high, low, atr, span, k, tol_mult));
-    return rcpp_result_gen;
-END_RCPP
-}
-// get_now_pivots_cpp
-DataFrame get_now_pivots_cpp(const NumericVector& high, const NumericVector& low, const NumericVector& datetime, int span, Rcpp::Nullable<int> latest_n, bool refined, double min_swing);
-RcppExport SEXP _strategyr_get_now_pivots_cpp(SEXP highSEXP, SEXP lowSEXP, SEXP datetimeSEXP, SEXP spanSEXP, SEXP latest_nSEXP, SEXP refinedSEXP, SEXP min_swingSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const NumericVector& >::type high(highSEXP);
-    Rcpp::traits::input_parameter< const NumericVector& >::type low(lowSEXP);
-    Rcpp::traits::input_parameter< const NumericVector& >::type datetime(datetimeSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type high(highSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type low(lowSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type datetime(datetimeSEXP);
     Rcpp::traits::input_parameter< int >::type span(spanSEXP);
     Rcpp::traits::input_parameter< Rcpp::Nullable<int> >::type latest_n(latest_nSEXP);
     Rcpp::traits::input_parameter< bool >::type refined(refinedSEXP);
     Rcpp::traits::input_parameter< double >::type min_swing(min_swingSEXP);
-    rcpp_result_gen = Rcpp::wrap(get_now_pivots_cpp(high, low, datetime, span, latest_n, refined, min_swing));
+    rcpp_result_gen = Rcpp::wrap(detect_pivots_cpp(high, low, datetime, span, latest_n, refined, min_swing));
     return rcpp_result_gen;
 END_RCPP
 }
-// rsi_cpp
-NumericVector rsi_cpp(NumericVector price, int n);
-RcppExport SEXP _strategyr_rsi_cpp(SEXP priceSEXP, SEXP nSEXP) {
+// rolling_sum
+Rcpp::NumericVector rolling_sum(const Rcpp::NumericVector& x, int n);
+RcppExport SEXP _strategyr_rolling_sum(SEXP xSEXP, SEXP nSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericVector >::type price(priceSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type x(xSEXP);
     Rcpp::traits::input_parameter< int >::type n(nSEXP);
-    rcpp_result_gen = Rcpp::wrap(rsi_cpp(price, n));
+    rcpp_result_gen = Rcpp::wrap(rolling_sum(x, n));
     return rcpp_result_gen;
 END_RCPP
 }
-// sma_cpp
-NumericVector sma_cpp(NumericVector x, int n);
-RcppExport SEXP _strategyr_sma_cpp(SEXP xSEXP, SEXP nSEXP) {
+// rolling_mean
+Rcpp::NumericVector rolling_mean(const Rcpp::NumericVector& x, int n);
+RcppExport SEXP _strategyr_rolling_mean(SEXP xSEXP, SEXP nSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericVector >::type x(xSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type x(xSEXP);
     Rcpp::traits::input_parameter< int >::type n(nSEXP);
-    rcpp_result_gen = Rcpp::wrap(sma_cpp(x, n));
+    rcpp_result_gen = Rcpp::wrap(rolling_mean(x, n));
+    return rcpp_result_gen;
+END_RCPP
+}
+// rolling_sd
+Rcpp::NumericVector rolling_sd(const Rcpp::NumericVector& x, int n, bool sample);
+RcppExport SEXP _strategyr_rolling_sd(SEXP xSEXP, SEXP nSEXP, SEXP sampleSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type x(xSEXP);
+    Rcpp::traits::input_parameter< int >::type n(nSEXP);
+    Rcpp::traits::input_parameter< bool >::type sample(sampleSEXP);
+    rcpp_result_gen = Rcpp::wrap(rolling_sd(x, n, sample));
+    return rcpp_result_gen;
+END_RCPP
+}
+// ema_ttr_fixed_step
+Rcpp::NumericVector ema_ttr_fixed_step(const Rcpp::NumericVector& x, int n, bool wilder);
+RcppExport SEXP _strategyr_ema_ttr_fixed_step(SEXP xSEXP, SEXP nSEXP, SEXP wilderSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type x(xSEXP);
+    Rcpp::traits::input_parameter< int >::type n(nSEXP);
+    Rcpp::traits::input_parameter< bool >::type wilder(wilderSEXP);
+    rcpp_result_gen = Rcpp::wrap(ema_ttr_fixed_step(x, n, wilder));
+    return rcpp_result_gen;
+END_RCPP
+}
+// ema_tau_fixed_step
+Rcpp::NumericVector ema_tau_fixed_step(const Rcpp::NumericVector& x, double tau);
+RcppExport SEXP _strategyr_ema_tau_fixed_step(SEXP xSEXP, SEXP tauSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type x(xSEXP);
+    Rcpp::traits::input_parameter< double >::type tau(tauSEXP);
+    rcpp_result_gen = Rcpp::wrap(ema_tau_fixed_step(x, tau));
+    return rcpp_result_gen;
+END_RCPP
+}
+// ema_tau_irregular
+Rcpp::NumericVector ema_tau_irregular(const Rcpp::NumericVector& t, const Rcpp::NumericVector& x, double tau);
+RcppExport SEXP _strategyr_ema_tau_irregular(SEXP tSEXP, SEXP xSEXP, SEXP tauSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type t(tSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type x(xSEXP);
+    Rcpp::traits::input_parameter< double >::type tau(tauSEXP);
+    rcpp_result_gen = Rcpp::wrap(ema_tau_irregular(t, x, tau));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -298,25 +284,24 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_strategyr_atr_cpp", (DL_FUNC) &_strategyr_atr_cpp, 4},
-    {"_strategyr_atr_cpp2", (DL_FUNC) &_strategyr_atr_cpp2, 4},
     {"_strategyr_bbands_cpp", (DL_FUNC) &_strategyr_bbands_cpp, 3},
     {"_strategyr_bbands_cpp2", (DL_FUNC) &_strategyr_bbands_cpp2, 3},
-    {"_strategyr_get_now_cycles_cpp", (DL_FUNC) &_strategyr_get_now_cycles_cpp, 3},
-    {"_strategyr_get_bt_cycles_cpp", (DL_FUNC) &_strategyr_get_bt_cycles_cpp, 4},
+    {"_strategyr_cluster_price_levels", (DL_FUNC) &_strategyr_cluster_price_levels, 4},
+    {"_strategyr_merge_overlapping_zones", (DL_FUNC) &_strategyr_merge_overlapping_zones, 6},
+    {"_strategyr_detect_cycles_now_cpp", (DL_FUNC) &_strategyr_detect_cycles_now_cpp, 3},
+    {"_strategyr_detect_main_cycles_cpp", (DL_FUNC) &_strategyr_detect_main_cycles_cpp, 4},
     {"_strategyr_get_now_fresh_main_cycles_cpp", (DL_FUNC) &_strategyr_get_now_fresh_main_cycles_cpp, 3},
-    {"_strategyr_ema_cpp", (DL_FUNC) &_strategyr_ema_cpp, 2},
-    {"_strategyr_ema_cpp2", (DL_FUNC) &_strategyr_ema_cpp2, 2},
-    {"_strategyr_ema_metrics_cpp", (DL_FUNC) &_strategyr_ema_metrics_cpp, 5},
+    {"_strategyr_twoline_cross", (DL_FUNC) &_strategyr_twoline_cross, 2},
+    {"_strategyr_event_score", (DL_FUNC) &_strategyr_event_score, 4},
     {"_strategyr_fib_all_cpp", (DL_FUNC) &_strategyr_fib_all_cpp, 4},
-    {"_strategyr_fib_all_vec_cpp", (DL_FUNC) &_strategyr_fib_all_vec_cpp, 2},
     {"_strategyr_get_fib_ladder_index_cpp", (DL_FUNC) &_strategyr_get_fib_ladder_index_cpp, 4},
-    {"_strategyr_pivots_cpp_slow", (DL_FUNC) &_strategyr_pivots_cpp_slow, 3},
-    {"_strategyr_pivots_cpp", (DL_FUNC) &_strategyr_pivots_cpp, 3},
-    {"_strategyr_zones_pivots_cpp", (DL_FUNC) &_strategyr_zones_pivots_cpp, 6},
-    {"_strategyr_get_now_pivots_cpp", (DL_FUNC) &_strategyr_get_now_pivots_cpp, 7},
-    {"_strategyr_rsi_cpp", (DL_FUNC) &_strategyr_rsi_cpp, 2},
-    {"_strategyr_sma_cpp", (DL_FUNC) &_strategyr_sma_cpp, 2},
+    {"_strategyr_detect_pivots_cpp", (DL_FUNC) &_strategyr_detect_pivots_cpp, 7},
+    {"_strategyr_rolling_sum", (DL_FUNC) &_strategyr_rolling_sum, 2},
+    {"_strategyr_rolling_mean", (DL_FUNC) &_strategyr_rolling_mean, 2},
+    {"_strategyr_rolling_sd", (DL_FUNC) &_strategyr_rolling_sd, 3},
+    {"_strategyr_ema_ttr_fixed_step", (DL_FUNC) &_strategyr_ema_ttr_fixed_step, 3},
+    {"_strategyr_ema_tau_fixed_step", (DL_FUNC) &_strategyr_ema_tau_fixed_step, 2},
+    {"_strategyr_ema_tau_irregular", (DL_FUNC) &_strategyr_ema_tau_irregular, 3},
     {"_strategyr_zones_quantile_fixed_cpp", (DL_FUNC) &_strategyr_zones_quantile_fixed_cpp, 3},
     {"_strategyr_zones_quantile_dyn_cpp", (DL_FUNC) &_strategyr_zones_quantile_dyn_cpp, 7},
     {NULL, NULL, 0}

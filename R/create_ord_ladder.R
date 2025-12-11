@@ -1,4 +1,4 @@
-.gen_ord_dca_ladder_core <- function(inst_id, unit_per_contract, min_digit,
+.create_ord_ladder_core <- function(inst_id, unit_per_contract, min_digit,
   eq_budget, long_contracts, short_contracts, 
   price_now, candle_DT, lev, 
   direction = NULL) {

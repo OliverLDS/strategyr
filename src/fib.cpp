@@ -145,30 +145,6 @@ List fib_all_cpp(double trend_start, double trend_end,
   );
 }
 
-// [[Rcpp::export]] 
-Rcpp::NumericMatrix fib_all_vec_cpp(const Rcpp::NumericVector& bg, const Rcpp::NumericVector& ed) { 
-	const int n = bg.size(); 
-	const int K = 19; 
-	Rcpp::NumericMatrix out(n, K); 
-	std::fill(out.begin(), out.end(), NA_REAL); 
-	for (int i = 0; i < n; ++i) { 
-		double b = bg[i], e = ed[i]; 
-		if (!R_finite(b) || !R_finite(e)) continue; 
-		Rcpp::List res = fib_all_cpp(b, e); 
-		if (!res.containsElementNamed("points")) continue; 
-		// explicit cast avoids ambiguous conversion 
-		Rcpp::DataFrame pts = Rcpp::as<Rcpp::DataFrame>(res["points"]); 
-		if (!pts.containsElementNamed("level")) continue; 
-		Rcpp::NumericVector lvl = pts["level"]; 
-		if (lvl.size() == 0) continue; // drop NAs (defensive), then sort ascending 
-		Rcpp::NumericVector good_lvl = lvl[!Rcpp::is_na(lvl)]; 
-		if (good_lvl.size() == 0) continue; 
-		Rcpp::NumericVector sorted = Rcpp::clone(good_lvl); 
-		std::sort(sorted.begin(), sorted.end()); // ascending 
-		const int m = std::min(K, static_cast<int>(sorted.size())); 
-		for (int k = 0; k < m; ++k) out(i, k) = sorted[k]; // remaining columns stay NA if m < K 
-	} 
-	return out; }
 
 // 19-point ladder (including extensions).
 static const double RATIO_DOWN[19] = {

@@ -1,6 +1,7 @@
 // [[Rcpp::depends(Rcpp)]]
 #include <Rcpp.h>
 #include <deque>
+#include "utils_rcpp.h"
 using namespace Rcpp;
 
 // equality like R's identical() for doubles (exact match)
@@ -24,7 +25,7 @@ inline IntegerVector order_by_end_start(const NumericVector &end,
 }
 
 // [[Rcpp::export]]
-DataFrame get_now_cycles_cpp(const DataFrame &pivots,
+DataFrame detect_cycles_now_cpp(const DataFrame &pivots,
                                      int min_backward_bars = 360,
                                      int min_stable_pivots = 7) {
   IntegerVector idx   = pivots["idx"];
@@ -165,32 +166,36 @@ DataFrame get_now_cycles_cpp(const DataFrame &pivots,
   return out;
 }
 
-
 // idx must be sorted ascending; ties OK.
 // datetime should be seconds since epoch (numeric).
 // cycle_N is the width in *idx units*.
 // we will get the most senior cycle within the rolling window
 // [[Rcpp::export]]
-List get_bt_cycles_cpp(IntegerVector idx,
-                  NumericVector price,
-                  NumericVector datetime,
-                  int cycle_N) {
-  int n = idx.size();
-  std::deque<int> qmin, qmax;
-  IntegerVector amin(n), amax(n);
+Rcpp::DataFrame detect_main_cycles_cpp(const Rcpp::IntegerVector &idx,
+                               const Rcpp::NumericVector &price,
+                               const Rcpp::NumericVector &datetime,
+                               int cycle_N) {
 
+  int n = idx.size();
+  if (price.size() != n || datetime.size() != n)
+    Rcpp::stop("idx, price, datetime must have same length.");
+
+  std::deque<int> qmin, qmax;
+  Rcpp::IntegerVector amin(n), amax(n);
+
+  // Sliding-window extrema
   for (int i = 0; i < n; ++i) {
     int lo_idx = idx[i] - cycle_N + 1;
 
-    // drop out-of-window heads
+    // pop old elements out of window
     while (!qmin.empty() && idx[qmin.front()] < lo_idx) qmin.pop_front();
     while (!qmax.empty() && idx[qmax.front()] < lo_idx) qmax.pop_front();
 
-    // maintain nondecreasing min-queue (first min breaks ties)
+    // maintain min queue
     while (!qmin.empty() && price[qmin.back()] >= price[i]) qmin.pop_back();
     qmin.push_back(i);
 
-    // maintain nonincreasing max-queue (first max breaks ties)
+    // maintain max queue
     while (!qmax.empty() && price[qmax.back()] <= price[i]) qmax.pop_back();
     qmax.push_back(i);
 
@@ -198,22 +203,40 @@ List get_bt_cycles_cpp(IntegerVector idx,
     amax[i] = qmax.front();
   }
 
-  NumericVector cstart(n), cend(n), pstart(n), pend(n);
+  Rcpp::NumericVector cycle_start(n), cycle_end(n);
+  Rcpp::NumericVector cycle_bg_price(n), cycle_ed_price(n);
+
   for (int i = 0; i < n; ++i) {
     int iMin = amin[i], iMax = amax[i];
-    if (datetime[iMin] <= datetime[iMax]) {
-      cstart[i] = datetime[iMin]; cend[i] = datetime[iMax];
-      pstart[i] = price[iMin];    pend[i] = price[iMax];
+
+    double tMin = datetime[iMin];
+    double tMax = datetime[iMax];
+
+    if (tMin <= tMax) {
+      cycle_start[i]    = tMin;
+      cycle_end[i]      = tMax;
+      cycle_bg_price[i] = price[iMin];
+      cycle_ed_price[i] = price[iMax];
     } else {
-      cstart[i] = datetime[iMax]; cend[i] = datetime[iMin];
-      pstart[i] = price[iMax];    pend[i] = price[iMin];
+      cycle_start[i]    = tMax;
+      cycle_end[i]      = tMin;
+      cycle_bg_price[i] = price[iMax];
+      cycle_ed_price[i] = price[iMin];
     }
   }
 
-  return List::create(
-    _["amin"] = amin, _["amax"] = amax,
-    _["cycle_start"] = cstart, _["cycle_end"] = cend,
-    _["cycle_bg_price"] = pstart, _["cycle_ed_price"] = pend
+  // Preserve datetime class/tzone consistency
+  copy_posixct_attrs(cycle_start, datetime);
+  copy_posixct_attrs(cycle_end, datetime);
+
+  return Rcpp::DataFrame::create(
+    Rcpp::_["amin"]             = amin,
+    Rcpp::_["amax"]             = amax,
+    Rcpp::_["cycle_start"]      = cycle_start,
+    Rcpp::_["cycle_end"]        = cycle_end,
+    Rcpp::_["cycle_bg_price"]   = cycle_bg_price,
+    Rcpp::_["cycle_ed_price"]   = cycle_ed_price,
+    Rcpp::_["stringsAsFactors"] = false
   );
 }
 

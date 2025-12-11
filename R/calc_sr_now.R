@@ -1,14 +1,4 @@
-.new_order <- function(inst_id = character(), type = character(), pos = character(), size = numeric(), price = numeric(), pricing_method = character(), trade_reason = character()) {
-  data.table::data.table(
-    inst_id = inst_id,
-    type = type, # OPEN or CLOSE
-    pos = pos, # long or short
-    size = size,
-    price = price,
-    pricing_method = pricing_method, # market or limit
-    trade_reason = trade_reason
-  )  
-}
+
 
 #' @export
 get_now_pivots <- function(DT, span = 3, latest_n = NULL, refined = TRUE, min_swing = 0.05) {
