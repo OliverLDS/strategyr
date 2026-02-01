@@ -1,7 +1,7 @@
 # this function assigns cycles (with limited records) to the whole candle's datetime
-.assign_cylces_to_datetime <- function(cycles_dt, datetime, detailed_mode = FALSE) { 
+.assign_cylces_to_datetime <- function(cycles_dt, datetime, debug_mode = FALSE) { 
   out <- cycles_dt[DT[, .(datetime)], on = 'datetime', roll = TRUE]
-  if (!detailed_mode) {
+  if (!debug_mode) {
     out <- out[, .(cycle_bg_price, cycle_ed_price)]
   }
   invisible(out)
@@ -19,8 +19,10 @@
 # This function actually generates cycle range now; all the following calculation (for price-independent optimal ladder weights and price-dependent position) are in gen_pos_dca_ladder
 # ladder_index should be one of 1L:19L or -1L:-19L
 #' @export
-calc_ladder_index <- function(DT, span = 3, latest_n = NULL, refined = TRUE, min_swing = 0.05, cycle_N = 360L, aware_seconds = 0, cycle_prefix = NULL, center_idx = 9L, detailed_report = FALSE) {
+calc_ladder_index <- function(DT, span = 3, latest_n = NULL, refined = TRUE, min_swing = 0.05, cycle_N = 360L, cycle_prefix = NULL, center_idx = 9L, detailed_report = FALSE) {
 
+  # pivots and cycles are both data.frame from rcpp; by design, they have the same number of rows; key issue here is to put availtime into datetime when you combine pivots and cycles into cycles_dt, so later when you use candle data's full datetime to filling merge, cycle information will be available in the merged row
+  # also cycle information is observable in the beginning of the merged row, the ladder_index is only observable in the end of the merged row; therefore, when you try to use the ladder_index information (like build strategy pos), it should be on or after the close of this bar
   pivots <- detect_pivots_cpp(DT$high, DT$low, DT$datetime, span = span, latest_n = latest_n, refined = refined, min_swing = min_swing)
   cycles <- detect_main_cycles_cpp(pivots$idx, pivots$price, pivots$datetime, cycle_N = cycle_N)
   cycles_dt <- data.table::data.table(idx = pivots$idx, datetime = pivots$availtime, cycle_bg_price = cycles$cycle_bg_price, cycle_ed_price = cycles$cycle_ed_price)[!duplicated(datetime)]
@@ -29,8 +31,9 @@ calc_ladder_index <- function(DT, span = 3, latest_n = NULL, refined = TRUE, min
   cycle_names <- c(sprintf('cycle_%s_bg_price', cycle_prefix), sprintf('cycle_%s_ed_price', cycle_prefix))
   cycle_columns <- .assign_cylces_to_datetime(cycles_dt, DT$datetime)
   
-  idx_name <- sprintf('ind_dca_ladder_%s', cycle_prefix)
-  idx <- sign(cycle_columns[[2]] - cycle_columns[[1]]) * get_fib_ladder_index_cpp(DT$close, cycle_columns[[1]], cycle_columns[[2]], center_idx = center_idx)
+  idx_name <- sprintf('ladder_index_%s', cycle_prefix)
+  cycle_direction <- sign(cycle_columns[[2]] - cycle_columns[[1]]) # 1 represents for upward cycle; -1 for downward cycle
+  idx <- cycle_direction * get_fib_ladder_index_cpp(DT$close, cycle_columns[[1]], cycle_columns[[2]], center_idx = center_idx)
   
   if (detailed_report) {
     return(invisible(DT[, (cycle_names) := cycle_columns][, (idx_name) := idx]))

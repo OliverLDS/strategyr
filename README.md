@@ -8,7 +8,8 @@ Rather than acting as a generic indicator library, `strategyr` embeds trading ph
 
 The package is under active development. Documentation will evolve over time and be expanded incrementally in the `doc/` directory:
 
-- [`doc/philosophy.md`](doc/philosophy.md)
+- [`Philosophy and Architecture`](doc/philosophy.md)
+- [`Fib-Level-Based Positioning Strategy`](doc/fib_ladder_explained.md)
 
 
 ## Installation
@@ -27,4 +28,4 @@ MIT License. Feel free to modify, extend, and adapt.
 
 ## Author
 
-Created and maintained by Oliver Lee (mailto: olee7149@gmail.com).
+Created and maintained by Oliver (mailto: olee7149@gmail.com).

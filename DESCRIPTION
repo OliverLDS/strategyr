@@ -22,24 +22,10 @@ Suggests:
     ggplot2
 Collate:
     'RcppExports.R'
-    'def_utils.R'
-    'calc_feat_price_action.R'
-    'calc_ind_range.R'
-    'calc_ind_zone_pivot.R'
-    'calc_ind_zone_quantile.R'
-    'calc_feat_volume.R'
-    'calc_feat_volatility.R'
-    'calc_ind_band.R'
-    'calc_feat_momentum.R'
+    'utils_common.R'
     'calc_feat_trend.R'
-    'calc_s_EMA_cross.R'
-    'calc_sr_now.R'
+    'calc_feat_volatility.R'
+    'calc_ema_cross.R'
     'calc_ladder_index.R'
-    'detect_evt_trend.R'
-    'build_pos_trend.R'
-    'build_pos_ladder.R'
-    'create_ord_ladder.R'
-    'create_ord_tp_sl.R'
-    'create_ord_breakout.R'
 RoxygenNote: 7.2.3
 

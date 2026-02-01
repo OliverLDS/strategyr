@@ -1,0 +1,241 @@
+// [[Rcpp::depends(Rcpp)]]
+#include <Rcpp.h>
+#include <algorithm>
+#include <cmath>
+using namespace Rcpp;
+
+inline CharacterVector pct_labels(const NumericVector &v) {
+  int n = v.size();
+  CharacterVector out(n);
+  std::ostringstream oss;
+  for (int i = 0; i < n; ++i) {
+    oss.str("");                    // reset
+    oss.clear();
+    oss << std::fixed << std::setprecision(1) << v[i] * 100.0;
+    out[i] = oss.str() + "%";
+  }
+  return out;
+}
+
+// [[Rcpp::export]]
+List fib_all_cpp(double trend_start, double trend_end,
+                 NumericVector retr_levels = NumericVector::create(0.0, 0.236, 0.382, 0.5, 0.618, 0.786, 1.0),
+                 NumericVector ext_levels  = NumericVector::create(0.272, 0.618, 1.0, 1.272, 1.618, 2.0)) {
+
+  if (!R_finite(trend_start) || !R_finite(trend_end)) {
+    return List::create(
+      _["direction"]        = NA_STRING,
+      _["H"]                = NA_REAL,
+      _["L"]                = NA_REAL,
+      _["diff"]             = NA_REAL,
+      _["retracements"]     = R_NilValue,
+      _["extensions_down"]  = R_NilValue,
+      _["extensions_up"]    = R_NilValue,
+      _["points"]           = DataFrame::create()
+    );
+  }
+  double H = std::max(trend_start, trend_end);
+  double L = std::min(trend_start, trend_end);
+  double diff = H - L;
+  if (diff <= 0.0) {
+    return List::create(
+      _["direction"]        = NA_STRING,
+      _["H"]                = NA_REAL,
+      _["L"]                = NA_REAL,
+      _["diff"]             = NA_REAL,
+      _["retracements"]     = R_NilValue,
+      _["extensions_down"]  = R_NilValue,
+      _["extensions_up"]    = R_NilValue,
+      _["points"]           = DataFrame::create()
+    );
+  }
+  
+  const bool is_down = (trend_end < trend_start);
+  const std::string direction = is_down ? "down" : "up";
+
+  // Retracements always inside [L, H]
+  NumericVector retr(retr_levels.size());
+  if (is_down) { // down-leg: resistances above L
+    for (int i = 0; i < retr.size(); ++i) retr[i] = L + retr_levels[i] * diff;
+  } else {                       // up-leg: supports below H
+    for (int i = 0; i < retr.size(); ++i) retr[i] = H - retr_levels[i] * diff;
+  }
+  CharacterVector retr_lbl = pct_labels(retr_levels);
+  retr.attr("names") = retr_lbl;
+
+  // Extensions in trend direction (continuation)
+  NumericVector ext_down(ext_levels.size()); // below L
+  NumericVector ext_up  (ext_levels.size()); // above H
+
+  if (is_down) {
+	for (int i = 0; i < ext_down.size(); ++i) ext_down[i] = L - ext_levels[i] * diff; // continuous ext
+	for (int i = 0; i < ext_up.size();   ++i) ext_up[i]   = H + ext_levels[i] * diff; // reversal ext
+  } else {
+	for (int i = 0; i < ext_up.size();   ++i) ext_up[i]   = H + ext_levels[i] * diff; // continuous ext
+	for (int i = 0; i < ext_down.size(); ++i) ext_down[i] = L - ext_levels[i] * diff; // reversal ext
+  }
+
+  CharacterVector ext_lbl = pct_labels(ext_levels);
+  ext_down.attr("names") = ext_lbl;
+  ext_up.attr("names")   = ext_lbl;
+  
+  const int n_retr = retr.size();
+  const int n_xd   = ext_down.size();
+  const int n_xu   = ext_up.size();
+  const int N      = n_retr + n_xd + n_xu;
+	
+  NumericVector level(N);
+  CharacterVector label(N), point_type(N), sr_hint(N), group(N);
+
+  int k = 0;
+
+  // Retracements
+  for (int i = 0; i < n_retr; ++i, ++k) {
+	  level[k]      = retr[i];
+	  label[k]      = retr_lbl[i];
+	  point_type[k] = "retracement";
+	  // Without price_now: in an up-cycle, retracements are supports; in a down-cycle, resistances.
+	  sr_hint[k]    = is_down ? "resistance" : "support";
+	  group[k]      = "retr";
+  }
+
+  // Extensions DOWN (below L)
+  for (int i = 0; i < n_xd; ++i, ++k) {
+	  level[k]      = ext_down[i];
+	  label[k]      = ext_lbl[i];
+	  group[k]      = "ext_down";
+	  // In a down-cycle, ext_down is continuous; in an up-cycle, it's reversal.
+	  const bool continuous = is_down;
+	  point_type[k] = continuous ? "continuous_extension" : "reversal_extension";
+	  // S/R hint without price_now: below-market targets are typically SUPPORT zones
+	  sr_hint[k]    = "support";
+  }
+
+  // Extensions UP (above H)
+  for (int i = 0; i < n_xu; ++i, ++k) {
+	  level[k]      = ext_up[i];
+	  label[k]      = ext_lbl[i];
+	  group[k]      = "ext_up";
+	  // In an up-cycle, ext_up is continuous; in a down-cycle, it's reversal.
+	  const bool continuous = !is_down;
+	  point_type[k] = continuous ? "continuous_extension" : "reversal_extension";
+	  // S/R hint without price_now: above-market targets are typically RESISTANCE zones
+	  sr_hint[k]    = "resistance";
+  }
+
+  DataFrame points = DataFrame::create(
+	  _["level"]      = level,
+	  _["label"]      = label,
+	  _["point_type"] = point_type,
+	  _["sr_hint"]    = sr_hint,
+	  _["group"]      = group,
+	  _["stringsAsFactors"] = false
+  );
+
+  // Return meta + legacy vectors for backward compatibility
+  return List::create(
+	  _["direction"]        = direction,  // "up" or "down"
+	  _["H"]                = H,
+	  _["L"]                = L,
+	  _["diff"]             = diff,
+	  _["retracements"]     = retr,
+	  _["extensions_down"]  = ext_down,
+	  _["extensions_up"]    = ext_up,
+	  _["points"]           = points
+  );
+}
+
+
+// 19-point ladder (including extensions).
+static const double RATIO_DOWN[19] = {
+	-2.000, -1.618, -1.272, -1.000, -0.618, -0.272, // downwards extensions (continuous)
+	0.000, 0.236, 0.382, 0.500, 0.618, 0.786, 1.000, // retracements as resistance
+	1.272, 1.618, 2.000, 2.272, 2.618, 3.000 // upwards extensions (reversal)
+};
+
+// the retracements of up and down trends are different
+static const double RATIO_UP[19] = {
+	-2.000, -1.618, -1.272, -1.000, -0.618, -0.272, // downwards extensions (reversal)
+	0.000, 0.214, 0.382, 0.500, 0.618, 0.764, 1.000, // retracements as support
+	1.272, 1.618, 2.000, 2.272, 2.618, 3.000 // upwards extensions (continuous)
+};
+
+
+// Note: Although 19 Fibonacci levels create 20 bins on the normalized scale,
+// our ladder index is NOT a bin index. We return the index of the Fibonacci
+// level that lies just *inside* (closer to the center) relative to the current
+// price, using center_idx to define the inner boundary.
+//
+// Reason:
+// Weight/position sizing is defined on the 19 Fibonacci levels (length(w) = 19).
+// Using bin-based weights would cause discontinuities around the center level:
+// e.g., if the center corresponds to price 3000, bin-based logic might give a
+// short at 3000.01 and a long at 2999.99, even though these prices are nearly
+// identical.
+//
+// By mapping any price within a bin to the nearest *inner* Fibonacci level,
+// both sides of the center share a stable, continuous weight. This avoids
+// pathological flips near the center and ensures that optimal weights depend
+// smoothly on distance from the center zone rather than arbitrary bin borders.
+//
+// In short: bins locate the price, but Fibonacci *levels* determine the weights;
+// the ladder index therefore selects the appropriate level, not the interval.
+
+// center_idx (0-based): last index of the "lower" block (from w)
+// [[Rcpp::export]]
+Rcpp::IntegerVector get_fib_ladder_index_cpp(const Rcpp::NumericVector& close,
+                                         const Rcpp::NumericVector& bg,
+                                         const Rcpp::NumericVector& ed,
+										 int center_idx = 9) {
+  const int n = close.size(), K = 19;
+  Rcpp::IntegerVector out(n, NA_INTEGER);
+  const double eps = 1e-12;
+
+  for (int i = 0; i < n; ++i) {
+    const double b = bg[i], e = ed[i], c = close[i];
+    if (!R_finite(b) || !R_finite(e) || !R_finite(c)) continue;
+	
+		const double L = std::min(b, e), H = std::max(b, e), span = H - L;
+		if (!(span > 0)) continue;
+
+    const bool is_down = (e < b);
+    const double* r = is_down ? RATIO_DOWN : RATIO_UP;
+	
+		const double t = (c - L) / span;     // normalize
+	
+		// check excat match
+		int exact_j = -1;
+		for (int k = 0; k < K; ++k) {
+		  if (std::fabs(r[k] - t) < eps) {   // exact match anywhere in ladder
+		    exact_j = k;
+		    break;
+		  }
+		}
+		if (exact_j >= 0) {
+		  out[i] = exact_j + 1;              // 1-based index for R
+		  continue;                          // skip to next row
+		}
+
+		// if no exact hit found, continue with normal search logic
+		const double* it = std::lower_bound(r, r + K, t); 	// first r[j] >= t
+		int j = int(it - r); 								// 0..K
+	
+		// clamp if entirely outside
+    if (j <= 0) { out[i] = 1; continue; }                  // below smallest
+    if (j >= K) { out[i] = K; continue; }                  // above largest
+
+    // exact level?
+    if (std::fabs(r[j] - t) <= eps) {
+      out[i] = j + 1;
+      continue;
+    }
+
+    // inner-bound rule via center boundary
+    int pick = (j <= center_idx) ? j : (j - 1);            // j is interval's upper
+    if (pick < 0) pick = 0;
+    if (pick >= K) pick = K - 1;
+    out[i] = pick + 1;
+  }
+  return out;
+}
+

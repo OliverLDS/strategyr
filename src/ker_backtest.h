@@ -1,0 +1,89 @@
+// ker_backtest.h
+
+#pragma once
+
+void backtest(double* eq, 
+	const double* timestamp, const double* open, const double* high, const double* low, const double* close, 
+	const double* tgt_pos, const int* pos_strat, const double* tol_pos, 
+	int strat, int asset, double ctr_size, double ctr_step, 
+	double lev, double fee_rt, double fund_rt,
+	size_t len, bool rec, Recorder* recorder_ptr) { // here intent will be executed in next bar; so when you generate intent, you don't need to move forward it
+		
+	TradeState s{};
+	s.strat = strat;
+	s.asset = asset;
+	s.ctr_size = ctr_size;
+	s.ctr_step = ctr_step; 
+	s.lev = lev;	
+	s.fee_rt = fee_rt; 
+	s.fund_rt = fund_rt; 
+	
+	Exchange x{};
+	
+	Recorder& recorder = *recorder_ptr;
+	
+	for (size_t i = 0; i < len; ++i) {
+		if (s.liquidated) {
+			eq[i] = 0;
+			continue;
+		}; // I think just return eq as 0 and continue
+		
+		x.update_bar(timestamp[i], open[i], high[i], low[i], close[i]);
+		
+		// OEPN stage; execute pending;
+		if (s.pending.n > 0) {
+			ActionPlan remaining; // failed decision will not be included into unproceeded_decisions; so basically only limit orders would be included
+		  for (size_t j = 0; j < s.pending.n; ++j) {
+				const ActionDecision& a = s.pending.a[j];
+				if (a.type == STRATEGYR::OrderType::MARKET) {
+					ExchangeMessage_on_trade trade_msg = x.update_on_trade(s, a, STRATEGYR::BarStage::OPEN, x.open);
+					if (trade_msg.liquidate) { 
+						if (rec && recorder_ptr) recorder.append_liquidation(trade_msg.timestamp, trade_msg.bar_stage);
+						s.liquidated = true; eq[i] = 0.0; break;
+					};
+					
+					if (trade_msg.status == STRATEGYR::ActionStatus::FILLED) {
+						s.cash = trade_msg.cash; s.pos_dir = trade_msg.pos_dir; s.ctr_unit = trade_msg.ctr_unit; s.avg_price = trade_msg.avg_price;
+					}
+				
+					if (rec && recorder_ptr) {
+						recorder.append_record(s, trade_msg);
+					};
+				} else {
+					remaining.append_action(a);
+				}
+		  }
+		  s.pending = remaining;
+			if (s.liquidated) continue;
+
+		}
+		
+		// check intra bar if you complete tp/sl and limit order logic in the future
+		
+		// CLOSE stage; check liquidation
+		ExchangeMessage_on_funding fund_msg = x.update_on_funding(s);
+		s.cash = fund_msg.cash;
+		if (fund_msg.liquidate) { 
+			if (rec && recorder_ptr) { recorder.append_liquidation(fund_msg.timestamp, fund_msg.bar_stage); }
+			s.liquidated = true; eq[i] = 0.0; continue;
+		};
+		
+		ExchangeMessage_on_mark mark_msg = x.update_on_mark(s);
+		s.last_px = mark_msg.last_px;
+		if (mark_msg.liquidate) { 
+			if (rec && recorder_ptr) { recorder.append_liquidation(mark_msg.timestamp, mark_msg.bar_stage); }
+			s.liquidated = true; eq[i] = 0.0; continue;
+		};
+		
+		// CLOSE stage; gen action
+		Intent intent{}; 
+		intent.strat = pos_strat[i];
+		intent.tgt_pos = tgt_pos[i];
+		intent.tol_pos = tol_pos[i];
+		s.pending = s.plan_action_mkt_ord(intent, s.action_id_now);
+		s.action_id_now += s.pending.n;
+		
+		// the only vector output is eq
+		eq[i] = s.eq();
+	}
+}
