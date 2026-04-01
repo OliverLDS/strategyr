@@ -1,3 +1,12 @@
+# strategyr 0.1.2
+
+- Added minimal portfolio-adjustment planning via
+  `plan_portfolio_adjustment()`.
+- Added minimal rebalance order-intent generation via
+  `build_order_intents()`.
+- Expanded the README with package usage cases.
+- Added package-level philosophy and architecture notes under `docs/`.
+
 # strategyr 0.1.1
 
 - Reframed the package as an execution-oriented strategy workflow engine.

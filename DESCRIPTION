@@ -1,7 +1,7 @@
 Package: strategyr
 Type: Package
 Title: Execution-Oriented Strategy Workflows for Dynamic Trading Decisions
-Version: 0.1.1
+Version: 0.1.2
 Authors@R: 
     person("Oliver", "Zhou", , "oliver.yxzhou@gmail.com", role = c("aut", "cre"))
 Description: Tools for modular, execution-oriented strategy workflows that
@@ -35,6 +35,7 @@ Collate:
     'calc_feat_volatility.R'
     'calc_ema_cross.R'
     'calc_ladder_index.R'
+    'portfolio_adjustment.R'
     'strat_utils.R'
     'strat_buy_and_hold.R'
     'strat_ladder_bounce.R'
