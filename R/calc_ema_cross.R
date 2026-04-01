@@ -1,3 +1,22 @@
+#' Add EMA-Cross Strategy Targets
+#'
+#' Evaluates a simple EMA-cross trading rule with ATR-based gating and writes
+#' either diagnostic columns or a target-position column to a candle
+#' `data.table` in place.
+#'
+#' @param DT A `data.table` containing the feature columns required by the
+#'   strategy.
+#' @param fast Integer fast EMA length.
+#' @param slow Integer slow EMA length.
+#' @param low_atr_threshold Numeric percentile threshold used by the
+#'   low-volatility gate.
+#' @param freshness_floor Integer maximum cross age allowed for a live target.
+#' @param tp_ratio Numeric take-profit guard.
+#' @param sl_ratio Numeric stop-loss guard.
+#' @param debug_mode Logical; when `TRUE`, writes diagnostic columns instead of
+#'   a target-position column.
+#'
+#' @return The input `DT`, modified by reference and returned invisibly.
 #' @export
 calc_EMA_cross <- function(DT, fast = 20, slow = 50, low_atr_threshold = 5, freshness_floor = 18, tp_ratio = 0.05, sl_ratio = 0.02, debug_mode = FALSE) {
   stopifnot(fast < slow)

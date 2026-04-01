@@ -21,10 +21,10 @@ test_that("rolling sd matches TTR::runSD", {
 
 testthat::test_that("rolling sd errors on n=0", {
   x <- 1:5
-  testthat::expect_error(cpp_rolling_sd(x, 0))
+  testthat::expect_error(rolling_sd(x, 0))
 })
 
 testthat::test_that("rolling sd errors on sample=TRUE with n<2", {
   x <- 1:5
-  testthat::expect_error(cpp_rolling_sd(x, 1, sample = TRUE))
+  testthat::expect_error(rolling_sd(x, 1, sample = TRUE))
 })

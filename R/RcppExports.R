@@ -29,10 +29,52 @@ detect_pivots_cpp <- function(high, low, datetime, span = 3L, latest_n = NULL, r
     .Call(`_strategyr_detect_pivots_cpp`, high, low, datetime, span, latest_n, refined, min_swing)
 }
 
+#' Generate an Action Plan from Current Trade State
+#'
+#' Translates a target position and current account state into executable order
+#' intents using the native trade-state planner.
+#'
+#' @param ctr_size Contract size.
+#' @param ctr_step Minimum tradable contract increment.
+#' @param lev Leverage used for margin calculations.
+#' @param last_px Latest market price.
+#' @param ctr_unit Current contract quantity.
+#' @param avg_price Current average entry price.
+#' @param cash Current cash balance.
+#' @param tgt_pos Target exposure ratio.
+#' @param tol_pos Tolerance around the target exposure.
+#' @param strat_id Integer strategy identifier recorded on generated actions.
+#' @param pos_dir Current position direction encoded as `-1`, `0`, or `1`.
+#'
+#' @return A list describing the generated action plan.
+#' @export
 gen_action_plan_rcpp <- function(ctr_size, ctr_step, lev, last_px, ctr_unit, avg_price, cash, tgt_pos, tol_pos, strat_id, pos_dir = 0L) {
     .Call(`_strategyr_gen_action_plan_rcpp`, ctr_size, ctr_step, lev, last_px, ctr_unit, avg_price, cash, tgt_pos, tol_pos, strat_id, pos_dir)
 }
 
+#' Run Path-Dependent Backtests
+#'
+#' Executes the native backtesting engine on precomputed target positions and
+#' execution assumptions.
+#'
+#' @param timestamp Numeric vector of bar timestamps.
+#' @param open,high,low,close Numeric OHLC vectors.
+#' @param tgt_pos Numeric vector of target positions.
+#' @param pos_strat Integer vector identifying the strategy responsible for each
+#'   target.
+#' @param tol_pos Numeric tolerance vector.
+#' @param strat Integer strategy identifier for the backtest.
+#' @param asset Integer asset identifier.
+#' @param ctr_size Contract size.
+#' @param ctr_step Minimum tradable contract increment.
+#' @param lev Leverage used for margin calculations.
+#' @param fee_rt Trade fee rate on notional.
+#' @param fund_rt Funding rate per 8 hours on notional.
+#' @param rec Logical; whether to attach recorder output.
+#'
+#' @return A numeric equity curve. When `rec = TRUE`, the returned vector also
+#'   carries a `recorder` attribute.
+#' @export
 backtest_rcpp <- function(timestamp, open, high, low, close, tgt_pos, pos_strat, tol_pos, strat, asset, ctr_size = 1.0, ctr_step = 1.0, lev = 10.0, fee_rt = 0.0, fund_rt = 0.0, rec = FALSE) {
     .Call(`_strategyr_backtest_rcpp`, timestamp, open, high, low, close, tgt_pos, pos_strat, tol_pos, strat, asset, ctr_size, ctr_step, lev, fee_rt, fund_rt, rec)
 }
@@ -64,4 +106,3 @@ rolling_quantiles <- function(x, n, probs) {
 strat_buy_and_hold_rcpp <- function(timestamp) {
     .Call(`_strategyr_strat_buy_and_hold_rcpp`, timestamp)
 }
-

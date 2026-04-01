@@ -1,6 +1,7 @@
 # this function assigns cycles (with limited records) to the whole candle's datetime
 .assign_cylces_to_datetime <- function(cycles_dt, datetime, debug_mode = FALSE) { 
-  out <- cycles_dt[DT[, .(datetime)], on = 'datetime', roll = TRUE]
+  datetime_dt <- data.table::data.table(datetime = datetime)
+  out <- cycles_dt[datetime_dt, on = 'datetime', roll = TRUE]
   if (!debug_mode) {
     out <- out[, .(cycle_bg_price, cycle_ed_price)]
   }
@@ -18,6 +19,25 @@
 
 # This function actually generates cycle range now; all the following calculation (for price-independent optimal ladder weights and price-dependent position) are in gen_pos_dca_ladder
 # ladder_index should be one of 1L:19L or -1L:-19L
+#' Add Signed Fibonacci Ladder Indices
+#'
+#' Detects recent pivot cycles and maps each bar's close to a signed Fibonacci
+#' ladder index. Positive and negative signs encode cycle direction, while the
+#' absolute value encodes the ladder level selected by the native engine.
+#'
+#' @param DT A candle `data.table` containing `datetime`, `high`, `low`, and
+#'   `close`.
+#' @param span Integer pivot span passed to the pivot detector.
+#' @param latest_n Optional integer tail length for pivot detection.
+#' @param refined Logical; whether to refine raw pivots before cycle detection.
+#' @param min_swing Minimum relative swing used by the pivot refinement step.
+#' @param cycle_N Integer cycle lookback width in bars.
+#' @param cycle_prefix Optional suffix used in generated column names.
+#' @param center_idx Zero-based native center index for the ladder mapping.
+#' @param detailed_report Logical; when `TRUE`, cycle boundary columns are also
+#'   added.
+#'
+#' @return The input `DT`, modified by reference and returned invisibly.
 #' @export
 calc_ladder_index <- function(DT, span = 3, latest_n = NULL, refined = TRUE, min_swing = 0.05, cycle_N = 360L, cycle_prefix = NULL, center_idx = 9L, detailed_report = FALSE) {
 

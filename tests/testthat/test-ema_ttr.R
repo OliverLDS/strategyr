@@ -22,5 +22,5 @@ testthat::test_that("EMA TTR fixed-step matches TTR::EMA", {
 
 testthat::test_that("EMA TTR fixed step errors for n=0", {
   x <- rnorm(10)
-  testthat::expect_error(cpp_ema_ttr_fixed_step(x, 0))
+  testthat::expect_error(ema_ttr_fixed_step(x, 0))
 })

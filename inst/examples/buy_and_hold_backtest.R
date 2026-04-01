@@ -1,4 +1,5 @@
-devtools::load_all("~/Documents/2025/_2025-07-13_strategyr/strategyr")
+library(data.table)
+library(strategyr)
 
 set.seed(123)
 
@@ -18,31 +19,30 @@ high  <- price * runif(n, 1.00, 1.01)  # small random wiggle
 low   <- price * runif(n, 0.99, 1.00)
 close <- price
 
-ohlc <- data.frame(
-  timestamp = timestamp,
+DT <- data.table(
+  datetime = timestamp,
   open  = open,
   high  = high,
   low   = low,
   close = close
 )
 
-head(ohlc)
+head(DT)
 
-# All 1.0 (fully long)
-tgt_pos <- strat_buy_and_hold_rcpp(ohlc$timestamp)
+tgt_pos <- strat_buy_and_hold_tgt_pos(DT)
 
 # One strategy ID for all bars
-pos_strat <- rep(1L, nrow(ohlc))
+pos_strat <- rep(1L, nrow(DT))
 
 # Zero tolerance: always try to match tgt_pos exactly
-tol_pos <- rep(0.0, nrow(ohlc))
+tol_pos <- rep(0.0, nrow(DT))
 
 eq <- backtest_rcpp(
-  timestamp = ohlc$timestamp,
-  open      = ohlc$open,
-  high      = ohlc$high,
-  low       = ohlc$low,
-  close     = ohlc$close,
+  timestamp = DT$datetime,
+  open      = DT$open,
+  high      = DT$high,
+  low       = DT$low,
+  close     = DT$close,
   tgt_pos   = tgt_pos,
   pos_strat = pos_strat,
   tol_pos   = tol_pos,
@@ -59,10 +59,10 @@ eq <- backtest_rcpp(
 # Equity path as plain numeric
 eq_num <- as.numeric(eq)
 
-# Attach equity to the OHLC table
-ohlc$eq <- eq_num
+# Attach equity to the candle table
+DT[, eq := eq_num]
 
-head(ohlc)
+head(DT)
 
 recorder <- attr(eq, "recorder")
 
@@ -101,7 +101,7 @@ rec_df$dir <- factor(
 head(rec_df)
 
 plot(
-  ohlc$timestamp, ohlc$eq,
+  DT$datetime, DT$eq,
   type = "l",
   xlab = "Time (sec)",
   ylab = "Equity",

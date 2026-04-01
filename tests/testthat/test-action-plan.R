@@ -2,6 +2,9 @@ library(testthat)
 
 test_that("gen_action_plan_rcpp: no position -> OPEN long", {
   plan <- gen_action_plan_rcpp(
+    ctr_size = 1.0,
+    ctr_step = 1.0,
+    lev = 10.0,
     last_px   = 100,
     ctr_unit  = 0,          # no existing position
     avg_price = NaN,
@@ -39,6 +42,9 @@ test_that("gen_action_plan_rcpp: no position -> OPEN long", {
 
 test_that("gen_action_plan_rcpp: within tolerance -> no action", {
   plan <- gen_action_plan_rcpp(
+    ctr_size = 1.0,
+    ctr_step = 1.0,
+    lev = 10.0,
     last_px   = 100,
     ctr_unit  = 0,
     avg_price = NaN,
@@ -55,6 +61,9 @@ test_that("gen_action_plan_rcpp: within tolerance -> no action", {
 
 test_that("gen_action_plan_rcpp: NA target -> no action", {
   plan <- gen_action_plan_rcpp(
+    ctr_size = 1.0,
+    ctr_step = 1.0,
+    lev = 10.0,
     last_px   = 100,
     ctr_unit  = 0,
     avg_price = NaN,
@@ -70,6 +79,9 @@ test_that("gen_action_plan_rcpp: NA target -> no action", {
 
 test_that("gen_action_plan_rcpp: flip from long to short -> CLOSE + OPEN", {
   plan <- gen_action_plan_rcpp(
+    ctr_size = 1.0,
+    ctr_step = 1.0,
+    lev = 10.0,
     last_px   = 100,
     ctr_unit  = 50,     # 50 contracts
     avg_price = 100,

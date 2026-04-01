@@ -1,15 +1,10 @@
 # strategyr
 
-`strategyr` is a research-oriented package for computing rule-based, backtest-validated features; detecting tradable events; constructing positions; generating executable orders; and optimizing portfolio weights across equities, fixed income, derivatives, and crypto.
+`strategyr` is an execution-oriented R package for modular strategy workflows. It is designed to transform already-available market features, portfolio state, and dynamic quantitative analysis into actionable signals, target positions, portfolio adjustments, and order intents.
 
-It covers the entire pipeline—from raw market data to actionable trading decisions.
+The package emphasizes path-dependent backtesting so strategy logic is evaluated under evolving account state, execution assumptions, and market conditions rather than through purely static signal research.
 
-Rather than acting as a generic indicator library, `strategyr` embeds trading philosophy directly into its framework. The emphasis is on behaviours and features proven through backtesting, not on mechanical indicators or ad-hoc filters.
-
-The package is under active development. Documentation will evolve over time and be expanded incrementally in the `doc/` directory:
-
-- [`Philosophy and Architecture`](doc/philosophy.md)
-- [`Fib-Level-Based Positioning Strategy`](doc/fib_ladder_explained.md)
+Compared with `investlabr`, which is oriented toward exploratory research and communication, `strategyr` is intended for disciplined strategy logic and timely investment decision support.
 
 
 ## Installation
@@ -18,14 +13,17 @@ The package is under active development. Documentation will evolve over time and
 devtools::install_github("OliverLDS/strategyr")
 ```
 
----
+## Current Scope
 
-## License
-
-MIT License. Feel free to modify, extend, and adapt.
-
----
+- feature utilities such as EMA, ATR, and ladder-cycle indexing
+- strategy-facing target-position logic
+- action-plan generation from current account state
+- path-dependent backtesting with execution and funding assumptions
 
 ## Author
 
-Created and maintained by Oliver (mailto: olee7149@gmail.com).
+Oliver Zhou <oliver.yxzhou@gmail.com>
+
+## License
+
+MIT License
