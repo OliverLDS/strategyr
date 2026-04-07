@@ -18,6 +18,37 @@ int rolling_1st_moment_kernel(double* out, const double* in, size_t len, size_t 
 	return 0;
 }
 
+int rolling_sum_kernel(double* out, const double* in, size_t len, size_t n) {
+	if (n == 0 || len == 0) return 1;
+
+  std::fill(out, out + len, STRATEGYR::kNaReal);
+  double window_sum = 0.0;
+  size_t na_count = 0;
+
+  for (size_t i = 0; i < len; ++i) {
+    if (is_na(in[i])) {
+      na_count += 1;
+    } else {
+      window_sum += in[i];
+    }
+
+    if (i >= n) {
+      const double outgoing = in[i - n];
+      if (is_na(outgoing)) {
+        na_count -= 1;
+      } else {
+        window_sum -= outgoing;
+      }
+    }
+
+    if (i >= n - 1 && na_count == 0) {
+      out[i] = window_sum;
+    }
+  }
+
+  return 0;
+}
+
 int rolling_2nd_moment_kernel(double* out, const double* in, size_t len, size_t n, bool sample = false) {
 	if (n == 0 || len == 0) return 1;
 	if (sample && n < 2) return 1;
@@ -35,6 +66,38 @@ int rolling_2nd_moment_kernel(double* out, const double* in, size_t len, size_t 
 		}
 	}
 	return 0;
+}
+
+int rolling_mean_abs_dev_kernel(double* out, const double* in, size_t len, size_t n) {
+  if (n == 0 || len == 0) return 1;
+
+  std::vector<double> means(len, STRATEGYR::kNaReal);
+  const int err = rolling_1st_moment_kernel(means.data(), in, len, n);
+  if (err != 0) return err;
+
+  std::fill(out, out + len, STRATEGYR::kNaReal);
+
+  for (size_t i = n - 1; i < len; ++i) {
+    const double mu = means[i];
+    if (is_na(mu)) continue;
+
+    double abs_dev_sum = 0.0;
+    bool has_na = false;
+    for (size_t j = i + 1 - n; j <= i; ++j) {
+      const double xj = in[j];
+      if (is_na(xj)) {
+        has_na = true;
+        break;
+      }
+      abs_dev_sum += std::abs(xj - mu);
+    }
+
+    if (!has_na) {
+      out[i] = abs_dev_sum / static_cast<double>(n);
+    }
+  }
+
+  return 0;
 }
 
 template <bool is_max>
@@ -72,6 +135,65 @@ int rolling_extrema_kernel(double* out, const double* in, size_t len, size_t n) 
     if (i >= n - 1 && na_count == 0 && !q.empty()) {
       out[i] = in[q.front()];
     }
+  }
+
+  return 0;
+}
+
+int rolling_linear_wma_kernel(double* out, const double* in, size_t len, size_t n) {
+  if (n == 0 || len == 0) return 1;
+
+  std::fill(out, out + len, STRATEGYR::kNaReal);
+  if (n > len) return 0;
+
+  const double denom = static_cast<double>(n) * static_cast<double>(n + 1) / 2.0;
+  double window_sum = 0.0;
+  double weighted_sum = 0.0;
+  size_t na_count = 0;
+
+  for (size_t i = 0; i < n; ++i) {
+    if (is_na(in[i])) {
+      na_count += 1;
+    } else {
+      window_sum += in[i];
+      weighted_sum += static_cast<double>(i + 1) * in[i];
+    }
+  }
+
+  if (na_count == 0) {
+    out[n - 1] = weighted_sum / denom;
+  }
+
+  for (size_t end = n; end < len; ++end) {
+    const double outgoing = in[end - n];
+    const double incoming = in[end];
+    const size_t old_na_count = na_count;
+    const double prev_window_sum = window_sum;
+
+    if (is_na(outgoing)) {
+      na_count -= 1;
+    } else {
+      window_sum -= outgoing;
+    }
+
+    if (is_na(incoming)) {
+      na_count += 1;
+    } else {
+      window_sum += incoming;
+    }
+
+    if (na_count != 0) continue;
+
+    if (old_na_count == 0) {
+      weighted_sum = weighted_sum - prev_window_sum + static_cast<double>(n) * incoming;
+    } else {
+      weighted_sum = 0.0;
+      for (size_t j = end + 1 - n; j <= end; ++j) {
+        weighted_sum += static_cast<double>(j - (end + 1 - n) + 1) * in[j];
+      }
+    }
+
+    out[end] = weighted_sum / denom;
   }
 
   return 0;

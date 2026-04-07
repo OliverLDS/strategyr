@@ -10,6 +10,53 @@ Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
 Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
+// gen_action_plan_rcpp
+Rcpp::List gen_action_plan_rcpp(double ctr_size, double ctr_step, double lev, double last_px, double ctr_unit, double avg_price, double cash, double tgt_pos, double tol_pos, int strat_id, int pos_dir);
+RcppExport SEXP _strategyr_gen_action_plan_rcpp(SEXP ctr_sizeSEXP, SEXP ctr_stepSEXP, SEXP levSEXP, SEXP last_pxSEXP, SEXP ctr_unitSEXP, SEXP avg_priceSEXP, SEXP cashSEXP, SEXP tgt_posSEXP, SEXP tol_posSEXP, SEXP strat_idSEXP, SEXP pos_dirSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< double >::type ctr_size(ctr_sizeSEXP);
+    Rcpp::traits::input_parameter< double >::type ctr_step(ctr_stepSEXP);
+    Rcpp::traits::input_parameter< double >::type lev(levSEXP);
+    Rcpp::traits::input_parameter< double >::type last_px(last_pxSEXP);
+    Rcpp::traits::input_parameter< double >::type ctr_unit(ctr_unitSEXP);
+    Rcpp::traits::input_parameter< double >::type avg_price(avg_priceSEXP);
+    Rcpp::traits::input_parameter< double >::type cash(cashSEXP);
+    Rcpp::traits::input_parameter< double >::type tgt_pos(tgt_posSEXP);
+    Rcpp::traits::input_parameter< double >::type tol_pos(tol_posSEXP);
+    Rcpp::traits::input_parameter< int >::type strat_id(strat_idSEXP);
+    Rcpp::traits::input_parameter< int >::type pos_dir(pos_dirSEXP);
+    rcpp_result_gen = Rcpp::wrap(gen_action_plan_rcpp(ctr_size, ctr_step, lev, last_px, ctr_unit, avg_price, cash, tgt_pos, tol_pos, strat_id, pos_dir));
+    return rcpp_result_gen;
+END_RCPP
+}
+// backtest_rcpp
+Rcpp::NumericVector backtest_rcpp(const Rcpp::NumericVector& timestamp, const Rcpp::NumericVector& open, const Rcpp::NumericVector& high, const Rcpp::NumericVector& low, const Rcpp::NumericVector& close, const Rcpp::NumericVector& tgt_pos, const Rcpp::IntegerVector& pos_strat, const Rcpp::NumericVector& tol_pos, int strat, int asset, double ctr_size, double ctr_step, double lev, double fee_rt, double fund_rt, bool rec);
+RcppExport SEXP _strategyr_backtest_rcpp(SEXP timestampSEXP, SEXP openSEXP, SEXP highSEXP, SEXP lowSEXP, SEXP closeSEXP, SEXP tgt_posSEXP, SEXP pos_stratSEXP, SEXP tol_posSEXP, SEXP stratSEXP, SEXP assetSEXP, SEXP ctr_sizeSEXP, SEXP ctr_stepSEXP, SEXP levSEXP, SEXP fee_rtSEXP, SEXP fund_rtSEXP, SEXP recSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type timestamp(timestampSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type open(openSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type high(highSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type low(lowSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type close(closeSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type tgt_pos(tgt_posSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::IntegerVector& >::type pos_strat(pos_stratSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type tol_pos(tol_posSEXP);
+    Rcpp::traits::input_parameter< int >::type strat(stratSEXP);
+    Rcpp::traits::input_parameter< int >::type asset(assetSEXP);
+    Rcpp::traits::input_parameter< double >::type ctr_size(ctr_sizeSEXP);
+    Rcpp::traits::input_parameter< double >::type ctr_step(ctr_stepSEXP);
+    Rcpp::traits::input_parameter< double >::type lev(levSEXP);
+    Rcpp::traits::input_parameter< double >::type fee_rt(fee_rtSEXP);
+    Rcpp::traits::input_parameter< double >::type fund_rt(fund_rtSEXP);
+    Rcpp::traits::input_parameter< bool >::type rec(recSEXP);
+    rcpp_result_gen = Rcpp::wrap(backtest_rcpp(timestamp, open, high, low, close, tgt_pos, pos_strat, tol_pos, strat, asset, ctr_size, ctr_step, lev, fee_rt, fund_rt, rec));
+    return rcpp_result_gen;
+END_RCPP
+}
 // detect_cycles_now_cpp
 DataFrame detect_cycles_now_cpp(const DataFrame& pivots, int min_backward_bars, int min_stable_pivots);
 RcppExport SEXP _strategyr_detect_cycles_now_cpp(SEXP pivotsSEXP, SEXP min_backward_barsSEXP, SEXP min_stable_pivotsSEXP) {
@@ -47,6 +94,44 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< int >::type min_backward_bars(min_backward_barsSEXP);
     Rcpp::traits::input_parameter< int >::type min_stable_pivots(min_stable_pivotsSEXP);
     rcpp_result_gen = Rcpp::wrap(get_now_fresh_main_cycles_cpp(pivots, min_backward_bars, min_stable_pivots));
+    return rcpp_result_gen;
+END_RCPP
+}
+// ema_ttr_fixed_step
+Rcpp::NumericVector ema_ttr_fixed_step(const Rcpp::NumericVector& x, int n, bool wilder);
+RcppExport SEXP _strategyr_ema_ttr_fixed_step(SEXP xSEXP, SEXP nSEXP, SEXP wilderSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type x(xSEXP);
+    Rcpp::traits::input_parameter< int >::type n(nSEXP);
+    Rcpp::traits::input_parameter< bool >::type wilder(wilderSEXP);
+    rcpp_result_gen = Rcpp::wrap(ema_ttr_fixed_step(x, n, wilder));
+    return rcpp_result_gen;
+END_RCPP
+}
+// ema_fixed_step_tau
+Rcpp::NumericVector ema_fixed_step_tau(const Rcpp::NumericVector& x, double tau);
+RcppExport SEXP _strategyr_ema_fixed_step_tau(SEXP xSEXP, SEXP tauSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type x(xSEXP);
+    Rcpp::traits::input_parameter< double >::type tau(tauSEXP);
+    rcpp_result_gen = Rcpp::wrap(ema_fixed_step_tau(x, tau));
+    return rcpp_result_gen;
+END_RCPP
+}
+// ema_tau_irregular
+Rcpp::NumericVector ema_tau_irregular(const Rcpp::NumericVector& x, const Rcpp::IntegerVector& t, double tau);
+RcppExport SEXP _strategyr_ema_tau_irregular(SEXP xSEXP, SEXP tSEXP, SEXP tauSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type x(xSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::IntegerVector& >::type t(tSEXP);
+    Rcpp::traits::input_parameter< double >::type tau(tauSEXP);
+    rcpp_result_gen = Rcpp::wrap(ema_tau_irregular(x, t, tau));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -109,91 +194,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// gen_action_plan_rcpp
-Rcpp::List gen_action_plan_rcpp(double ctr_size, double ctr_step, double lev, double last_px, double ctr_unit, double avg_price, double cash, double tgt_pos, double tol_pos, int strat_id, int pos_dir);
-RcppExport SEXP _strategyr_gen_action_plan_rcpp(SEXP ctr_sizeSEXP, SEXP ctr_stepSEXP, SEXP levSEXP, SEXP last_pxSEXP, SEXP ctr_unitSEXP, SEXP avg_priceSEXP, SEXP cashSEXP, SEXP tgt_posSEXP, SEXP tol_posSEXP, SEXP strat_idSEXP, SEXP pos_dirSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< double >::type ctr_size(ctr_sizeSEXP);
-    Rcpp::traits::input_parameter< double >::type ctr_step(ctr_stepSEXP);
-    Rcpp::traits::input_parameter< double >::type lev(levSEXP);
-    Rcpp::traits::input_parameter< double >::type last_px(last_pxSEXP);
-    Rcpp::traits::input_parameter< double >::type ctr_unit(ctr_unitSEXP);
-    Rcpp::traits::input_parameter< double >::type avg_price(avg_priceSEXP);
-    Rcpp::traits::input_parameter< double >::type cash(cashSEXP);
-    Rcpp::traits::input_parameter< double >::type tgt_pos(tgt_posSEXP);
-    Rcpp::traits::input_parameter< double >::type tol_pos(tol_posSEXP);
-    Rcpp::traits::input_parameter< int >::type strat_id(strat_idSEXP);
-    Rcpp::traits::input_parameter< int >::type pos_dir(pos_dirSEXP);
-    rcpp_result_gen = Rcpp::wrap(gen_action_plan_rcpp(ctr_size, ctr_step, lev, last_px, ctr_unit, avg_price, cash, tgt_pos, tol_pos, strat_id, pos_dir));
-    return rcpp_result_gen;
-END_RCPP
-}
-// backtest_rcpp
-Rcpp::NumericVector backtest_rcpp(const Rcpp::NumericVector& timestamp, const Rcpp::NumericVector& open, const Rcpp::NumericVector& high, const Rcpp::NumericVector& low, const Rcpp::NumericVector& close, const Rcpp::NumericVector& tgt_pos, const Rcpp::IntegerVector& pos_strat, const Rcpp::NumericVector& tol_pos, int strat, int asset, double ctr_size, double ctr_step, double lev, double fee_rt, double fund_rt, bool rec);
-RcppExport SEXP _strategyr_backtest_rcpp(SEXP timestampSEXP, SEXP openSEXP, SEXP highSEXP, SEXP lowSEXP, SEXP closeSEXP, SEXP tgt_posSEXP, SEXP pos_stratSEXP, SEXP tol_posSEXP, SEXP stratSEXP, SEXP assetSEXP, SEXP ctr_sizeSEXP, SEXP ctr_stepSEXP, SEXP levSEXP, SEXP fee_rtSEXP, SEXP fund_rtSEXP, SEXP recSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type timestamp(timestampSEXP);
-    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type open(openSEXP);
-    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type high(highSEXP);
-    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type low(lowSEXP);
-    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type close(closeSEXP);
-    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type tgt_pos(tgt_posSEXP);
-    Rcpp::traits::input_parameter< const Rcpp::IntegerVector& >::type pos_strat(pos_stratSEXP);
-    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type tol_pos(tol_posSEXP);
-    Rcpp::traits::input_parameter< int >::type strat(stratSEXP);
-    Rcpp::traits::input_parameter< int >::type asset(assetSEXP);
-    Rcpp::traits::input_parameter< double >::type ctr_size(ctr_sizeSEXP);
-    Rcpp::traits::input_parameter< double >::type ctr_step(ctr_stepSEXP);
-    Rcpp::traits::input_parameter< double >::type lev(levSEXP);
-    Rcpp::traits::input_parameter< double >::type fee_rt(fee_rtSEXP);
-    Rcpp::traits::input_parameter< double >::type fund_rt(fund_rtSEXP);
-    Rcpp::traits::input_parameter< bool >::type rec(recSEXP);
-    rcpp_result_gen = Rcpp::wrap(backtest_rcpp(timestamp, open, high, low, close, tgt_pos, pos_strat, tol_pos, strat, asset, ctr_size, ctr_step, lev, fee_rt, fund_rt, rec));
-    return rcpp_result_gen;
-END_RCPP
-}
-// ema_ttr_fixed_step
-Rcpp::NumericVector ema_ttr_fixed_step(const Rcpp::NumericVector& x, int n, bool wilder);
-RcppExport SEXP _strategyr_ema_ttr_fixed_step(SEXP xSEXP, SEXP nSEXP, SEXP wilderSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type x(xSEXP);
-    Rcpp::traits::input_parameter< int >::type n(nSEXP);
-    Rcpp::traits::input_parameter< bool >::type wilder(wilderSEXP);
-    rcpp_result_gen = Rcpp::wrap(ema_ttr_fixed_step(x, n, wilder));
-    return rcpp_result_gen;
-END_RCPP
-}
-// ema_fixed_step_tau
-Rcpp::NumericVector ema_fixed_step_tau(const Rcpp::NumericVector& x, double tau);
-RcppExport SEXP _strategyr_ema_fixed_step_tau(SEXP xSEXP, SEXP tauSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type x(xSEXP);
-    Rcpp::traits::input_parameter< double >::type tau(tauSEXP);
-    rcpp_result_gen = Rcpp::wrap(ema_fixed_step_tau(x, tau));
-    return rcpp_result_gen;
-END_RCPP
-}
-// ema_tau_irregular
-Rcpp::NumericVector ema_tau_irregular(const Rcpp::NumericVector& x, const Rcpp::IntegerVector& t, double tau);
-RcppExport SEXP _strategyr_ema_tau_irregular(SEXP xSEXP, SEXP tSEXP, SEXP tauSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type x(xSEXP);
-    Rcpp::traits::input_parameter< const Rcpp::IntegerVector& >::type t(tSEXP);
-    Rcpp::traits::input_parameter< double >::type tau(tauSEXP);
-    rcpp_result_gen = Rcpp::wrap(ema_tau_irregular(x, t, tau));
-    return rcpp_result_gen;
-END_RCPP
-}
 // rolling_mean
 Rcpp::NumericVector rolling_mean(const Rcpp::NumericVector& x, int n);
 RcppExport SEXP _strategyr_rolling_mean(SEXP xSEXP, SEXP nSEXP) {
@@ -203,6 +203,18 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type x(xSEXP);
     Rcpp::traits::input_parameter< int >::type n(nSEXP);
     rcpp_result_gen = Rcpp::wrap(rolling_mean(x, n));
+    return rcpp_result_gen;
+END_RCPP
+}
+// rolling_sum
+Rcpp::NumericVector rolling_sum(const Rcpp::NumericVector& x, int n);
+RcppExport SEXP _strategyr_rolling_sum(SEXP xSEXP, SEXP nSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type x(xSEXP);
+    Rcpp::traits::input_parameter< int >::type n(nSEXP);
+    rcpp_result_gen = Rcpp::wrap(rolling_sum(x, n));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -216,6 +228,30 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< int >::type n(nSEXP);
     Rcpp::traits::input_parameter< bool >::type sample(sampleSEXP);
     rcpp_result_gen = Rcpp::wrap(rolling_sd(x, n, sample));
+    return rcpp_result_gen;
+END_RCPP
+}
+// rolling_mean_abs_dev
+Rcpp::NumericVector rolling_mean_abs_dev(const Rcpp::NumericVector& x, int n);
+RcppExport SEXP _strategyr_rolling_mean_abs_dev(SEXP xSEXP, SEXP nSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type x(xSEXP);
+    Rcpp::traits::input_parameter< int >::type n(nSEXP);
+    rcpp_result_gen = Rcpp::wrap(rolling_mean_abs_dev(x, n));
+    return rcpp_result_gen;
+END_RCPP
+}
+// rolling_wma
+Rcpp::NumericVector rolling_wma(const Rcpp::NumericVector& x, int n);
+RcppExport SEXP _strategyr_rolling_wma(SEXP xSEXP, SEXP nSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type x(xSEXP);
+    Rcpp::traits::input_parameter< int >::type n(nSEXP);
+    rcpp_result_gen = Rcpp::wrap(rolling_wma(x, n));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -269,20 +305,23 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_strategyr_gen_action_plan_rcpp", (DL_FUNC) &_strategyr_gen_action_plan_rcpp, 11},
+    {"_strategyr_backtest_rcpp", (DL_FUNC) &_strategyr_backtest_rcpp, 16},
     {"_strategyr_detect_cycles_now_cpp", (DL_FUNC) &_strategyr_detect_cycles_now_cpp, 3},
     {"_strategyr_detect_main_cycles_cpp", (DL_FUNC) &_strategyr_detect_main_cycles_cpp, 4},
     {"_strategyr_get_now_fresh_main_cycles_cpp", (DL_FUNC) &_strategyr_get_now_fresh_main_cycles_cpp, 3},
+    {"_strategyr_ema_ttr_fixed_step", (DL_FUNC) &_strategyr_ema_ttr_fixed_step, 3},
+    {"_strategyr_ema_fixed_step_tau", (DL_FUNC) &_strategyr_ema_fixed_step_tau, 2},
+    {"_strategyr_ema_tau_irregular", (DL_FUNC) &_strategyr_ema_tau_irregular, 3},
     {"_strategyr_twoline_cross", (DL_FUNC) &_strategyr_twoline_cross, 4},
     {"_strategyr_fib_all_cpp", (DL_FUNC) &_strategyr_fib_all_cpp, 4},
     {"_strategyr_get_fib_ladder_index_cpp", (DL_FUNC) &_strategyr_get_fib_ladder_index_cpp, 4},
     {"_strategyr_detect_pivots_cpp", (DL_FUNC) &_strategyr_detect_pivots_cpp, 7},
-    {"_strategyr_gen_action_plan_rcpp", (DL_FUNC) &_strategyr_gen_action_plan_rcpp, 11},
-    {"_strategyr_backtest_rcpp", (DL_FUNC) &_strategyr_backtest_rcpp, 16},
-    {"_strategyr_ema_ttr_fixed_step", (DL_FUNC) &_strategyr_ema_ttr_fixed_step, 3},
-    {"_strategyr_ema_fixed_step_tau", (DL_FUNC) &_strategyr_ema_fixed_step_tau, 2},
-    {"_strategyr_ema_tau_irregular", (DL_FUNC) &_strategyr_ema_tau_irregular, 3},
     {"_strategyr_rolling_mean", (DL_FUNC) &_strategyr_rolling_mean, 2},
+    {"_strategyr_rolling_sum", (DL_FUNC) &_strategyr_rolling_sum, 2},
     {"_strategyr_rolling_sd", (DL_FUNC) &_strategyr_rolling_sd, 3},
+    {"_strategyr_rolling_mean_abs_dev", (DL_FUNC) &_strategyr_rolling_mean_abs_dev, 2},
+    {"_strategyr_rolling_wma", (DL_FUNC) &_strategyr_rolling_wma, 2},
     {"_strategyr_rolling_max", (DL_FUNC) &_strategyr_rolling_max, 2},
     {"_strategyr_rolling_min", (DL_FUNC) &_strategyr_rolling_min, 2},
     {"_strategyr_rolling_quantiles", (DL_FUNC) &_strategyr_rolling_quantiles, 3},

@@ -2,7 +2,7 @@
 % Please edit documentation in R/RcppExports.R
 \name{gen_action_plan_rcpp}
 \alias{gen_action_plan_rcpp}
-\title{Generate an Action Plan from Current Trade State}
+\title{Generate a Market-Order Action Plan}
 \usage{
 gen_action_plan_rcpp(
   ctr_size,
@@ -21,30 +21,30 @@ gen_action_plan_rcpp(
 \arguments{
 \item{ctr_size}{Contract size.}
 
-\item{ctr_step}{Minimum tradable contract increment.}
+\item{ctr_step}{Contract increment step.}
 
-\item{lev}{Leverage used for margin calculations.}
+\item{lev}{Leverage.}
 
 \item{last_px}{Latest market price.}
 
-\item{ctr_unit}{Current contract quantity.}
+\item{ctr_unit}{Current contract units held.}
 
-\item{avg_price}{Current average entry price.}
+\item{avg_price}{Average entry price of the current position.}
 
-\item{cash}{Current cash balance.}
+\item{cash}{Available cash.}
 
-\item{tgt_pos}{Target exposure ratio.}
+\item{tgt_pos}{Target position in strategy units.}
 
-\item{tol_pos}{Tolerance around the target exposure.}
+\item{tol_pos}{Position tolerance before action is required.}
 
-\item{strat_id}{Integer strategy identifier recorded on generated actions.}
+\item{strat_id}{Strategy identifier.}
 
-\item{pos_dir}{Current position direction encoded as `-1`, `0`, or `1`.}
+\item{pos_dir}{Current position direction.}
 }
 \value{
-A list describing the generated action plan.
+A list describing the action plan required to move toward `tgt_pos`.
 }
 \description{
-Translates a target position and current account state into executable order
-intents using the native trade-state planner.
+Translates current account state and a target position into an executable
+market-order action plan.
 }

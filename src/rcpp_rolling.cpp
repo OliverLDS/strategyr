@@ -24,6 +24,18 @@ Rcpp::NumericVector rolling_mean(const Rcpp::NumericVector& x, int n) {
 }
 
 // [[Rcpp::export]]
+Rcpp::NumericVector rolling_sum(const Rcpp::NumericVector& x, int n) {
+  if (n < 0) Rcpp::stop("n must be >= 0");
+  const size_t len = (size_t)x.size();
+  Rcpp::NumericVector out(len);
+
+  const int err = rolling_sum_kernel(REAL(out), REAL(x), len, (size_t)n);
+  stop_if(err, "rolling_sum_kernel failed (check n and len).");
+
+  return out;
+}
+
+// [[Rcpp::export]]
 Rcpp::NumericVector rolling_sd(const Rcpp::NumericVector& x, int n, bool sample = false) {
   if (n < 0) Rcpp::stop("n must be >= 0");
   const size_t len = (size_t)x.size();
@@ -31,6 +43,30 @@ Rcpp::NumericVector rolling_sd(const Rcpp::NumericVector& x, int n, bool sample 
 
   const int err = rolling_2nd_moment_kernel(REAL(out), REAL(x), len, (size_t)n, sample);
   stop_if(err, "rolling_2nd_moment_kernel failed (check n/len; if sample=TRUE then n>=2).");
+
+  return out;
+}
+
+// [[Rcpp::export]]
+Rcpp::NumericVector rolling_mean_abs_dev(const Rcpp::NumericVector& x, int n) {
+  if (n < 0) Rcpp::stop("n must be >= 0");
+  const size_t len = (size_t)x.size();
+  Rcpp::NumericVector out(len);
+
+  const int err = rolling_mean_abs_dev_kernel(REAL(out), REAL(x), len, (size_t)n);
+  stop_if(err, "rolling_mean_abs_dev_kernel failed (check n and len).");
+
+  return out;
+}
+
+// [[Rcpp::export]]
+Rcpp::NumericVector rolling_wma(const Rcpp::NumericVector& x, int n) {
+  if (n < 0) Rcpp::stop("n must be >= 0");
+  const size_t len = (size_t)x.size();
+  Rcpp::NumericVector out(len);
+
+  const int err = rolling_linear_wma_kernel(REAL(out), REAL(x), len, (size_t)n);
+  stop_if(err, "rolling_linear_wma_kernel failed (check n and len).");
 
   return out;
 }

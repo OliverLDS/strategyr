@@ -2,7 +2,7 @@
 % Please edit documentation in R/RcppExports.R
 \name{backtest_rcpp}
 \alias{backtest_rcpp}
-\title{Run Path-Dependent Backtests}
+\title{Run a Path-Dependent Backtest}
 \usage{
 backtest_rcpp(
   timestamp,
@@ -24,38 +24,36 @@ backtest_rcpp(
 )
 }
 \arguments{
-\item{timestamp}{Numeric vector of bar timestamps.}
+\item{timestamp}{Numeric timestamps.}
 
 \item{open, high, low, close}{Numeric OHLC vectors.}
 
-\item{tgt_pos}{Numeric vector of target positions.}
+\item{tgt_pos}{Numeric target-position path.}
 
-\item{pos_strat}{Integer vector identifying the strategy responsible for each
-target.}
+\item{pos_strat}{Integer strategy position-state vector.}
 
 \item{tol_pos}{Numeric tolerance vector.}
 
-\item{strat}{Integer strategy identifier for the backtest.}
+\item{strat}{Integer strategy identifier.}
 
 \item{asset}{Integer asset identifier.}
 
 \item{ctr_size}{Contract size.}
 
-\item{ctr_step}{Minimum tradable contract increment.}
+\item{ctr_step}{Contract increment step.}
 
-\item{lev}{Leverage used for margin calculations.}
+\item{lev}{Leverage.}
 
-\item{fee_rt}{Trade fee rate on notional.}
+\item{fee_rt}{Fee rate.}
 
-\item{fund_rt}{Funding rate per 8 hours on notional.}
+\item{fund_rt}{Funding rate.}
 
-\item{rec}{Logical; whether to attach recorder output.}
+\item{rec}{Whether to return recorder output.}
 }
 \value{
-A numeric equity curve. When `rec = TRUE`, the returned vector also
-  carries a `recorder` attribute.
+A backtest result from the native engine.
 }
 \description{
-Executes the native backtesting engine on precomputed target positions and
-execution assumptions.
+Runs the native path-dependent backtest engine over OHLC data and a target
+position path.
 }

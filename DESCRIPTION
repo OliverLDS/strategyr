@@ -1,7 +1,7 @@
 Package: strategyr
 Type: Package
 Title: Execution-Oriented Strategy Workflows for Dynamic Trading Decisions
-Version: 0.1.2.1
+Version: 0.1.2.2
 Authors@R: 
     person("Oliver", "Zhou", , "oliver.yxzhou@gmail.com", role = c("aut", "cre"))
 Description: Tools for modular, execution-oriented strategy workflows that
@@ -32,6 +32,8 @@ Collate:
     'RcppExports.R'
     'utils_common.R'
     'calc_feat_trend.R'
+    'calc_feat_momentum.R'
+    'calc_feat_volume.R'
     'calc_feat_volatility.R'
     'calc_ema_cross.R'
     'calc_ladder_index.R'

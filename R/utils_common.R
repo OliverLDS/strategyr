@@ -18,6 +18,10 @@ NULL
 # gen_ind_normalize, gen_ind_zscore, etc.	
 # Useful transforms for modeling
 
+.suffix_num <- function(x) {
+  gsub("\\.", "p", format(x, trim = TRUE, scientific = FALSE))
+}
+
 .EMA_n_to_h <- function(n) {
   log(0.5)/log(1-2/(n+1))
 }
@@ -41,7 +45,6 @@ NULL
 .h_to_tau <- function(h) {
   h/log(2)
 }
-
 
 
 

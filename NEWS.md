@@ -1,3 +1,10 @@
+# strategyr 0.1.2.2
+
+- Added native rolling sum and linearly weighted moving-average kernels.
+- Added `calc_WMA()`, `calc_ADX()`, `calc_MFI()`, `calc_OBV()`,
+  `calc_VWAP()`, and `calc_WPR()`.
+- Added TTR parity coverage for the newly added conventional indicators.
+
 # strategyr 0.1.2.1
 
 - Added native rolling max/min kernels in the rolling layer.

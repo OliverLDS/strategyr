@@ -95,7 +95,8 @@ DT[, .(dc_high_3, dc_low_3, dc_mid_3, dc_high_5, dc_low_5)]
 
 ## Current Scope
 
-- feature utilities such as EMA, ATR, Donchian channels, and ladder-cycle indexing
+- feature utilities such as SMA, EMA, WMA, RSI, ADX, ATR, MFI, OBV, VWAP,
+  WPR, Donchian channels, and ladder-cycle indexing
 - strategy-facing target-position logic
 - portfolio-adjustment planning from target weights and current holdings
 - action-plan generation from current account state
