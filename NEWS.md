@@ -1,3 +1,10 @@
+# strategyr 0.1.2.1
+
+- Added native rolling max/min kernels in the rolling layer.
+- Added `calc_DonchianChannels()` with `dc_high_*`, `dc_low_*`, and
+  `dc_mid_*` outputs.
+- Added Donchian channel tests and README usage examples.
+
 # strategyr 0.1.2
 
 - Added minimal portfolio-adjustment planning via

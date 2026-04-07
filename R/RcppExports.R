@@ -99,6 +99,14 @@ rolling_sd <- function(x, n, sample = FALSE) {
     .Call(`_strategyr_rolling_sd`, x, n, sample)
 }
 
+rolling_max <- function(x, n) {
+    .Call(`_strategyr_rolling_max`, x, n)
+}
+
+rolling_min <- function(x, n) {
+    .Call(`_strategyr_rolling_min`, x, n)
+}
+
 rolling_quantiles <- function(x, n, probs) {
     .Call(`_strategyr_rolling_quantiles`, x, n, probs)
 }

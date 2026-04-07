@@ -36,6 +36,30 @@ Rcpp::NumericVector rolling_sd(const Rcpp::NumericVector& x, int n, bool sample 
 }
 
 // [[Rcpp::export]]
+Rcpp::NumericVector rolling_max(const Rcpp::NumericVector& x, int n) {
+  if (n < 0) Rcpp::stop("n must be >= 0");
+  const size_t len = (size_t)x.size();
+  Rcpp::NumericVector out(len);
+
+  const int err = rolling_extrema_kernel<true>(REAL(out), REAL(x), len, (size_t)n);
+  stop_if(err, "rolling_extrema_kernel<max> failed (check n and len).");
+
+  return out;
+}
+
+// [[Rcpp::export]]
+Rcpp::NumericVector rolling_min(const Rcpp::NumericVector& x, int n) {
+  if (n < 0) Rcpp::stop("n must be >= 0");
+  const size_t len = (size_t)x.size();
+  Rcpp::NumericVector out(len);
+
+  const int err = rolling_extrema_kernel<false>(REAL(out), REAL(x), len, (size_t)n);
+  stop_if(err, "rolling_extrema_kernel<min> failed (check n and len).");
+
+  return out;
+}
+
+// [[Rcpp::export]]
 Rcpp::NumericMatrix rolling_quantiles(const Rcpp::NumericVector& x,
                                          int n,
                                          const Rcpp::NumericVector& probs) {

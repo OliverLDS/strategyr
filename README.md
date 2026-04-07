@@ -75,6 +75,19 @@ adjustment <- plan_portfolio_adjustment(portfolio_state, equity = 3000)
 intents <- build_order_intents(adjustment)
 ```
 
+### 4. Add Donchian channel features for breakout or range logic
+
+```r
+DT <- data.table(
+  high = c(10, 11, 12, 13, 14, 13),
+  low = c(5, 6, 7, 8, 9, 8)
+)
+
+calc_DonchianChannels(DT, ns = c(3, 5))
+
+DT[, .(dc_high_3, dc_low_3, dc_mid_3, dc_high_5, dc_low_5)]
+```
+
 ## Docs
 
 - [Package Philosophy](docs/philosophy.md)
@@ -82,7 +95,7 @@ intents <- build_order_intents(adjustment)
 
 ## Current Scope
 
-- feature utilities such as EMA, ATR, and ladder-cycle indexing
+- feature utilities such as EMA, ATR, Donchian channels, and ladder-cycle indexing
 - strategy-facing target-position logic
 - portfolio-adjustment planning from target weights and current holdings
 - action-plan generation from current account state

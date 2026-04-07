@@ -219,6 +219,30 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// rolling_max
+Rcpp::NumericVector rolling_max(const Rcpp::NumericVector& x, int n);
+RcppExport SEXP _strategyr_rolling_max(SEXP xSEXP, SEXP nSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type x(xSEXP);
+    Rcpp::traits::input_parameter< int >::type n(nSEXP);
+    rcpp_result_gen = Rcpp::wrap(rolling_max(x, n));
+    return rcpp_result_gen;
+END_RCPP
+}
+// rolling_min
+Rcpp::NumericVector rolling_min(const Rcpp::NumericVector& x, int n);
+RcppExport SEXP _strategyr_rolling_min(SEXP xSEXP, SEXP nSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type x(xSEXP);
+    Rcpp::traits::input_parameter< int >::type n(nSEXP);
+    rcpp_result_gen = Rcpp::wrap(rolling_min(x, n));
+    return rcpp_result_gen;
+END_RCPP
+}
 // rolling_quantiles
 Rcpp::NumericMatrix rolling_quantiles(const Rcpp::NumericVector& x, int n, const Rcpp::NumericVector& probs);
 RcppExport SEXP _strategyr_rolling_quantiles(SEXP xSEXP, SEXP nSEXP, SEXP probsSEXP) {
@@ -259,6 +283,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_strategyr_ema_tau_irregular", (DL_FUNC) &_strategyr_ema_tau_irregular, 3},
     {"_strategyr_rolling_mean", (DL_FUNC) &_strategyr_rolling_mean, 2},
     {"_strategyr_rolling_sd", (DL_FUNC) &_strategyr_rolling_sd, 3},
+    {"_strategyr_rolling_max", (DL_FUNC) &_strategyr_rolling_max, 2},
+    {"_strategyr_rolling_min", (DL_FUNC) &_strategyr_rolling_min, 2},
     {"_strategyr_rolling_quantiles", (DL_FUNC) &_strategyr_rolling_quantiles, 3},
     {"_strategyr_strat_buy_and_hold_rcpp", (DL_FUNC) &_strategyr_strat_buy_and_hold_rcpp, 1},
     {NULL, NULL, 0}

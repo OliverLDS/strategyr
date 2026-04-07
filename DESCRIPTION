@@ -1,7 +1,7 @@
 Package: strategyr
 Type: Package
 Title: Execution-Oriented Strategy Workflows for Dynamic Trading Decisions
-Version: 0.1.2
+Version: 0.1.2.1
 Authors@R: 
     person("Oliver", "Zhou", , "oliver.yxzhou@gmail.com", role = c("aut", "cre"))
 Description: Tools for modular, execution-oriented strategy workflows that

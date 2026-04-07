@@ -1,5 +1,7 @@
 // ker_rolling.h
 
+#include <deque>
+
 int rolling_1st_moment_kernel(double* out, const double* in, size_t len, size_t n) {
 	if (n == 0 || len == 0) return 1;
 	rolling_1st_moment rolling_engine;
@@ -33,6 +35,46 @@ int rolling_2nd_moment_kernel(double* out, const double* in, size_t len, size_t 
 		}
 	}
 	return 0;
+}
+
+template <bool is_max>
+int rolling_extrema_kernel(double* out, const double* in, size_t len, size_t n) {
+	if (n == 0 || len == 0) return 1;
+
+  std::fill(out, out + len, STRATEGYR::kNaReal);
+  std::deque<size_t> q;
+  size_t na_count = 0;
+
+  for (size_t i = 0; i < len; ++i) {
+    const double incoming = in[i];
+    if (is_na(incoming)) {
+      na_count += 1;
+    } else {
+      while (!q.empty()) {
+        const double back_val = in[q.back()];
+        const bool worse = is_max ? (back_val <= incoming) : (back_val >= incoming);
+        if (!worse) break;
+        q.pop_back();
+      }
+      q.push_back(i);
+    }
+
+    if (i >= n) {
+      const size_t out_idx = i - n;
+      if (is_na(in[out_idx])) {
+        na_count -= 1;
+      }
+      while (!q.empty() && q.front() <= out_idx) {
+        q.pop_front();
+      }
+    }
+
+    if (i >= n - 1 && na_count == 0 && !q.empty()) {
+      out[i] = in[q.front()];
+    }
+  }
+
+  return 0;
 }
 
 void rolling_quantiles_kernel(
