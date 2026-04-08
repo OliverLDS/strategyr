@@ -1,3 +1,15 @@
+# strategyr 0.1.2.4
+
+- Added a fixed-income analytics layer covering bond cash flows, pricing,
+  yield, duration, convexity, DV01/PV01, z-spread, carry/roll, curve shocks,
+  and key-rate risk.
+- Added fixed-income convention helpers for day-count fractions, coupon
+  schedules, and previous/next coupon dates.
+- Added fixed-income strategy-facing helpers for bond risk-state snapshots and
+  duration/curve hedge adjustment planning.
+- Expanded package docs and README usage examples to reflect the fixed-income
+  workflow surface.
+
 # strategyr 0.1.2.3
 
 - Added `calc_DEMA()`, `calc_ZLEMA()`, `calc_HMA()`, `calc_CMO()`,

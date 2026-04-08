@@ -88,6 +88,25 @@ calc_DonchianChannels(DT, ns = c(3, 5))
 DT[, .(dc_high_3, dc_low_3, dc_mid_3, dc_high_5, dc_low_5)]
 ```
 
+### 5. Build a bond risk-state snapshot and a duration hedge plan
+
+```r
+bond_state <- calc_bond_risk_state(
+  par = 100,
+  c_rate = 0.06,
+  T = 3,
+  freq = 2,
+  ytm = 0.05,
+  accrual_frac = 0.25
+)
+
+dv01_plan <- plan_duration_neutral_adjustment(
+  current_dv01 = bond_state$dv01 * 1000,
+  target_dv01 = 0,
+  hedge_dv01 = -125
+)
+```
+
 ## Docs
 
 - [Package Philosophy](docs/philosophy.md)
@@ -100,8 +119,12 @@ DT[, .(dc_high_3, dc_low_3, dc_mid_3, dc_high_5, dc_low_5)]
   bands, Keltner channels, CCI, stochastic oscillator, MFI, OBV, VWAP, VWMA,
   CMF, Williams %R, EMV, Chaikin AD, Chaikin volatility, Donchian channels,
   and ladder-cycle indexing
+- fixed-income analytics such as bond cash flows, yield, clean and dirty
+  pricing, duration, convexity, DV01/PV01, z-spread, carry and roll-down,
+  curve shocks, key-rate duration, and coupon/convention helpers
 - strategy-facing target-position logic
 - portfolio-adjustment planning from target weights and current holdings
+- fixed-income risk-state snapshots and hedge-adjustment helpers
 - action-plan generation from current account state
 - order-intent tables for rebalancing workflows
 - path-dependent backtesting with execution and funding assumptions

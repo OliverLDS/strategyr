@@ -1,7 +1,7 @@
 Package: strategyr
 Type: Package
 Title: Execution-Oriented Strategy Workflows for Dynamic Trading Decisions
-Version: 0.1.2.3
+Version: 0.1.2.4
 Authors@R: 
     person("Oliver", "Zhou", , "oliver.yxzhou@gmail.com", role = c("aut", "cre"))
 Description: Tools for modular, execution-oriented strategy workflows that
@@ -31,6 +31,8 @@ BugReports: https://github.com/OliverLDS/strategyr/issues
 Collate:
     'RcppExports.R'
     'utils_common.R'
+    'calc_feat_fixed_income.R'
+    'calc_feat_fixed_income_conventions.R'
     'calc_feat_trend.R'
     'calc_feat_momentum.R'
     'calc_feat_volume.R'
@@ -38,6 +40,7 @@ Collate:
     'calc_ema_cross.R'
     'calc_ladder_index.R'
     'portfolio_adjustment.R'
+    'portfolio_fixed_income.R'
     'strat_utils.R'
     'strat_buy_and_hold.R'
     'strat_ladder_bounce.R'

@@ -4,7 +4,8 @@
 
 ## 1. Feature Layer
 
-This layer computes reusable market-state annotations on candle data.
+This layer computes reusable market-state annotations on candle data and
+fixed-income risk descriptors.
 
 Examples:
 
@@ -12,9 +13,12 @@ Examples:
 - `calc_ATR()`
 - `calc_ATR_quantile()`
 - `calc_ladder_index()`
+- `calc_bond_duration()`
+- `calc_bond_zspread()`
 
-These functions operate mostly on `data.table` inputs and annotate the market
-state needed by downstream strategies.
+These functions operate mostly on `data.table` inputs for market data, with a
+small set of scalar fixed-income calculators for bond and curve state needed by
+downstream strategies.
 
 ## 2. Strategy Layer
 
@@ -27,6 +31,9 @@ Examples:
 - `strat_ladder_bounce_tgt_pos()`
 - `strat_ladder_breakout_tgt_pos()`
 - `plan_portfolio_adjustment()`
+- `calc_bond_risk_state()`
+- `plan_duration_neutral_adjustment()`
+- `plan_curve_trade_adjustment()`
 
 The strategy layer is the public rule layer. It should stay transparent and easy
 to test.
@@ -63,6 +70,16 @@ flowchart LR
   A[Target weights] --> B[plan_portfolio_adjustment]
   B --> C[Per-asset delta units]
   C --> D[build_order_intents]
+  D --> E[Execution adapter]
+```
+
+For fixed-income hedge workflows, the current minimal path is:
+
+```mermaid
+flowchart LR
+  A[Bond terms and curve] --> B[calc_bond_risk_state]
+  B --> C[DV01 or KRD gap]
+  C --> D[plan_duration_neutral_adjustment or plan_curve_trade_adjustment]
   D --> E[Execution adapter]
 ```
 
