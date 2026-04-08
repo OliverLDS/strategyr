@@ -4,8 +4,9 @@
 
 ## 1. Feature Layer
 
-This layer computes reusable market-state annotations on candle data, as well as
-fixed-income and option risk descriptors.
+This layer computes reusable market-state annotations on candle data, cross-
+sectional breadth and relative-value panels, execution-condition descriptors,
+and fixed-income, FX, futures, credit, and option risk descriptors.
 
 Examples:
 
@@ -17,10 +18,16 @@ Examples:
 - `calc_bond_zspread()`
 - `calc_option_greeks()`
 - `calc_option_iv()`
+- `calc_breadth_ad()`
+- `calc_rolling_beta()`
+- `calc_bid_ask_spread()`
+- `calc_roll_yield()`
+- `calc_fx_carry()`
+- `calc_credit_spread()`
 
 These functions operate mostly on `data.table` inputs for market data, with a
-small set of scalar fixed-income and option calculators for bond, curve, and
-derivative risk state needed by downstream strategies.
+small set of scalar fixed-income and option calculators for bond, curve, FX,
+and derivative risk state needed by downstream strategies.
 
 ## 2. Strategy Layer
 

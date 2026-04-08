@@ -137,13 +137,17 @@ delta_plan <- plan_delta_neutral_adjustment(
   ROC, MACD, TRIX, KST, ultimate oscillator, ADX, Aroon, ATR, Bollinger
   bands, Keltner channels, CCI, stochastic oscillator, MFI, OBV, VWAP, VWMA,
   CMF, Williams %R, EMV, Chaikin AD, Chaikin volatility, Donchian channels,
-  and ladder-cycle indexing
+  ladder-cycle indexing, rolling statistical features, breadth indicators,
+  relative-value descriptors, execution and microstructure proxies, futures
+  curve features, FX carry and basis features, and option-surface summaries
 - fixed-income analytics such as bond cash flows, yield, clean and dirty
   pricing, duration, convexity, DV01/PV01, z-spread, carry and roll-down,
   curve shocks, key-rate duration, and coupon/convention helpers
 - option-risk analytics such as Black-Scholes Greeks, implied volatility,
   position Greek aggregation, option risk-state snapshots, and delta/vega
   hedge-adjustment helpers
+- credit and spread features such as credit spread, excess spread, and
+  spread-curve slope and butterfly descriptors
 - strategy-facing target-position logic
 - portfolio-adjustment planning from target weights and current holdings
 - fixed-income risk-state snapshots and hedge-adjustment helpers

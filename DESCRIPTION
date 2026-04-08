@@ -1,7 +1,7 @@
 Package: strategyr
 Type: Package
 Title: Execution-Oriented Strategy Workflows for Dynamic Trading Decisions
-Version: 0.1.2.5
+Version: 0.1.2.6
 Authors@R: 
     person("Oliver", "Zhou", , "oliver.yxzhou@gmail.com", role = c("aut", "cre"))
 Description: Tools for modular, execution-oriented strategy workflows that
@@ -34,6 +34,14 @@ Collate:
     'calc_feat_fixed_income.R'
     'calc_feat_fixed_income_conventions.R'
     'calc_feat_options.R'
+    'calc_feat_stat.R'
+    'calc_feat_breadth.R'
+    'calc_feat_relative_value.R'
+    'calc_feat_microstructure.R'
+    'calc_feat_futures.R'
+    'calc_feat_fx.R'
+    'calc_feat_options_surface.R'
+    'calc_feat_credit.R'
     'calc_feat_trend.R'
     'calc_feat_momentum.R'
     'calc_feat_volume.R'

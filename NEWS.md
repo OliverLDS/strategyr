@@ -1,3 +1,12 @@
+# strategyr 0.1.2.6
+
+- Added statistical, breadth, and cross-asset relative-value feature layers.
+- Added execution and microstructure feature descriptors.
+- Added futures curve, FX carry/basis, option-surface, and credit-spread
+  feature layers.
+- Expanded README and architecture notes to reflect the broader `calc_*`
+  feature surface.
+
 # strategyr 0.1.2.5
 
 - Added an option-risk analytics layer with Black-Scholes Greeks and implied
