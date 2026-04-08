@@ -4,8 +4,8 @@
 
 ## 1. Feature Layer
 
-This layer computes reusable market-state annotations on candle data and
-fixed-income risk descriptors.
+This layer computes reusable market-state annotations on candle data, as well as
+fixed-income and option risk descriptors.
 
 Examples:
 
@@ -15,10 +15,12 @@ Examples:
 - `calc_ladder_index()`
 - `calc_bond_duration()`
 - `calc_bond_zspread()`
+- `calc_option_greeks()`
+- `calc_option_iv()`
 
 These functions operate mostly on `data.table` inputs for market data, with a
-small set of scalar fixed-income calculators for bond and curve state needed by
-downstream strategies.
+small set of scalar fixed-income and option calculators for bond, curve, and
+derivative risk state needed by downstream strategies.
 
 ## 2. Strategy Layer
 
@@ -34,6 +36,9 @@ Examples:
 - `calc_bond_risk_state()`
 - `plan_duration_neutral_adjustment()`
 - `plan_curve_trade_adjustment()`
+- `calc_option_risk_state()`
+- `plan_delta_neutral_adjustment()`
+- `plan_vega_target_adjustment()`
 
 The strategy layer is the public rule layer. It should stay transparent and easy
 to test.
@@ -80,6 +85,16 @@ flowchart LR
   A[Bond terms and curve] --> B[calc_bond_risk_state]
   B --> C[DV01 or KRD gap]
   C --> D[plan_duration_neutral_adjustment or plan_curve_trade_adjustment]
+  D --> E[Execution adapter]
+```
+
+For option hedge workflows, the current minimal path is:
+
+```mermaid
+flowchart LR
+  A[Spot, strike, expiry, vol] --> B[calc_option_risk_state]
+  B --> C[Delta or vega gap]
+  C --> D[plan_delta_neutral_adjustment or plan_vega_target_adjustment]
   D --> E[Execution adapter]
 ```
 

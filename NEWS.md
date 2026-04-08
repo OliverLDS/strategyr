@@ -1,3 +1,11 @@
+# strategyr 0.1.2.5
+
+- Added an option-risk analytics layer with Black-Scholes Greeks and implied
+  volatility helpers.
+- Added option portfolio helpers for position Greek aggregation, option
+  risk-state snapshots, and delta/vega hedge-adjustment planning.
+- Expanded README and architecture notes to include the option-risk workflow.
+
 # strategyr 0.1.2.4
 
 - Added a fixed-income analytics layer covering bond cash flows, pricing,

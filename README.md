@@ -107,6 +107,25 @@ dv01_plan <- plan_duration_neutral_adjustment(
 )
 ```
 
+### 6. Build an option risk-state snapshot and a delta hedge plan
+
+```r
+option_state <- calc_option_risk_state(
+  S = 100,
+  K = 100,
+  T = 30 / 365,
+  r = 0.04,
+  sigma = 0.25,
+  type = "call"
+)
+
+delta_plan <- plan_delta_neutral_adjustment(
+  current_delta = option_state$delta * 100,
+  target_delta = 0,
+  hedge_delta = -50
+)
+```
+
 ## Docs
 
 - [Package Philosophy](docs/philosophy.md)
@@ -122,9 +141,13 @@ dv01_plan <- plan_duration_neutral_adjustment(
 - fixed-income analytics such as bond cash flows, yield, clean and dirty
   pricing, duration, convexity, DV01/PV01, z-spread, carry and roll-down,
   curve shocks, key-rate duration, and coupon/convention helpers
+- option-risk analytics such as Black-Scholes Greeks, implied volatility,
+  position Greek aggregation, option risk-state snapshots, and delta/vega
+  hedge-adjustment helpers
 - strategy-facing target-position logic
 - portfolio-adjustment planning from target weights and current holdings
 - fixed-income risk-state snapshots and hedge-adjustment helpers
+- option risk-state snapshots and hedge-adjustment helpers
 - action-plan generation from current account state
 - order-intent tables for rebalancing workflows
 - path-dependent backtesting with execution and funding assumptions
