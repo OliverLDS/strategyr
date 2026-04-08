@@ -130,6 +130,7 @@ delta_plan <- plan_delta_neutral_adjustment(
 
 - [Package Philosophy](docs/philosophy.md)
 - [Architecture Notes](docs/architecture.md)
+- [Strategy Design Notes](docs/strategy_design.md)
 
 ## Current Scope
 
@@ -149,6 +150,11 @@ delta_plan <- plan_delta_neutral_adjustment(
 - credit and spread features such as credit spread, excess spread, and
   spread-curve slope and butterfly descriptors
 - strategy-facing target-position logic
+- public strategy families covering buy-and-hold, EMA/MACD crossover,
+  Bollinger and RSI mean reversion, Donchian and ATR breakout, volatility
+  targeting, trend pullback, pair-spread and ratio reversion, relative
+  strength, FX carry, bond carry-and-roll, curve steepener, roll yield, IV
+  skew, IV term structure, and options structure-proxy workflows
 - portfolio-adjustment planning from target weights and current holdings
 - fixed-income risk-state snapshots and hedge-adjustment helpers
 - option risk-state snapshots and hedge-adjustment helpers

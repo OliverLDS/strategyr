@@ -2,6 +2,11 @@
 
 `strategyr` currently has four layers.
 
+Related contributor note:
+
+- `docs/strategy_design.md` defines the implementation standard for public
+  `strat_*` functions.
+
 ## 1. Feature Layer
 
 This layer computes reusable market-state annotations on candle data, cross-
@@ -37,6 +42,25 @@ Examples:
 
 - `strat_buy_and_hold_tgt_pos()`
 - `strat_ema_cross_tgt_pos()`
+- `strat_macd_cross_tgt_pos()`
+- `strat_bollinger_revert_tgt_pos()`
+- `strat_rsi_revert_tgt_pos()`
+- `strat_donchian_breakout_tgt_pos()`
+- `strat_atr_breakout_tgt_pos()`
+- `strat_vol_target_tgt_pos()`
+- `strat_trend_pullback_tgt_pos()`
+- `strat_pair_spread_revert_tgt_pos()`
+- `strat_ratio_revert_tgt_pos()`
+- `strat_relative_strength_tgt_pos()`
+- `strat_fx_carry_tgt_pos()`
+- `strat_bond_carry_roll_tgt_pos()`
+- `strat_curve_steepener_tgt_pos()`
+- `strat_roll_yield_tgt_pos()`
+- `strat_iv_skew_tgt_pos()`
+- `strat_iv_term_structure_tgt_pos()`
+- `strat_straddle_tgt_pos()`
+- `strat_strangle_tgt_pos()`
+- `strat_vertical_spread_tgt_pos()`
 - `strat_ladder_bounce_tgt_pos()`
 - `strat_ladder_breakout_tgt_pos()`
 - `plan_portfolio_adjustment()`
@@ -49,6 +73,9 @@ Examples:
 
 The strategy layer is the public rule layer. It should stay transparent and easy
 to test.
+
+The contributor standard for this layer is documented in
+`docs/strategy_design.md`.
 
 ## 3. Action Layer
 

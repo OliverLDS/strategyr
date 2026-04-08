@@ -1,3 +1,16 @@
+# strategyr 0.1.3
+
+- Added a broader public `strat_*` layer covering Bollinger, RSI, Donchian,
+  ATR, MACD, volatility-targeting, and trend-pullback strategy families.
+- Added cross-asset public strategy families for pair-spread reversion, ratio
+  reversion, and relative-strength workflows.
+- Added asset-class-specific public strategy families for FX carry, bond
+  carry-and-roll, curve steepener, and futures roll-yield workflows.
+- Added option strategy-proxy families for IV skew, IV term structure,
+  straddle, strangle, and vertical-spread workflows.
+- Added contributor documentation for `strat_*` implementation standards and
+  updated package-facing docs to reflect the expanded strategy surface.
+
 # strategyr 0.1.2.6
 
 - Added statistical, breadth, and cross-asset relative-value feature layers.

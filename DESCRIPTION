@@ -1,7 +1,7 @@
 Package: strategyr
 Type: Package
 Title: Execution-Oriented Strategy Workflows for Dynamic Trading Decisions
-Version: 0.1.2.6
+Version: 0.1.3
 Authors@R: 
     person("Oliver", "Zhou", , "oliver.yxzhou@gmail.com", role = c("aut", "cre"))
 Description: Tools for modular, execution-oriented strategy workflows that
@@ -56,4 +56,23 @@ Collate:
     'strat_ladder_bounce.R'
     'strat_ladder_breakout.R'
     'strat_ema_cross.R'
+    'strat_bollinger_revert.R'
+    'strat_donchian_breakout.R'
+    'strat_rsi_revert.R'
+    'strat_macd_cross.R'
+    'strat_atr_breakout.R'
+    'strat_vol_target.R'
+    'strat_trend_pullback.R'
+    'strat_pair_spread_revert.R'
+    'strat_ratio_revert.R'
+    'strat_relative_strength.R'
+    'strat_fx_carry.R'
+    'strat_bond_carry_roll.R'
+    'strat_curve_steepener.R'
+    'strat_roll_yield.R'
+    'strat_iv_skew.R'
+    'strat_iv_term_structure.R'
+    'strat_straddle.R'
+    'strat_strangle.R'
+    'strat_vertical_spread.R'
 RoxygenNote: 7.2.3
