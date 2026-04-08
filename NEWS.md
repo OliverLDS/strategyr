@@ -1,3 +1,12 @@
+# strategyr 0.1.2.3
+
+- Added `calc_DEMA()`, `calc_ZLEMA()`, `calc_HMA()`, `calc_CMO()`,
+  `calc_TRIX()`, `calc_KST()`, and `calc_ultimateOscillator()`.
+- Added `calc_SMI()`, `calc_chaikinAD()`, `calc_chaikinVolatility()`, and
+  `calc_EMV()`.
+- Added `calc_CMF()`, `calc_VWMA()`, `calc_aroon()`, and `calc_SAR()`.
+- Expanded TTR parity coverage for the newly added indicator families.
+
 # strategyr 0.1.2.2
 
 - Added native rolling sum and linearly weighted moving-average kernels.

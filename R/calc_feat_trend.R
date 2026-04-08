@@ -38,6 +38,31 @@ calc_WMA <- function(DT, ns = c(5, 8, 9, 10, 12, 20, 21, 26, 30, 50, 100, 200)) 
   invisible(DT)
 }
 
+#' Add Hull Moving Average Features
+#'
+#' Computes HMA columns from the `close` series of a candle `data.table` in
+#' place using the standard weighted-moving-average construction.
+#'
+#' @param DT A `data.table` containing a `close` column.
+#' @param ns Integer vector of HMA window sizes.
+#'
+#' @return The input `DT`, modified by reference and returned invisibly.
+#' @export
+calc_HMA <- function(DT, ns = c(9, 16, 20, 50)) {
+  stopifnot(data.table::is.data.table(DT))
+  stopifnot("close" %in% names(DT))
+
+  close <- DT[["close"]]
+  for (n in ns) {
+    n_fast <- trunc(n / 2)
+    n_smooth <- trunc(sqrt(n))
+    madiff <- 2 * rolling_wma(close, n_fast) - rolling_wma(close, n)
+    data.table::set(DT, j = paste0("hma_", n), value = rolling_wma(madiff, n_smooth))
+  }
+
+  invisible(DT)
+}
+
 #' Add Exponential Moving Average Features
 #'
 #' Computes EMA columns from the `close` series of a candle `data.table` in
@@ -55,6 +80,71 @@ calc_EMA <- function(DT, ns = c(5, 8, 9, 10, 12, 20, 21, 26, 30, 50, 100, 200)) 
     colname <- paste0("ema_", n)
     data.table::set(DT, j = colname, value = ema_ttr_fixed_step(DT[["close"]], n, FALSE))
   }
+  invisible(DT)
+}
+
+#' Add Double Exponential Moving Average Features
+#'
+#' Computes DEMA columns from the `close` series of a candle `data.table` in
+#' place.
+#'
+#' @param DT A `data.table` containing a `close` column.
+#' @param ns Integer vector of EMA window sizes.
+#' @param v Numeric blending factor. `1` matches the conventional DEMA.
+#'
+#' @return The input `DT`, modified by reference and returned invisibly.
+#' @export
+calc_DEMA <- function(DT, ns = c(10, 20, 50), v = 1) {
+  stopifnot(data.table::is.data.table(DT))
+  stopifnot("close" %in% names(DT))
+  stopifnot(v >= 0, v <= 1)
+
+  close <- DT[["close"]]
+  for (n in ns) {
+    ema1 <- ema_ttr_fixed_step(close, n, FALSE)
+    ema2 <- .apply_after_first_non_na(ema1, ema_ttr_fixed_step, n = n, wilder = FALSE)
+    data.table::set(DT, j = paste0("dema_", n), value = (1 + v) * ema1 - v * ema2)
+  }
+
+  invisible(DT)
+}
+
+#' Add Zero-Lag Exponential Moving Average Features
+#'
+#' Computes ZLEMA columns from the `close` series of a candle `data.table` in
+#' place.
+#'
+#' @param DT A `data.table` containing a `close` column.
+#' @param ns Integer vector of EMA window sizes.
+#'
+#' @return The input `DT`, modified by reference and returned invisibly.
+#' @export
+calc_ZLEMA <- function(DT, ns = c(10, 20, 50)) {
+  stopifnot(data.table::is.data.table(DT))
+  stopifnot("close" %in% names(DT))
+
+  close <- DT[["close"]]
+  for (n in ns) {
+    lag_n <- floor((n - 1) / 2)
+    adjusted <- close
+    if (lag_n > 0) {
+      adjusted[(lag_n + 1):length(close)] <- close[(lag_n + 1):length(close)] +
+        (close[(lag_n + 1):length(close)] - close[seq_len(length(close) - lag_n)])
+    }
+
+    zlema <- rep(NA_real_, length(close))
+    if (n <= length(close)) {
+      alpha <- 2 / (n + 1)
+      zlema[n] <- mean(close[seq_len(n)])
+      if (n < length(close)) {
+        for (i in (n + 1):length(close)) {
+          zlema[i] <- alpha * adjusted[i] + (1 - alpha) * zlema[i - 1]
+        }
+      }
+    }
+    data.table::set(DT, j = paste0("zlema_", n), value = zlema)
+  }
+
   invisible(DT)
 }
 
@@ -363,6 +453,60 @@ calc_ADX <- function(DT, ns = c(14)) {
     data.table::set(DT, j = paste0("adx_din_", n), value = di_neg)
     data.table::set(DT, j = paste0("adx_dx_", n), value = dx)
     data.table::set(DT, j = paste0("adx_", n), value = adx)
+  }
+
+  invisible(DT)
+}
+
+#' Add Aroon Features
+#'
+#' Computes Aroon up, down, and oscillator columns from candle highs and lows
+#' in place.
+#'
+#' @param DT A `data.table` containing `high` and `low`.
+#' @param ns Integer vector of Aroon windows.
+#'
+#' @return The input `DT`, modified by reference and returned invisibly.
+#' @export
+calc_aroon <- function(DT, ns = c(20)) {
+  stopifnot(data.table::is.data.table(DT))
+  stopifnot(all(c("high", "low") %in% names(DT)))
+
+  high <- DT[["high"]]
+  low <- DT[["low"]]
+
+  for (n in ns) {
+    up <- aroon_up_pct_cpp(high, n)
+    dn <- aroon_dn_pct_cpp(low, n)
+    data.table::set(DT, j = paste0("aroon_up_", n), value = up)
+    data.table::set(DT, j = paste0("aroon_dn_", n), value = dn)
+    data.table::set(DT, j = paste0("aroon_osc_", n), value = up - dn)
+  }
+
+  invisible(DT)
+}
+
+#' Add Parabolic SAR Features
+#'
+#' Computes Parabolic SAR columns from candle highs and lows in place using the
+#' classic acceleration step and maximum parameters.
+#'
+#' @param DT A `data.table` containing `high` and `low`.
+#' @param accels A list of numeric vectors, each of length two, giving
+#'   `c(step, max)` acceleration settings.
+#'
+#' @return The input `DT`, modified by reference and returned invisibly.
+#' @export
+calc_SAR <- function(DT, accels = list(c(0.02, 0.2))) {
+  stopifnot(data.table::is.data.table(DT))
+  stopifnot(all(c("high", "low") %in% names(DT)))
+
+  for (accel in accels) {
+    stopifnot(length(accel) == 2)
+    step_tag <- .suffix_num(accel[1])
+    max_tag <- .suffix_num(accel[2])
+    colname <- paste0("sar_", step_tag, "_", max_tag)
+    data.table::set(DT, j = colname, value = sar_cpp(DT[["high"]], DT[["low"]], as.numeric(accel)))
   }
 
   invisible(DT)

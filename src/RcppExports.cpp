@@ -267,6 +267,18 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// rolling_argmax_pct
+Rcpp::NumericVector rolling_argmax_pct(const Rcpp::NumericVector& x, int n);
+RcppExport SEXP _strategyr_rolling_argmax_pct(SEXP xSEXP, SEXP nSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type x(xSEXP);
+    Rcpp::traits::input_parameter< int >::type n(nSEXP);
+    rcpp_result_gen = Rcpp::wrap(rolling_argmax_pct(x, n));
+    return rcpp_result_gen;
+END_RCPP
+}
 // rolling_min
 Rcpp::NumericVector rolling_min(const Rcpp::NumericVector& x, int n);
 RcppExport SEXP _strategyr_rolling_min(SEXP xSEXP, SEXP nSEXP) {
@@ -276,6 +288,18 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type x(xSEXP);
     Rcpp::traits::input_parameter< int >::type n(nSEXP);
     rcpp_result_gen = Rcpp::wrap(rolling_min(x, n));
+    return rcpp_result_gen;
+END_RCPP
+}
+// rolling_argmin_pct
+Rcpp::NumericVector rolling_argmin_pct(const Rcpp::NumericVector& x, int n);
+RcppExport SEXP _strategyr_rolling_argmin_pct(SEXP xSEXP, SEXP nSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type x(xSEXP);
+    Rcpp::traits::input_parameter< int >::type n(nSEXP);
+    rcpp_result_gen = Rcpp::wrap(rolling_argmin_pct(x, n));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -303,6 +327,43 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// aroon_up_pct_cpp
+Rcpp::NumericVector aroon_up_pct_cpp(const Rcpp::NumericVector& high, int n);
+RcppExport SEXP _strategyr_aroon_up_pct_cpp(SEXP highSEXP, SEXP nSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type high(highSEXP);
+    Rcpp::traits::input_parameter< int >::type n(nSEXP);
+    rcpp_result_gen = Rcpp::wrap(aroon_up_pct_cpp(high, n));
+    return rcpp_result_gen;
+END_RCPP
+}
+// aroon_dn_pct_cpp
+Rcpp::NumericVector aroon_dn_pct_cpp(const Rcpp::NumericVector& low, int n);
+RcppExport SEXP _strategyr_aroon_dn_pct_cpp(SEXP lowSEXP, SEXP nSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type low(lowSEXP);
+    Rcpp::traits::input_parameter< int >::type n(nSEXP);
+    rcpp_result_gen = Rcpp::wrap(aroon_dn_pct_cpp(low, n));
+    return rcpp_result_gen;
+END_RCPP
+}
+// sar_cpp
+Rcpp::NumericVector sar_cpp(const Rcpp::NumericVector& high, const Rcpp::NumericVector& low, const Rcpp::NumericVector& accel);
+RcppExport SEXP _strategyr_sar_cpp(SEXP highSEXP, SEXP lowSEXP, SEXP accelSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type high(highSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type low(lowSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type accel(accelSEXP);
+    rcpp_result_gen = Rcpp::wrap(sar_cpp(high, low, accel));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_strategyr_gen_action_plan_rcpp", (DL_FUNC) &_strategyr_gen_action_plan_rcpp, 11},
@@ -323,9 +384,14 @@ static const R_CallMethodDef CallEntries[] = {
     {"_strategyr_rolling_mean_abs_dev", (DL_FUNC) &_strategyr_rolling_mean_abs_dev, 2},
     {"_strategyr_rolling_wma", (DL_FUNC) &_strategyr_rolling_wma, 2},
     {"_strategyr_rolling_max", (DL_FUNC) &_strategyr_rolling_max, 2},
+    {"_strategyr_rolling_argmax_pct", (DL_FUNC) &_strategyr_rolling_argmax_pct, 2},
     {"_strategyr_rolling_min", (DL_FUNC) &_strategyr_rolling_min, 2},
+    {"_strategyr_rolling_argmin_pct", (DL_FUNC) &_strategyr_rolling_argmin_pct, 2},
     {"_strategyr_rolling_quantiles", (DL_FUNC) &_strategyr_rolling_quantiles, 3},
     {"_strategyr_strat_buy_and_hold_rcpp", (DL_FUNC) &_strategyr_strat_buy_and_hold_rcpp, 1},
+    {"_strategyr_aroon_up_pct_cpp", (DL_FUNC) &_strategyr_aroon_up_pct_cpp, 2},
+    {"_strategyr_aroon_dn_pct_cpp", (DL_FUNC) &_strategyr_aroon_dn_pct_cpp, 2},
+    {"_strategyr_sar_cpp", (DL_FUNC) &_strategyr_sar_cpp, 3},
     {NULL, NULL, 0}
 };
 

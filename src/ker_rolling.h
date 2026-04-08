@@ -140,6 +140,48 @@ int rolling_extrema_kernel(double* out, const double* in, size_t len, size_t n) 
   return 0;
 }
 
+template <bool is_max>
+int rolling_extrema_position_pct_kernel(double* out, const double* in, size_t len, size_t n) {
+  if (n == 0 || len == 0) return 1;
+
+  std::fill(out, out + len, STRATEGYR::kNaReal);
+  std::deque<size_t> q;
+  size_t na_count = 0;
+
+  for (size_t i = 0; i < len; ++i) {
+    const double incoming = in[i];
+    if (is_na(incoming)) {
+      na_count += 1;
+    } else {
+      while (!q.empty()) {
+        const double back_val = in[q.back()];
+        const bool worse = is_max ? (back_val <= incoming) : (back_val >= incoming);
+        if (!worse) break;
+        q.pop_back();
+      }
+      q.push_back(i);
+    }
+
+    if (i >= n) {
+      const size_t out_idx = i - n;
+      if (is_na(in[out_idx])) {
+        na_count -= 1;
+      }
+      while (!q.empty() && q.front() <= out_idx) {
+        q.pop_front();
+      }
+    }
+
+    if (i >= n - 1 && na_count == 0 && !q.empty()) {
+      const size_t window_start = i + 1 - n;
+      const double pos = static_cast<double>(q.front() - window_start + 1);
+      out[i] = 100.0 * pos / static_cast<double>(n);
+    }
+  }
+
+  return 0;
+}
+
 int rolling_linear_wma_kernel(double* out, const double* in, size_t len, size_t n) {
   if (n == 0 || len == 0) return 1;
 

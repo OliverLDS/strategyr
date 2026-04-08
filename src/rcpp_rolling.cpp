@@ -84,6 +84,18 @@ Rcpp::NumericVector rolling_max(const Rcpp::NumericVector& x, int n) {
 }
 
 // [[Rcpp::export]]
+Rcpp::NumericVector rolling_argmax_pct(const Rcpp::NumericVector& x, int n) {
+  if (n < 0) Rcpp::stop("n must be >= 0");
+  const size_t len = (size_t)x.size();
+  Rcpp::NumericVector out(len);
+
+  const int err = rolling_extrema_position_pct_kernel<true>(REAL(out), REAL(x), len, (size_t)n);
+  stop_if(err, "rolling_extrema_position_pct_kernel<max> failed (check n and len).");
+
+  return out;
+}
+
+// [[Rcpp::export]]
 Rcpp::NumericVector rolling_min(const Rcpp::NumericVector& x, int n) {
   if (n < 0) Rcpp::stop("n must be >= 0");
   const size_t len = (size_t)x.size();
@@ -91,6 +103,18 @@ Rcpp::NumericVector rolling_min(const Rcpp::NumericVector& x, int n) {
 
   const int err = rolling_extrema_kernel<false>(REAL(out), REAL(x), len, (size_t)n);
   stop_if(err, "rolling_extrema_kernel<min> failed (check n and len).");
+
+  return out;
+}
+
+// [[Rcpp::export]]
+Rcpp::NumericVector rolling_argmin_pct(const Rcpp::NumericVector& x, int n) {
+  if (n < 0) Rcpp::stop("n must be >= 0");
+  const size_t len = (size_t)x.size();
+  Rcpp::NumericVector out(len);
+
+  const int err = rolling_extrema_position_pct_kernel<false>(REAL(out), REAL(x), len, (size_t)n);
+  stop_if(err, "rolling_extrema_position_pct_kernel<min> failed (check n and len).");
 
   return out;
 }

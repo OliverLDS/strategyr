@@ -228,6 +228,44 @@ test_that("calc_WMA matches TTR WMA", {
   )
 })
 
+test_that("calc_HMA matches TTR HMA", {
+  x <- seq(100, 160, length.out = 80) + sin(seq_len(80))
+  DT <- data.table::data.table(close = x)
+
+  calc_HMA(DT, ns = 20)
+
+  expect_equal(
+    DT$hma_20,
+    as.numeric(TTR::HMA(x, n = 20)),
+    tolerance = 1e-10
+  )
+})
+
+test_that("calc_DEMA matches TTR DEMA", {
+  x <- seq(100, 160, length.out = 80)
+  DT <- data.table::data.table(close = x)
+
+  calc_DEMA(DT, ns = 10)
+
+  expect_equal(
+    DT$dema_10,
+    as.numeric(TTR::DEMA(x, n = 10, v = 1, wilder = FALSE)),
+    tolerance = 1e-10
+  )
+})
+
+test_that("calc_ZLEMA adds expected columns with EMA-like warmup", {
+  x <- seq(100, 160, length.out = 80) + sin(seq_len(80))
+  DT <- data.table::data.table(close = x)
+
+  calc_ZLEMA(DT, ns = 10)
+
+  expect_true("zlema_10" %in% names(DT))
+  expect_true(all(is.na(DT$zlema_10[1:9])))
+  expect_false(is.na(DT$zlema_10[10]))
+  expect_true(all(is.finite(DT$zlema_10[10:length(x)])))
+})
+
 test_that("calc_ADX matches TTR ADX on shared non-NA region", {
   DT <- data.table::data.table(
     high = seq(103, 202, length.out = 120) + sin(seq_len(120)),
@@ -247,6 +285,35 @@ test_that("calc_ADX matches TTR ADX on shared non-NA region", {
   idx_adx <- which(!is.na(adx_ref[, "ADX"]))
   expect_true(length(idx_adx) > 0)
   expect_equal(DT$adx_14[idx_adx], as.numeric(adx_ref[idx_adx, "ADX"]), tolerance = 1e-10)
+})
+
+test_that("calc_aroon matches TTR aroon", {
+  DT <- data.table::data.table(
+    high = seq(101, 160, length.out = 60) + sin(seq_len(60)) / 10,
+    low = seq(99, 158, length.out = 60) + cos(seq_len(60)) / 10
+  )
+
+  calc_aroon(DT, ns = 14)
+  ref <- TTR::aroon(as.matrix(DT[, .(high, low)]), n = 14)
+
+  expect_equal(DT$aroon_up_14, as.numeric(ref[, "aroonUp"]), tolerance = 1e-12)
+  expect_equal(DT$aroon_dn_14, as.numeric(ref[, "aroonDn"]), tolerance = 1e-12)
+  expect_equal(DT$aroon_osc_14, as.numeric(ref[, "oscillator"]), tolerance = 1e-12)
+})
+
+test_that("calc_SAR matches TTR SAR", {
+  DT <- data.table::data.table(
+    high = c(10, 11, 12, 13, 12, 14, 15, 14, 16, 15, 17, 16),
+    low = c(9, 10, 11, 12, 11, 13, 14, 13, 15, 14, 16, 15)
+  )
+
+  calc_SAR(DT, accels = list(c(0.02, 0.2)))
+
+  expect_equal(
+    DT$sar_0p02_0p2,
+    as.numeric(TTR::SAR(as.matrix(DT[, .(high, low)]), accel = c(0.02, 0.2))),
+    tolerance = 1e-10
+  )
 })
 
 test_that("calc_MFI matches TTR MFI", {
@@ -296,6 +363,38 @@ test_that("calc_VWAP matches TTR VWAP", {
   )
 })
 
+test_that("calc_VWMA matches TTR VWMA", {
+  DT <- data.table::data.table(
+    close = seq(100, 130, length.out = 60),
+    volume = seq(1000, 4000, length.out = 60)
+  )
+
+  calc_VWMA(DT, ns = 10)
+
+  expect_equal(
+    DT$vwma_10,
+    as.numeric(TTR::VWMA(DT$close, DT$volume, n = 10)),
+    tolerance = 1e-12
+  )
+})
+
+test_that("calc_CMF matches TTR CMF", {
+  DT <- data.table::data.table(
+    high = seq(103, 202, length.out = 120) + sin(seq_len(120)),
+    low = seq(99, 198, length.out = 120) + sin(seq_len(120)) / 2,
+    close = seq(101, 200, length.out = 120) + cos(seq_len(120)) / 3,
+    volume = seq(1000, 4000, length.out = 120)
+  )
+
+  calc_CMF(DT, ns = 20)
+
+  expect_equal(
+    DT$cmf_20,
+    as.numeric(TTR::CMF(as.matrix(DT[, .(high, low, close)]), DT$volume, n = 20)),
+    tolerance = 1e-12
+  )
+})
+
 test_that("calc_WPR matches TTR WPR", {
   DT <- data.table::data.table(
     high = seq(103, 202, length.out = 120) + sin(seq_len(120)),
@@ -310,4 +409,139 @@ test_that("calc_WPR matches TTR WPR", {
     as.numeric(TTR::WPR(as.matrix(DT[, .(high, low, close)]), n = 14)),
     tolerance = 1e-12
   )
+})
+
+test_that("calc_SMI matches TTR SMI on shared non-NA region", {
+  DT <- data.table::data.table(
+    high = seq(103, 202, length.out = 120) + sin(seq_len(120)),
+    low = seq(99, 198, length.out = 120) + sin(seq_len(120)) / 2,
+    close = seq(101, 200, length.out = 120) + cos(seq_len(120)) / 3
+  )
+
+  calc_SMI(DT, n = 13, nFast = 2, nSlow = 25, nSig = 9)
+  ref <- TTR::SMI(as.matrix(DT[, .(high, low, close)]), n = 13, nFast = 2, nSlow = 25, nSig = 9)
+
+  idx <- which(!is.na(ref[, "SMI"]))
+  expect_true(length(idx) > 0)
+  expect_equal(DT$smi_13_2_25[idx], as.numeric(ref[idx, "SMI"]), tolerance = 1e-10)
+
+  idx_sig <- which(!is.na(ref[, "signal"]))
+  expect_true(length(idx_sig) > 0)
+  expect_equal(DT$smi_signal_13_2_25_9[idx_sig], as.numeric(ref[idx_sig, "signal"]), tolerance = 1e-10)
+})
+
+test_that("calc_TRIX matches TTR TRIX on shared non-NA region", {
+  DT <- data.table::data.table(close = seq(100, 200, length.out = 160) + sin(seq_len(160)))
+
+  calc_TRIX(DT, ns = 20, signal_ns = 9)
+  trix_ref <- TTR::TRIX(DT$close, n = 20, nSig = 9, maType = "EMA", percent = TRUE)
+
+  idx_trix <- which(!is.na(trix_ref[, "TRIX"]))
+  expect_true(length(idx_trix) > 0)
+  expect_equal(DT$trix_20[idx_trix], as.numeric(trix_ref[idx_trix, "TRIX"]), tolerance = 1e-10)
+
+  idx_sig <- which(!is.na(trix_ref[, "signal"]))
+  expect_true(length(idx_sig) > 0)
+  expect_equal(DT$trix_signal_20_9[idx_sig], as.numeric(trix_ref[idx_sig, "signal"]), tolerance = 1e-10)
+})
+
+test_that("calc_ultimateOscillator matches TTR ultimateOscillator", {
+  DT <- data.table::data.table(
+    high = seq(103, 202, length.out = 120) + sin(seq_len(120)),
+    low = seq(99, 198, length.out = 120) + sin(seq_len(120)) / 2,
+    close = seq(101, 200, length.out = 120) + cos(seq_len(120)) / 3
+  )
+
+  calc_ultimateOscillator(DT, nss = list(c(7, 14, 28)), wtss = list(c(4, 2, 1)))
+
+  expect_equal(
+    DT$uo_7_14_28_4_2_1,
+    as.numeric(TTR::ultimateOscillator(as.matrix(DT[, .(high, low, close)]), n = c(7, 14, 28), wts = c(4, 2, 1))),
+    tolerance = 1e-10
+  )
+})
+
+test_that("calc_KST matches TTR KST", {
+  x <- seq(100, 200, length.out = 180) + sin(seq_len(180))
+  DT <- data.table::data.table(close = x)
+
+  calc_KST(
+    DT,
+    nss = list(c(10, 10, 10, 15)),
+    n_rocss = list(c(10, 15, 20, 30)),
+    signal_ns = 9,
+    wtss = list(1:4)
+  )
+
+  ref <- TTR::KST(x, n = c(10, 10, 10, 15), nROC = c(10, 15, 20, 30), nSig = 9)
+
+  expect_equal(
+    DT$kst_10_10_10_15_10_15_20_30_1_2_3_4,
+    as.numeric(ref[, "kst"]),
+    tolerance = 1e-10
+  )
+  expect_equal(
+    DT$kst_signal_10_10_10_15_10_15_20_30_1_2_3_4_9,
+    as.numeric(ref[, "signal"]),
+    tolerance = 1e-10
+  )
+})
+
+test_that("calc_CMO matches TTR CMO", {
+  x <- seq(100, 160, length.out = 80) + sin(seq_len(80))
+  DT <- data.table::data.table(close = x)
+
+  calc_CMO(DT, ns = 14)
+
+  expect_equal(
+    DT$cmo_14,
+    as.numeric(TTR::CMO(x, n = 14)),
+    tolerance = 1e-10
+  )
+})
+
+test_that("calc_chaikinAD matches TTR chaikinAD", {
+  DT <- data.table::data.table(
+    high = seq(103, 202, length.out = 120) + sin(seq_len(120)),
+    low = seq(99, 198, length.out = 120) + sin(seq_len(120)) / 2,
+    close = seq(101, 200, length.out = 120) + cos(seq_len(120)) / 3,
+    volume = seq(1000, 4000, length.out = 120)
+  )
+
+  calc_chaikinAD(DT)
+
+  expect_equal(
+    DT$chaikin_ad,
+    as.numeric(TTR::chaikinAD(as.matrix(DT[, .(high, low, close)]), DT$volume)),
+    tolerance = 1e-10
+  )
+})
+
+test_that("calc_chaikinVolatility matches TTR chaikinVolatility", {
+  DT <- data.table::data.table(
+    high = seq(103, 202, length.out = 120) + sin(seq_len(120)),
+    low = seq(99, 198, length.out = 120) + sin(seq_len(120)) / 2
+  )
+
+  calc_chaikinVolatility(DT, ns = 10)
+
+  expect_equal(
+    DT$chaikin_volatility_10,
+    as.numeric(TTR::chaikinVolatility(as.matrix(DT[, .(high, low)]), n = 10)),
+    tolerance = 1e-10
+  )
+})
+
+test_that("calc_EMV matches TTR EMV", {
+  DT <- data.table::data.table(
+    high = seq(103, 202, length.out = 120) + sin(seq_len(120)),
+    low = seq(99, 198, length.out = 120) + sin(seq_len(120)) / 2,
+    volume = seq(1000, 4000, length.out = 120)
+  )
+
+  calc_EMV(DT, ns = 9, vol_divisor = 10000)
+  ref <- TTR::EMV(as.matrix(DT[, .(high, low)]), DT$volume, n = 9, vol.divisor = 10000)
+
+  expect_equal(DT$emv, as.numeric(ref[, "emv"]), tolerance = 1e-10)
+  expect_equal(DT$emv_ma_9, as.numeric(ref[, "maEMV"]), tolerance = 1e-10)
 })

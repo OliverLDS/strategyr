@@ -113,8 +113,16 @@ rolling_max <- function(x, n) {
     .Call(`_strategyr_rolling_max`, x, n)
 }
 
+rolling_argmax_pct <- function(x, n) {
+    .Call(`_strategyr_rolling_argmax_pct`, x, n)
+}
+
 rolling_min <- function(x, n) {
     .Call(`_strategyr_rolling_min`, x, n)
+}
+
+rolling_argmin_pct <- function(x, n) {
+    .Call(`_strategyr_rolling_argmin_pct`, x, n)
 }
 
 rolling_quantiles <- function(x, n, probs) {
@@ -123,4 +131,16 @@ rolling_quantiles <- function(x, n, probs) {
 
 strat_buy_and_hold_rcpp <- function(timestamp) {
     .Call(`_strategyr_strat_buy_and_hold_rcpp`, timestamp)
+}
+
+aroon_up_pct_cpp <- function(high, n) {
+    .Call(`_strategyr_aroon_up_pct_cpp`, high, n)
+}
+
+aroon_dn_pct_cpp <- function(low, n) {
+    .Call(`_strategyr_aroon_dn_pct_cpp`, low, n)
+}
+
+sar_cpp <- function(high, low, accel) {
+    .Call(`_strategyr_sar_cpp`, high, low, accel)
 }
