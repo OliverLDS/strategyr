@@ -1,3 +1,8 @@
+# strategyr 0.1.3.1
+
+- Fixed native backtest recorder handling so `rec = FALSE` no longer forms a
+  reference from a null recorder pointer.
+
 # strategyr 0.1.3
 
 - Added a broader public `strat_*` layer covering Bollinger, RSI, Donchian,

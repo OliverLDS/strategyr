@@ -20,8 +20,6 @@ void backtest(double* eq,
 	
 	Exchange x{};
 	
-	Recorder& recorder = *recorder_ptr;
-	
 	for (size_t i = 0; i < len; ++i) {
 		if (s.liquidated) {
 			eq[i] = 0;
@@ -38,7 +36,7 @@ void backtest(double* eq,
 				if (a.type == STRATEGYR::OrderType::MARKET) {
 					ExchangeMessage_on_trade trade_msg = x.update_on_trade(s, a, STRATEGYR::BarStage::OPEN, x.open);
 					if (trade_msg.liquidate) { 
-						if (rec && recorder_ptr) recorder.append_liquidation(trade_msg.timestamp, trade_msg.bar_stage);
+						if (rec && recorder_ptr) recorder_ptr->append_liquidation(trade_msg.timestamp, trade_msg.bar_stage);
 						s.liquidated = true; eq[i] = 0.0; break;
 					};
 					
@@ -47,7 +45,7 @@ void backtest(double* eq,
 					}
 				
 					if (rec && recorder_ptr) {
-						recorder.append_record(s, trade_msg);
+						recorder_ptr->append_record(s, trade_msg);
 					};
 				} else {
 					remaining.append_action(a);
@@ -64,14 +62,14 @@ void backtest(double* eq,
 		ExchangeMessage_on_funding fund_msg = x.update_on_funding(s);
 		s.cash = fund_msg.cash;
 		if (fund_msg.liquidate) { 
-			if (rec && recorder_ptr) { recorder.append_liquidation(fund_msg.timestamp, fund_msg.bar_stage); }
+			if (rec && recorder_ptr) { recorder_ptr->append_liquidation(fund_msg.timestamp, fund_msg.bar_stage); }
 			s.liquidated = true; eq[i] = 0.0; continue;
 		};
 		
 		ExchangeMessage_on_mark mark_msg = x.update_on_mark(s);
 		s.last_px = mark_msg.last_px;
 		if (mark_msg.liquidate) { 
-			if (rec && recorder_ptr) { recorder.append_liquidation(mark_msg.timestamp, mark_msg.bar_stage); }
+			if (rec && recorder_ptr) { recorder_ptr->append_liquidation(mark_msg.timestamp, mark_msg.bar_stage); }
 			s.liquidated = true; eq[i] = 0.0; continue;
 		};
 		
