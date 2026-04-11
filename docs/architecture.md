@@ -1,6 +1,6 @@
 # strategyr Architecture
 
-`strategyr` currently has four layers.
+`strategyr` currently has five layers.
 
 Related contributor note:
 
@@ -146,6 +146,23 @@ Key properties:
 - fees and funding affect equity
 - liquidation checks are explicit
 - recorder output preserves an execution trace
+
+## 5. Strategy Mining Layer
+
+This layer loops strategy parameters or tradable assets across a fixed
+backtesting setup and ranks results by a performance metric.
+
+Examples:
+
+- `calc_backtest_performance()`
+- `mine_strategy_params()`
+- `mine_strategy_assets()`
+
+The default ranking metric is Sortino ratio, computed inside `strategyr` from
+the backtest equity curve. The mining layer is deliberately data-provider
+agnostic: callers supply the fixed market data table or a named list of market
+data tables, and the mining helpers reuse the same `strat_*_tgt_pos()` rule and
+`backtest_rcpp()` execution assumptions used elsewhere in the package.
 
 ## Execution Timing
 

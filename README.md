@@ -126,6 +126,27 @@ delta_plan <- plan_delta_neutral_adjustment(
 )
 ```
 
+### 7. Mine strategy parameters by Sortino-ranked backtests
+
+```r
+param_res <- mine_strategy_params(
+  DT,
+  strategy_fun = strat_macd_cross_tgt_pos,
+  param_grid = list(
+    fast = c(8L, 12L),
+    slow = c(21L, 26L),
+    signal = c(9L),
+    target_size = 0.95
+  ),
+  strat_id = 304L,
+  ctr_step = 0.01,
+  lev = 1,
+  fee_rt = 0.0007
+)
+
+param_res[, .(rank, fast, slow, signal, sortino, total_return, max_drawdown)]
+```
+
 ## Docs
 
 - [Package Philosophy](docs/philosophy.md)
@@ -161,6 +182,8 @@ delta_plan <- plan_delta_neutral_adjustment(
 - action-plan generation from current account state
 - order-intent tables for rebalancing workflows
 - path-dependent backtesting with execution and funding assumptions
+- strategy-mining helpers for Sortino-ranked parameter sweeps and
+  fixed-parameter asset sweeps
 
 ## Author
 

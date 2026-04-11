@@ -1,3 +1,10 @@
+# strategyr 0.1.3.2
+
+- Added strategy-mining helpers for Sortino-ranked parameter grids and
+  fixed-parameter asset sweeps.
+- Fixed `calc_ADX()` smoothing so ADX directional indicators match `TTR::ADX()`
+  on the shared non-NA region.
+
 # strategyr 0.1.3.1
 
 - Fixed native backtest recorder handling so `rec = FALSE` no longer forms a

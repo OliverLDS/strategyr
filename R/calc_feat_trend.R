@@ -201,6 +201,24 @@ calc_DonchianChannels <- function(DT, ns = c(20, 55)) {
   out
 }
 
+.wilder_sum_ttr <- function(x, n) {
+  out <- rep(NA_real_, length(x))
+  if (n < 1L || n >= length(x)) {
+    return(out)
+  }
+
+  seed <- sum(x[seq_len(n)], na.rm = TRUE)
+  for (i in (n + 1L):length(x)) {
+    if (is.na(x[i])) {
+      next
+    }
+    seed <- seed * (n - 1L) / n + x[i]
+    out[i] <- seed
+  }
+
+  out
+}
+
 #' Add Keltner Channel Features
 #'
 #' Computes Keltner channel mid, upper, and lower bands from an EMA centerline
@@ -438,9 +456,9 @@ calc_ADX <- function(DT, ns = c(14)) {
   tr <- pmax(high - low, abs(high - prev_close), abs(low - prev_close))
 
   for (n in ns) {
-    tr_sm <- .apply_after_first_non_na(tr, ema_ttr_fixed_step, n = n, wilder = TRUE)
-    dm_pos_sm <- .apply_after_first_non_na(dm_pos, ema_ttr_fixed_step, n = n, wilder = TRUE)
-    dm_neg_sm <- .apply_after_first_non_na(dm_neg, ema_ttr_fixed_step, n = n, wilder = TRUE)
+    tr_sm <- .wilder_sum_ttr(tr, n)
+    dm_pos_sm <- .wilder_sum_ttr(dm_pos, n)
+    dm_neg_sm <- .wilder_sum_ttr(dm_neg, n)
 
     di_pos <- 100 * dm_pos_sm / tr_sm
     di_neg <- 100 * dm_neg_sm / tr_sm
