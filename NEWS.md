@@ -1,7 +1,12 @@
-# strategyr 0.1.3.2
+# strategyr 0.1.3.3
 
 - Added strategy-mining helpers for Sortino-ranked parameter grids and
   fixed-parameter asset sweeps.
+- Added `strat_macd_contrarian_tgt_pos()` and
+  `strat_macd_contrarian_action_plan()` for the inverse MACD-cross rule.
+- Added `strat_rsi_logr_revert_tgt_pos()` and
+  `strat_rsi_logr_revert_action_plan()` for reversion rules based on
+  strategyr's log-return RSI feature.
 - Fixed `calc_ADX()` smoothing so ADX directional indicators match `TTR::ADX()`
   on the shared non-NA region.
 

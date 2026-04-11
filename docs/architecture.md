@@ -43,8 +43,10 @@ Examples:
 - `strat_buy_and_hold_tgt_pos()`
 - `strat_ema_cross_tgt_pos()`
 - `strat_macd_cross_tgt_pos()`
+- `strat_macd_contrarian_tgt_pos()`
 - `strat_bollinger_revert_tgt_pos()`
 - `strat_rsi_revert_tgt_pos()`
+- `strat_rsi_logr_revert_tgt_pos()`
 - `strat_donchian_breakout_tgt_pos()`
 - `strat_atr_breakout_tgt_pos()`
 - `strat_vol_target_tgt_pos()`

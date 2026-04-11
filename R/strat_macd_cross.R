@@ -92,3 +92,59 @@ strat_macd_cross_action_plan <- function(DT, state, fast = 12L, slow = 26L, sign
   }
   plan
 }
+
+#' MACD-Contrarian Target Positions
+#'
+#' Generates a target-position path that is the exact directional inverse of
+#' `strat_macd_cross_tgt_pos()`. Positive MACD spread targets a short exposure,
+#' and negative MACD spread targets a long exposure.
+#'
+#' @inheritParams strat_macd_cross_tgt_pos
+#'
+#' @return A numeric vector of target positions, or a list when `debug = TRUE`.
+#' @export
+strat_macd_contrarian_tgt_pos <- function(DT, fast = 12L, slow = 26L, signal = 9L, target_size = 1.0, compute_features = TRUE, debug = FALSE) {
+  res <- strat_macd_cross_tgt_pos(
+    DT,
+    fast = fast,
+    slow = slow,
+    signal = signal,
+    target_size = target_size,
+    compute_features = compute_features,
+    debug = debug
+  )
+
+  if (debug) {
+    res$tgt_pos <- -res$tgt_pos
+    return(res)
+  }
+
+  -res
+}
+
+#' MACD-Contrarian Action Plan
+#'
+#' Applies the MACD-contrarian rule to the latest bar and translates the
+#' resulting target exposure into an executable action plan.
+#'
+#' @inheritParams strat_macd_cross_action_plan
+#'
+#' @return A list produced by `gen_action_plan_rcpp()`.
+#' @export
+strat_macd_contrarian_action_plan <- function(DT, state, fast = 12L, slow = 26L, signal = 9L, target_size = 1.0, compute_features = TRUE, strat_id = 305L, tol_pos = 0.1, debug = FALSE) {
+  tgt_pos <- strat_macd_contrarian_tgt_pos(
+    DT,
+    fast = fast,
+    slow = slow,
+    signal = signal,
+    target_size = target_size,
+    compute_features = compute_features,
+    debug = FALSE
+  )
+  latest_tgt_pos <- .latest_non_na(tgt_pos)
+  plan <- .action_plan_from_tgt_pos(latest_tgt_pos, state, strat_id = strat_id, tol_pos = tol_pos)
+  if (debug) {
+    return(list(plan = plan, latest_tgt_pos = latest_tgt_pos))
+  }
+  plan
+}

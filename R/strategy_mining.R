@@ -20,20 +20,35 @@ calc_backtest_performance <- function(equity, annualization = 252, risk_free_ret
   stopifnot(length(risk_free_return) == 1L, is.finite(risk_free_return))
   stopifnot(length(min_acceptable_return) == 1L, is.finite(min_acceptable_return))
 
-  valid_equity <- equity[is.finite(equity) & equity > 0]
-  if (length(valid_equity) < 2L) {
+  n_obs <- length(equity)
+  empty_metrics <- function(sortino = NA_real_, total_return = NA_real_, annual_return = NA_real_, max_drawdown = NA_real_) {
     return(data.table::data.table(
-      n_obs = length(valid_equity),
-      total_return = NA_real_,
-      annual_return = NA_real_,
+      n_obs = n_obs,
+      total_return = total_return,
+      annual_return = annual_return,
       volatility = NA_real_,
       downside_deviation = NA_real_,
-      sortino = NA_real_,
-      max_drawdown = NA_real_
+      sortino = sortino,
+      max_drawdown = max_drawdown
     ))
   }
 
-  log_ret <- diff(log(valid_equity))
+  if (n_obs < 2L || !is.finite(equity[[1L]]) || equity[[1L]] <= 0) {
+    return(empty_metrics())
+  }
+  if (any(!is.finite(equity))) {
+    return(empty_metrics())
+  }
+  if (any(equity <= 0)) {
+    return(empty_metrics(
+      sortino = -Inf,
+      total_return = -1,
+      annual_return = -1,
+      max_drawdown = 1
+    ))
+  }
+
+  log_ret <- diff(log(equity))
   excess_ret <- log_ret - risk_free_return / annualization
   downside_gap <- pmin(log_ret - min_acceptable_return / annualization, 0)
   downside_deviation <- sqrt(mean(downside_gap^2, na.rm = TRUE)) * sqrt(annualization)
@@ -49,14 +64,14 @@ calc_backtest_performance <- function(equity, annualization = 252, risk_free_ret
     NA_real_
   }
 
-  eq_norm <- valid_equity / valid_equity[[1L]]
+  eq_norm <- equity / equity[[1L]]
   drawdown <- 1 - eq_norm / cummax(eq_norm)
   total_return <- tail(eq_norm, 1L) - 1
   years <- length(log_ret) / annualization
   annual_return <- if (years > 0) tail(eq_norm, 1L)^(1 / years) - 1 else NA_real_
 
   data.table::data.table(
-    n_obs = length(valid_equity),
+    n_obs = n_obs,
     total_return = total_return,
     annual_return = annual_return,
     volatility = stats::sd(log_ret, na.rm = TRUE) * sqrt(annualization),

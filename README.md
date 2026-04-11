@@ -171,8 +171,9 @@ param_res[, .(rank, fast, slow, signal, sortino, total_return, max_drawdown)]
 - credit and spread features such as credit spread, excess spread, and
   spread-curve slope and butterfly descriptors
 - strategy-facing target-position logic
-- public strategy families covering buy-and-hold, EMA/MACD crossover,
-  Bollinger and RSI mean reversion, Donchian and ATR breakout, volatility
+- public strategy families covering buy-and-hold, EMA/MACD crossover and MACD
+  contrarian, Bollinger reversion, classic and log-return RSI reversion,
+  Donchian and ATR breakout, volatility
   targeting, trend pullback, pair-spread and ratio reversion, relative
   strength, FX carry, bond carry-and-roll, curve steepener, roll yield, IV
   skew, IV term structure, and options structure-proxy workflows

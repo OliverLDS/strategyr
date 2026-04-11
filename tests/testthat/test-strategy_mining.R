@@ -26,6 +26,17 @@ test_that("calc_backtest_performance computes Sortino-centered metrics", {
   expect_true("sortino" %in% names(perf))
 })
 
+test_that("calc_backtest_performance does not score partial invalid equity", {
+  perf_na <- calc_backtest_performance(c(100, 110, NA_real_, 120), annualization = 252)
+  perf_zero <- calc_backtest_performance(c(100, 110, 0, 120), annualization = 252)
+
+  expect_equal(perf_na$n_obs, 4)
+  expect_true(is.na(perf_na$sortino))
+  expect_equal(perf_zero$total_return, -1)
+  expect_equal(perf_zero$max_drawdown, 1)
+  expect_equal(perf_zero$sortino, -Inf)
+})
+
 test_that("mine_strategy_params ranks parameter grids by Sortino", {
   DT <- make_mining_market(c(100, 101, 102, 103, 104, 105))
 
