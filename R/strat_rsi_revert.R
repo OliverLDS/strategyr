@@ -132,8 +132,10 @@ strat_rsi_revert_action_plan <- function(DT, state, n = 14L, oversold = 30, over
 #'
 #' @param DT A candle `data.table`.
 #' @param h Numeric half-life for the log-return RSI smoother.
-#' @param oversold Numeric oversold threshold.
-#' @param overbought Numeric overbought threshold.
+#' @param oversold Numeric oversold threshold. The log-return RSI default is
+#'   intentionally closer to the center than classic `30/70` RSI thresholds.
+#' @param overbought Numeric overbought threshold. The log-return RSI default
+#'   is intentionally closer to the center than classic `30/70` RSI thresholds.
 #' @param exit_level Numeric neutral RSI level used to close open targets.
 #' @param target_size Numeric absolute target exposure.
 #' @param compute_features Logical; when `TRUE`, missing log-return RSI
@@ -143,7 +145,7 @@ strat_rsi_revert_action_plan <- function(DT, state, n = 14L, oversold = 30, over
 #'
 #' @return A numeric vector of target positions, or a list when `debug = TRUE`.
 #' @export
-strat_rsi_logr_revert_tgt_pos <- function(DT, h = 12, oversold = 30, overbought = 70, exit_level = 50, target_size = 1.0, compute_features = TRUE, debug = FALSE) {
+strat_rsi_logr_revert_tgt_pos <- function(DT, h = 12, oversold = 40, overbought = 60, exit_level = 50, target_size = 1.0, compute_features = TRUE, debug = FALSE) {
   if (compute_features) {
     rsi_col <- .ensure_rsi_logr_revert_features(DT, h = h)
   } else {
@@ -178,7 +180,7 @@ strat_rsi_logr_revert_tgt_pos <- function(DT, h = 12, oversold = 30, overbought 
 #'
 #' @return A list produced by `gen_action_plan_rcpp()`.
 #' @export
-strat_rsi_logr_revert_action_plan <- function(DT, state, h = 12, oversold = 30, overbought = 70, exit_level = 50, target_size = 1.0, compute_features = TRUE, strat_id = 306L, tol_pos = 0.1, debug = FALSE) {
+strat_rsi_logr_revert_action_plan <- function(DT, state, h = 12, oversold = 40, overbought = 60, exit_level = 50, target_size = 1.0, compute_features = TRUE, strat_id = 306L, tol_pos = 0.1, debug = FALSE) {
   tgt_pos <- strat_rsi_logr_revert_tgt_pos(
     DT,
     h = h,

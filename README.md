@@ -184,7 +184,8 @@ param_res[, .(rank, fast, slow, signal, sortino, total_return, max_drawdown)]
 - order-intent tables for rebalancing workflows
 - path-dependent backtesting with execution and funding assumptions
 - strategy-mining helpers for Sortino-ranked parameter sweeps and
-  fixed-parameter asset sweeps
+  fixed-parameter asset sweeps, plus asset-year mining with buy-and-hold
+  filtering
 
 ## Author
 

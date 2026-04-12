@@ -7,8 +7,8 @@
 strat_rsi_logr_revert_tgt_pos(
   DT,
   h = 12,
-  oversold = 30,
-  overbought = 70,
+  oversold = 40,
+  overbought = 60,
   exit_level = 50,
   target_size = 1,
   compute_features = TRUE,
@@ -20,9 +20,11 @@ strat_rsi_logr_revert_tgt_pos(
 
 \item{h}{Numeric half-life for the log-return RSI smoother.}
 
-\item{oversold}{Numeric oversold threshold.}
+\item{oversold}{Numeric oversold threshold. The log-return RSI default is
+intentionally closer to the center than classic `30/70` RSI thresholds.}
 
-\item{overbought}{Numeric overbought threshold.}
+\item{overbought}{Numeric overbought threshold. The log-return RSI default
+is intentionally closer to the center than classic `30/70` RSI thresholds.}
 
 \item{exit_level}{Numeric neutral RSI level used to close open targets.}
 

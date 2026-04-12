@@ -169,6 +169,45 @@ calc_backtest_performance <- function(equity, annualization = 252, risk_free_ret
   result_dt
 }
 
+.mine_buy_hold_total_return <- function(market_dt) {
+  if (nrow(market_dt) < 1L) {
+    return(NA_real_)
+  }
+  first_open <- market_dt$open[[1L]]
+  last_close <- market_dt$close[[nrow(market_dt)]]
+  if (!is.finite(first_open) || !is.finite(last_close) || first_open <= 0) {
+    return(NA_real_)
+  }
+  last_close / first_open - 1
+}
+
+.mine_empty_asset_year_result <- function(param_cols) {
+  out <- data.table::data.table(
+    rank = integer(),
+    asset = character(),
+    asset_index = integer(),
+    year = integer(),
+    param_id = integer()
+  )
+  for (col in param_cols) {
+    out[, (col) := vector("list", 0L)]
+  }
+  cbind(
+    out,
+    data.table::data.table(
+      n_obs = integer(),
+      total_return = numeric(),
+      annual_return = numeric(),
+      volatility = numeric(),
+      downside_deviation = numeric(),
+      sortino = numeric(),
+      max_drawdown = numeric(),
+      buy_hold_total_return = numeric(),
+      excess_total_return = numeric()
+    )
+  )
+}
+
 #' Mine Strategy Parameters
 #'
 #' Loops over a strategy parameter grid for one fixed asset and backtesting
@@ -252,6 +291,204 @@ mine_strategy_params <- function(
   }
 
   .mine_order_results(data.table::rbindlist(rows, fill = TRUE), score_col = score_col)
+}
+
+#' Mine Strategy Parameters Across Asset-Year Pairs
+#'
+#' First mines the best parameter rows on selected seed assets over the full
+#' period. It then evaluates the unique selected parameter rows across every
+#' valid asset-year pair, keeps only pairs where strategy total return beats a
+#' simple buy-and-hold return, and ranks the survivors by Sortino ratio.
+#'
+#' @param market_data_list Named or unnamed list of candle `data.table`s.
+#' @param strategy_fun Strategy target-position function. It must accept `DT` as
+#'   its first argument and return a numeric target-position vector.
+#' @param param_grid Non-empty list, `data.frame`, or `data.table` of parameter
+#'   values used for seed-asset parameter mining.
+#' @param seed_assets Character vector of asset names used to select candidate
+#'   parameter rows.
+#' @param seed_n_best Integer number of top parameter rows retained per seed
+#'   asset.
+#' @param asset_names Optional asset labels. Defaults to names of
+#'   `market_data_list`, or `asset_1`, `asset_2`, ...
+#' @param years Optional integer vector of calendar years to evaluate. Defaults
+#'   to all years present after `from`/`to` filtering.
+#' @param min_year_rows Minimum OHLC rows required for an asset-year pair.
+#' @inheritParams mine_strategy_params
+#'
+#' @return A list with `seed_params`, `candidate_params`, and
+#'   `asset_year_results` `data.table`s.
+#' @export
+mine_strategy_asset_years <- function(
+  market_data_list,
+  strategy_fun,
+  param_grid,
+  seed_assets = c("SPY", "AGG", "IAU", "IBIT", "USO", "UUP"),
+  seed_n_best = 1L,
+  asset_names = NULL,
+  years = NULL,
+  from = NULL,
+  to = NULL,
+  min_year_rows = 200L,
+  score_col = "sortino",
+  keep_paths = FALSE,
+  strat_id = 0L,
+  asset_id = 0L,
+  ctr_size = 1.0,
+  ctr_step = 1.0,
+  lev = 10.0,
+  fee_rt = 0.0,
+  fund_rt = 0.0,
+  tol_pos = 0.1,
+  rec = FALSE,
+  annualization = 252,
+  risk_free_return = 0,
+  min_acceptable_return = 0
+) {
+  stopifnot(is.list(market_data_list), length(market_data_list) > 0L)
+  stopifnot(is.function(strategy_fun))
+  stopifnot(is.character(seed_assets), length(seed_assets) > 0L)
+  stopifnot(length(seed_n_best) == 1L, is.finite(seed_n_best), seed_n_best >= 1L)
+  stopifnot(length(min_year_rows) == 1L, is.finite(min_year_rows), min_year_rows >= 1L)
+  stopifnot(is.logical(keep_paths), length(keep_paths) == 1L)
+
+  grid <- .mine_param_grid(param_grid)
+  param_cols <- names(grid)
+
+  if (is.null(asset_names)) {
+    asset_names <- names(market_data_list)
+    if (is.null(asset_names) || any(asset_names == "")) {
+      asset_names <- paste0("asset_", seq_along(market_data_list))
+    }
+  }
+  stopifnot(length(asset_names) == length(market_data_list))
+
+  seed_idx <- match(seed_assets, asset_names)
+  keep_seed <- !is.na(seed_idx)
+  if (!any(keep_seed)) {
+    stop("None of `seed_assets` were found in `asset_names`.", call. = FALSE)
+  }
+  seed_assets <- seed_assets[keep_seed]
+  seed_idx <- seed_idx[keep_seed]
+
+  seed_rows <- vector("list", length(seed_idx))
+  for (i in seq_along(seed_idx)) {
+    seed_res <- mine_strategy_params(
+      DT = market_data_list[[seed_idx[[i]]]],
+      strategy_fun = strategy_fun,
+      param_grid = grid,
+      from = from,
+      to = to,
+      score_col = score_col,
+      keep_paths = FALSE,
+      strat_id = strat_id,
+      asset_id = asset_id,
+      ctr_size = ctr_size,
+      ctr_step = ctr_step,
+      lev = lev,
+      fee_rt = fee_rt,
+      fund_rt = fund_rt,
+      tol_pos = tol_pos,
+      rec = rec,
+      annualization = annualization,
+      risk_free_return = risk_free_return,
+      min_acceptable_return = min_acceptable_return
+    )
+    top_n <- min(as.integer(seed_n_best), nrow(seed_res))
+    seed_rows[[i]] <- seed_res[seq_len(top_n)]
+    seed_rows[[i]][, `:=`(
+      seed_asset = seed_assets[[i]],
+      seed_asset_index = seed_idx[[i]],
+      seed_rank = rank
+    )]
+  }
+
+  seed_params <- data.table::rbindlist(seed_rows, fill = TRUE)
+  candidate_params <- unique(seed_params[, ..param_cols])
+  candidate_params[, param_id := seq_len(.N)]
+  data.table::setcolorder(candidate_params, c("param_id", param_cols))
+
+  rows <- list()
+  row_i <- 0L
+  for (asset_i in seq_along(market_data_list)) {
+    market_dt <- tryCatch(
+      .mine_market_dt(market_data_list[[asset_i]], from = from, to = to),
+      error = function(e) NULL
+    )
+    if (is.null(market_dt) || nrow(market_dt) < min_year_rows) {
+      next
+    }
+
+    market_dt[, .mine_year := as.integer(format(datetime, "%Y"))]
+    eval_years <- sort(unique(market_dt$.mine_year))
+    if (!is.null(years)) {
+      eval_years <- intersect(eval_years, as.integer(years))
+    }
+
+    for (yr in eval_years) {
+      year_dt <- market_dt[.mine_year == yr]
+      year_dt[, .mine_year := NULL]
+      if (nrow(year_dt) < min_year_rows) {
+        next
+      }
+      buy_hold_total_return <- .mine_buy_hold_total_return(year_dt)
+
+      for (param_i in seq_len(nrow(candidate_params))) {
+        params <- as.list(candidate_params[param_i, ..param_cols])
+        bt <- .mine_run_strategy_backtest(
+          market_dt = year_dt,
+          strategy_fun = strategy_fun,
+          strategy_params = params,
+          strat_id = strat_id,
+          asset_id = asset_id,
+          ctr_size = ctr_size,
+          ctr_step = ctr_step,
+          lev = lev,
+          fee_rt = fee_rt,
+          fund_rt = fund_rt,
+          tol_pos = tol_pos,
+          rec = rec
+        )
+        perf <- calc_backtest_performance(
+          bt$equity,
+          annualization = annualization,
+          risk_free_return = risk_free_return,
+          min_acceptable_return = min_acceptable_return
+        )
+        if (!is.finite(perf$total_return[[1L]]) ||
+            !is.finite(buy_hold_total_return) ||
+            perf$total_return[[1L]] <= buy_hold_total_return) {
+          next
+        }
+
+        row_i <- row_i + 1L
+        rows[[row_i]] <- data.table::data.table(
+          asset = asset_names[[asset_i]],
+          asset_index = asset_i,
+          year = yr,
+          candidate_params[param_i],
+          perf,
+          buy_hold_total_return = buy_hold_total_return,
+          excess_total_return = perf$total_return[[1L]] - buy_hold_total_return
+        )
+        if (keep_paths) {
+          rows[[row_i]][, `:=`(tgt_pos = list(bt$tgt_pos), equity = list(bt$equity))]
+        }
+      }
+    }
+  }
+
+  asset_year_results <- if (length(rows) > 0L) {
+    .mine_order_results(data.table::rbindlist(rows, fill = TRUE), score_col = score_col)
+  } else {
+    .mine_empty_asset_year_result(param_cols)
+  }
+
+  list(
+    seed_params = seed_params,
+    candidate_params = candidate_params,
+    asset_year_results = asset_year_results
+  )
 }
 
 #' Mine Strategy Assets

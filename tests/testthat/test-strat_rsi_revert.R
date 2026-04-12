@@ -47,13 +47,13 @@ test_that("strat_rsi_revert_action_plan uses latest target", {
 })
 
 test_that("strat_rsi_logr_revert_tgt_pos enters on log-return RSI extremes", {
-  DT <- data.table(rsi_logr_12 = c(25, 55, 75, 45))
+  DT <- data.table(rsi_logr_12 = c(35, 55, 65, 45))
 
   tgt_pos <- strat_rsi_logr_revert_tgt_pos(
     DT,
     h = 12,
-    oversold = 30,
-    overbought = 70,
+    oversold = 40,
+    overbought = 60,
     exit_level = 50,
     compute_features = FALSE
   )
@@ -72,7 +72,7 @@ test_that("strat_rsi_logr_revert_tgt_pos can compute log-return RSI features", {
 })
 
 test_that("strat_rsi_logr_revert_action_plan uses latest target", {
-  DT <- data.table(rsi_logr_12 = c(50, 75))
+  DT <- data.table(rsi_logr_12 = c(50, 65))
   state <- list(
     ctr_size = 1.0,
     ctr_step = 1.0,
@@ -88,8 +88,8 @@ test_that("strat_rsi_logr_revert_action_plan uses latest target", {
     DT,
     state,
     h = 12,
-    oversold = 30,
-    overbought = 70,
+    oversold = 40,
+    overbought = 60,
     exit_level = 50,
     compute_features = FALSE,
     strat_id = 306L,

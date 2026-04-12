@@ -1,3 +1,11 @@
+# strategyr 0.1.3.4
+
+- Added an asset-year strategy-mining helper that seeds candidate parameter
+  rows from selected assets, evaluates valid asset-year pairs, filters for
+  strategy total return above buy-and-hold, and ranks survivors by Sortino.
+- Updated log-return RSI reversion defaults and the real-data mining example
+  away from classic `30/70` RSI thresholds.
+
 # strategyr 0.1.3.3
 
 - Added strategy-mining helpers for Sortino-ranked parameter grids and

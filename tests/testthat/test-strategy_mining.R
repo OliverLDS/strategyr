@@ -17,6 +17,10 @@ toy_threshold_strategy <- function(DT, threshold = 0, target_size = 1) {
   out
 }
 
+toy_asset_year_strategy <- function(DT, target_size = 1) {
+  rep(target_size, nrow(DT))
+}
+
 test_that("calc_backtest_performance computes Sortino-centered metrics", {
   perf <- calc_backtest_performance(c(100, 101, 99, 103), annualization = 252)
 
@@ -80,4 +84,49 @@ test_that("mine_strategy_assets ranks assets with fixed strategy parameters", {
   expect_equal(nrow(res), 2)
   expect_equal(res$asset[[1]], "up")
   expect_true(res$sortino[[1]] >= res$sortino[[2]])
+})
+
+test_that("mine_strategy_asset_years ranks outperforming asset-year pairs", {
+  make_year_market <- function(start_date, open, close) {
+    data.table(
+      datetime = as.POSIXct(start_date, tz = "UTC") + 0:2 * 86400,
+      open = rep(open, 3),
+      high = rep(max(open, close) * 1.01, 3),
+      low = rep(min(open, close) * 0.99, 3),
+      close = rep(close, 3)
+    )
+  }
+
+  beat_dt <- rbind(
+    make_year_market("2024-01-01", open = 100, close = 100),
+    make_year_market("2025-01-01", open = 100, close = 100)
+  )
+  lag_dt <- rbind(
+    make_year_market("2024-01-01", open = 100, close = 120),
+    make_year_market("2025-01-01", open = 100, close = 120)
+  )
+  short_dt <- make_year_market("2024-01-01", open = 100, close = 100)[1:2]
+
+  res <- mine_strategy_asset_years(
+    market_data_list = list(SPY = beat_dt, AGG = lag_dt, IAU = short_dt),
+    strategy_fun = toy_asset_year_strategy,
+    param_grid = data.table(target_size = c(0, 1.5)),
+    seed_assets = c("SPY", "AGG"),
+    years = c(2024L, 2025L),
+    min_year_rows = 3L,
+    strat_id = 903L,
+    ctr_size = 1,
+    ctr_step = 0.01,
+    lev = 10,
+    fee_rt = 0,
+    tol_pos = 0
+  )
+
+  expect_true(all(c("seed_params", "candidate_params", "asset_year_results") %in% names(res)))
+  expect_true(nrow(res$candidate_params) >= 1L)
+  expect_gt(nrow(res$asset_year_results), 0L)
+  expect_true(all(res$asset_year_results$n_obs >= 3L))
+  expect_false("IAU" %in% res$asset_year_results$asset)
+  expect_true(all(res$asset_year_results$total_return > res$asset_year_results$buy_hold_total_return))
+  expect_equal(res$asset_year_results$rank, seq_len(nrow(res$asset_year_results)))
 })

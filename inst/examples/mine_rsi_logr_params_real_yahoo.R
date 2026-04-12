@@ -8,10 +8,10 @@ if (!requireNamespace("jsonlite", quietly = TRUE)) {
   stop("Package `jsonlite` is required to read the local Yahoo ticker registry.")
 }
 
-ticker <- "^GSPC"
 from_date <- as.Date("2000-01-01")
 to_date <- Sys.Date()
 registry_path <- "/Users/oliver/Documents/2025/_2025-08-05_investdatar/YahooFinance_ticker_registry.json"
+seed_assets <- c("SPY", "AGG", "IAU", "IBIT", "USO", "UUP")
 
 load_local_yahoo <- function(symbol, min_rows = 260L) {
   out <- tryCatch(
@@ -49,54 +49,15 @@ load_local_yahoo <- function(symbol, min_rows = 260L) {
   out
 }
 
-market_dt <- load_local_yahoo(ticker)
-
-if (is.null(market_dt)) {
-  stop("Need at least 260 rows of local OHLC data for log-return RSI parameter mining: ", ticker)
-}
-
 # Keep the first public example grid modest. Increase these ranges when running
 # a deeper offline mining job.
 param_grid <- data.table::CJ(
   h = c(6, 9, 12, 18, 24),
-  oversold = c(25, 30, 35, 40),
-  overbought = c(60, 65, 70, 75),
-  exit_level = c(45, 50, 55),
+  oversold = c(35, 40, 45),
+  overbought = c(55, 60, 65),
+  exit_level = c(47.5, 50, 52.5),
   target_size = 0.95
 )[oversold < exit_level & exit_level < overbought]
-
-rsi_logr_mining_res <- strategyr::mine_strategy_params(
-  DT = market_dt,
-  strategy_fun = strategyr::strat_rsi_logr_revert_tgt_pos,
-  param_grid = param_grid,
-  strat_id = 306L,
-  asset_id = 8001L,
-  ctr_size = 0.01,
-  ctr_step = 0.01,
-  lev = 1.0,
-  fee_rt = 0.0007,
-  fund_rt = 0,
-  tol_pos = 0.1,
-  rec = FALSE,
-  keep_paths = FALSE,
-  annualization = 252
-)
-
-best_rsi_logr_params <- rsi_logr_mining_res[1L]
-
-print(best_rsi_logr_params)
-print(rsi_logr_mining_res[seq_len(min(.N, 10L)), .(
-  rank,
-  h,
-  oversold,
-  overbought,
-  exit_level,
-  target_size,
-  sortino,
-  total_return,
-  annual_return,
-  max_drawdown
-)])
 
 registry_dt <- data.table::as.data.table(jsonlite::fromJSON(registry_path))
 
@@ -120,16 +81,14 @@ if (length(asset_market_data) < 2L) {
   stop("Need at least two locally cached Yahoo assets for asset mining.")
 }
 
-best_strategy_params <- as.list(
-  best_rsi_logr_params[, .(h, oversold, overbought, exit_level, target_size)]
-)
-
-rsi_logr_asset_res <- strategyr::mine_strategy_assets(
+rsi_logr_mining_res <- strategyr::mine_strategy_asset_years(
   market_data_list = asset_market_data,
   strategy_fun = strategyr::strat_rsi_logr_revert_tgt_pos,
-  strategy_params = best_strategy_params,
+  param_grid = param_grid,
+  seed_assets = seed_assets,
   from = from_date,
   to = to_date,
+  min_year_rows = 200L,
   strat_id = 306L,
   asset_id = 8001L,
   ctr_size = 0.01,
@@ -143,13 +102,35 @@ rsi_logr_asset_res <- strategyr::mine_strategy_assets(
   annualization = 252
 )
 
-print(best_strategy_params)
-print(rsi_logr_asset_res[seq_len(min(.N, 20L)), .(
+print(rsi_logr_mining_res$seed_params[, .(
+  seed_asset,
   rank,
-  asset,
+  h,
+  oversold,
+  overbought,
+  exit_level,
+  target_size,
   sortino,
   total_return,
   annual_return,
-  max_drawdown,
+  max_drawdown
+)])
+
+print(rsi_logr_mining_res$candidate_params)
+
+asset_year_res <- rsi_logr_mining_res$asset_year_results
+print(asset_year_res[seq_len(min(.N, 20L)), .(
+  rank,
+  asset,
+  year,
+  param_id,
+  h,
+  oversold,
+  overbought,
+  exit_level,
+  sortino,
+  total_return,
+  buy_hold_total_return,
+  excess_total_return,
   n_obs
 )])
