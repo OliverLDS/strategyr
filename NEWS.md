@@ -1,3 +1,10 @@
+# strategyr 0.1.3.6
+
+- Added real-data Yahoo strategy-mining examples for ATR breakout, EMA cross,
+  ladder bounce/breakout, volatility targeting, trend pullback, ratio
+  reversion, pair-spread reversion, relative strength, and curve steepener
+  workflows.
+
 # strategyr 0.1.3.5
 
 - Updated asset-year strategy mining to compute strategy signals on a warmup
