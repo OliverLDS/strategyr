@@ -15,6 +15,8 @@ mine_strategy_asset_years(
   from = NULL,
   to = NULL,
   min_year_rows = 200L,
+  warmup_days = 365L,
+  warmup_years = NULL,
   score_col = "sortino",
   keep_paths = FALSE,
   strat_id = 0L,
@@ -56,6 +58,10 @@ to all years present after `from`/`to` filtering.}
 
 \item{min_year_rows}{Minimum OHLC rows required for an asset-year pair.}
 
+\item{warmup_days, warmup_years}{Warmup history used for signal construction
+before each asset-year trade window. `warmup_years`, when supplied,
+overrides `warmup_days`.}
+
 \item{score_col}{Metric used for descending ranking.}
 
 \item{keep_paths}{Logical; when `TRUE`, include list-columns with target
@@ -83,4 +89,9 @@ First mines the best parameter rows on selected seed assets over the full
 period. It then evaluates the unique selected parameter rows across every
 valid asset-year pair, keeps only pairs where strategy total return beats a
 simple buy-and-hold return, and ranks the survivors by Sortino ratio.
+}
+\details{
+Asset-year strategy signals are computed on a wider signal window that can
+include warmup history before the trade year. The reported performance is
+always computed on the trade/evaluation asset-year slice only.
 }

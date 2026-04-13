@@ -159,6 +159,55 @@ calc_backtest_performance <- function(equity, annualization = 252, risk_free_ret
   list(tgt_pos = tgt_pos, equity = eq)
 }
 
+.mine_run_strategy_backtest_with_signal <- function(
+  signal_dt,
+  trade_dt,
+  strategy_fun,
+  strategy_params,
+  strat_id,
+  asset_id,
+  ctr_size,
+  ctr_step,
+  lev,
+  fee_rt,
+  fund_rt,
+  tol_pos,
+  rec
+) {
+  DT_i <- data.table::copy(signal_dt)
+  tgt_pos_signal <- do.call(strategy_fun, c(list(DT = DT_i), strategy_params))
+  if (!is.numeric(tgt_pos_signal) || length(tgt_pos_signal) != nrow(DT_i)) {
+    stop("Strategy function must return a numeric target-position vector matching `nrow(DT)`.", call. = FALSE)
+  }
+
+  trade_idx <- match(trade_dt$datetime, DT_i$datetime)
+  if (anyNA(trade_idx)) {
+    stop("Trade rows must be present in the signal data.", call. = FALSE)
+  }
+  tgt_pos <- tgt_pos_signal[trade_idx]
+
+  eq <- backtest_rcpp(
+    timestamp = as.numeric(trade_dt$datetime),
+    open = trade_dt$open,
+    high = trade_dt$high,
+    low = trade_dt$low,
+    close = trade_dt$close,
+    tgt_pos = data.table::fifelse(is.na(tgt_pos), 0, tgt_pos),
+    pos_strat = rep(as.integer(strat_id), nrow(trade_dt)),
+    tol_pos = rep(tol_pos, nrow(trade_dt)),
+    strat = as.integer(strat_id),
+    asset = as.integer(asset_id),
+    ctr_size = ctr_size,
+    ctr_step = ctr_step,
+    lev = lev,
+    fee_rt = fee_rt,
+    fund_rt = fund_rt,
+    rec = rec
+  )
+
+  list(tgt_pos = tgt_pos, equity = eq)
+}
+
 .mine_order_results <- function(result_dt, score_col) {
   if (!score_col %in% names(result_dt)) {
     stop("`score_col` is not present in the mining result.", call. = FALSE)
@@ -167,6 +216,15 @@ calc_backtest_performance <- function(equity, annualization = 252, risk_free_ret
   result_dt[, rank := seq_len(.N)]
   data.table::setcolorder(result_dt, c("rank", setdiff(names(result_dt), "rank")))
   result_dt
+}
+
+.mine_warmup_days <- function(warmup_days, warmup_years) {
+  if (!is.null(warmup_years)) {
+    stopifnot(length(warmup_years) == 1L, is.finite(warmup_years), warmup_years >= 0)
+    return(as.integer(ceiling(365.25 * warmup_years)))
+  }
+  stopifnot(length(warmup_days) == 1L, is.finite(warmup_days), warmup_days >= 0)
+  as.integer(ceiling(warmup_days))
 }
 
 .mine_buy_hold_total_return <- function(market_dt) {
@@ -203,7 +261,13 @@ calc_backtest_performance <- function(equity, annualization = 252, risk_free_ret
       sortino = numeric(),
       max_drawdown = numeric(),
       buy_hold_total_return = numeric(),
-      excess_total_return = numeric()
+      excess_total_return = numeric(),
+      signal_start = as.POSIXct(character()),
+      trade_start = as.POSIXct(character()),
+      trade_end = as.POSIXct(character()),
+      warmup_n_obs = integer(),
+      warmup_requested_days = integer(),
+      warmup_insufficient = logical()
     )
   )
 }
@@ -300,6 +364,10 @@ mine_strategy_params <- function(
 #' valid asset-year pair, keeps only pairs where strategy total return beats a
 #' simple buy-and-hold return, and ranks the survivors by Sortino ratio.
 #'
+#' Asset-year strategy signals are computed on a wider signal window that can
+#' include warmup history before the trade year. The reported performance is
+#' always computed on the trade/evaluation asset-year slice only.
+#'
 #' @param market_data_list Named or unnamed list of candle `data.table`s.
 #' @param strategy_fun Strategy target-position function. It must accept `DT` as
 #'   its first argument and return a numeric target-position vector.
@@ -314,6 +382,9 @@ mine_strategy_params <- function(
 #' @param years Optional integer vector of calendar years to evaluate. Defaults
 #'   to all years present after `from`/`to` filtering.
 #' @param min_year_rows Minimum OHLC rows required for an asset-year pair.
+#' @param warmup_days,warmup_years Warmup history used for signal construction
+#'   before each asset-year trade window. `warmup_years`, when supplied,
+#'   overrides `warmup_days`.
 #' @inheritParams mine_strategy_params
 #'
 #' @return A list with `seed_params`, `candidate_params`, and
@@ -330,6 +401,8 @@ mine_strategy_asset_years <- function(
   from = NULL,
   to = NULL,
   min_year_rows = 200L,
+  warmup_days = 365L,
+  warmup_years = NULL,
   score_col = "sortino",
   keep_paths = FALSE,
   strat_id = 0L,
@@ -351,6 +424,7 @@ mine_strategy_asset_years <- function(
   stopifnot(length(seed_n_best) == 1L, is.finite(seed_n_best), seed_n_best >= 1L)
   stopifnot(length(min_year_rows) == 1L, is.finite(min_year_rows), min_year_rows >= 1L)
   stopifnot(is.logical(keep_paths), length(keep_paths) == 1L)
+  warmup_requested_days <- .mine_warmup_days(warmup_days, warmup_years)
 
   grid <- .mine_param_grid(param_grid)
   param_cols <- names(grid)
@@ -410,33 +484,56 @@ mine_strategy_asset_years <- function(
 
   rows <- list()
   row_i <- 0L
+  signal_from <- from
+  if (!is.null(from) && warmup_requested_days > 0L) {
+    signal_from <- as.Date(from) - warmup_requested_days
+  }
   for (asset_i in seq_along(market_data_list)) {
     market_dt <- tryCatch(
-      .mine_market_dt(market_data_list[[asset_i]], from = from, to = to),
+      .mine_market_dt(market_data_list[[asset_i]], from = signal_from, to = to),
       error = function(e) NULL
     )
     if (is.null(market_dt) || nrow(market_dt) < min_year_rows) {
       next
     }
 
-    market_dt[, .mine_year := as.integer(format(datetime, "%Y"))]
-    eval_years <- sort(unique(market_dt$.mine_year))
+    trade_market_dt <- data.table::copy(market_dt)
+    if (!is.null(from)) {
+      trade_market_dt <- trade_market_dt[datetime >= as.POSIXct(from)]
+    }
+    if (nrow(trade_market_dt) < min_year_rows) {
+      next
+    }
+
+    trade_market_dt[, .mine_year := as.integer(format(datetime, "%Y"))]
+    eval_years <- sort(unique(trade_market_dt$.mine_year))
     if (!is.null(years)) {
       eval_years <- intersect(eval_years, as.integer(years))
     }
 
     for (yr in eval_years) {
-      year_dt <- market_dt[.mine_year == yr]
+      year_dt <- trade_market_dt[.mine_year == yr]
       year_dt[, .mine_year := NULL]
       if (nrow(year_dt) < min_year_rows) {
         next
       }
+      trade_start <- year_dt$datetime[[1L]]
+      trade_end <- year_dt$datetime[[nrow(year_dt)]]
+      signal_start_target <- as.POSIXct(as.Date(trade_start) - warmup_requested_days)
+      signal_dt <- market_dt[
+        datetime >= signal_start_target &
+          datetime <= trade_end
+      ]
+      warmup_n_obs <- sum(signal_dt$datetime < trade_start)
+      signal_start <- signal_dt$datetime[[1L]]
+      warmup_insufficient <- warmup_requested_days > 0L && warmup_n_obs == 0L
       buy_hold_total_return <- .mine_buy_hold_total_return(year_dt)
 
       for (param_i in seq_len(nrow(candidate_params))) {
         params <- as.list(candidate_params[param_i, ..param_cols])
-        bt <- .mine_run_strategy_backtest(
-          market_dt = year_dt,
+        bt <- .mine_run_strategy_backtest_with_signal(
+          signal_dt = signal_dt,
+          trade_dt = year_dt,
           strategy_fun = strategy_fun,
           strategy_params = params,
           strat_id = strat_id,
@@ -469,7 +566,13 @@ mine_strategy_asset_years <- function(
           candidate_params[param_i],
           perf,
           buy_hold_total_return = buy_hold_total_return,
-          excess_total_return = perf$total_return[[1L]] - buy_hold_total_return
+          excess_total_return = perf$total_return[[1L]] - buy_hold_total_return,
+          signal_start = signal_start,
+          trade_start = trade_start,
+          trade_end = trade_end,
+          warmup_n_obs = warmup_n_obs,
+          warmup_requested_days = warmup_requested_days,
+          warmup_insufficient = warmup_insufficient
         )
         if (keep_paths) {
           rows[[row_i]][, `:=`(tgt_pos = list(bt$tgt_pos), equity = list(bt$equity))]

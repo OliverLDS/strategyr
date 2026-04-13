@@ -21,6 +21,10 @@ toy_asset_year_strategy <- function(DT, target_size = 1) {
   rep(target_size, nrow(DT))
 }
 
+toy_warmup_strategy <- function(DT, target_size = 1) {
+  rep(if (DT$close[[1L]] < 90) target_size else 0, nrow(DT))
+}
+
 test_that("calc_backtest_performance computes Sortino-centered metrics", {
   perf <- calc_backtest_performance(c(100, 101, 99, 103), annualization = 252)
 
@@ -129,4 +133,59 @@ test_that("mine_strategy_asset_years ranks outperforming asset-year pairs", {
   expect_false("IAU" %in% res$asset_year_results$asset)
   expect_true(all(res$asset_year_results$total_return > res$asset_year_results$buy_hold_total_return))
   expect_equal(res$asset_year_results$rank, seq_len(nrow(res$asset_year_results)))
+})
+
+test_that("mine_strategy_asset_years computes signals with warmup history", {
+  DT <- data.table(
+    datetime = as.POSIXct(c("2023-12-27", "2023-12-28", "2023-12-29", "2024-01-02", "2024-01-03", "2024-01-04"), tz = "UTC"),
+    open = c(80, 80, 80, 100, 110, 120),
+    high = c(81, 81, 81, 101, 111, 121),
+    low = c(79, 79, 79, 99, 109, 119),
+    close = c(80, 80, 80, 100, 110, 120)
+  )
+
+  warm_res <- mine_strategy_asset_years(
+    market_data_list = list(SPY = DT),
+    strategy_fun = toy_warmup_strategy,
+    param_grid = data.table(target_size = c(1.5, 3, 5)),
+    seed_assets = "SPY",
+    seed_n_best = 3L,
+    from = as.Date("2024-01-01"),
+    years = 2024L,
+    min_year_rows = 3L,
+    warmup_days = 10L,
+    strat_id = 904L,
+    ctr_size = 1,
+    ctr_step = 0.01,
+    lev = 10,
+    fee_rt = 0,
+    tol_pos = 0,
+    keep_paths = TRUE
+  )
+
+  cold_res <- mine_strategy_asset_years(
+    market_data_list = list(SPY = DT),
+    strategy_fun = toy_warmup_strategy,
+    param_grid = data.table(target_size = c(1.5, 3, 5)),
+    seed_assets = "SPY",
+    seed_n_best = 3L,
+    from = as.Date("2024-01-01"),
+    years = 2024L,
+    min_year_rows = 3L,
+    warmup_days = 0L,
+    strat_id = 904L,
+    ctr_size = 1,
+    ctr_step = 0.01,
+    lev = 10,
+    fee_rt = 0,
+    tol_pos = 0,
+    keep_paths = TRUE
+  )
+
+  expect_gt(nrow(warm_res$asset_year_results), 0L)
+  expect_equal(nrow(cold_res$asset_year_results), 0L)
+  expect_equal(warm_res$asset_year_results$warmup_n_obs[[1L]], 3L)
+  expect_false(warm_res$asset_year_results$warmup_insufficient[[1L]])
+  expect_lt(warm_res$asset_year_results$signal_start[[1L]], warm_res$asset_year_results$trade_start[[1L]])
+  expect_true(all(warm_res$asset_year_results$tgt_pos[[1L]] > 0))
 })

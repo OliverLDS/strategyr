@@ -1,3 +1,11 @@
+# strategyr 0.1.3.5
+
+- Updated asset-year strategy mining to compute strategy signals on a warmup
+  window before each evaluation year, then backtest only the trade-year slice.
+- Added warmup metadata to asset-year mining results so signal and evaluation
+  windows are reproducible.
+- Updated real-data mining examples to show warmup-aware asset-year results.
+
 # strategyr 0.1.3.4
 
 - Added an asset-year strategy-mining helper that seeds candidate parameter

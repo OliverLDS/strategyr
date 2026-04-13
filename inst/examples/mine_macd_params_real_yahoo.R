@@ -8,47 +8,10 @@ if (!requireNamespace("jsonlite", quietly = TRUE)) {
   stop("Package `jsonlite` is required to read the local Yahoo ticker registry.")
 }
 
-ticker <- "^GSPC"
 from_date <- as.Date("2000-01-01")
 to_date <- Sys.Date()
 registry_path <- "/Users/oliver/Documents/2025/_2025-08-05_investdatar/YahooFinance_ticker_registry.json"
-
-market_dt <- data.table::as.data.table(
-  investdatar::get_local_quantmod_OHLC(ticker, src = "yahoo")
-)
-
-if (nrow(market_dt) == 0L || !"datetime" %in% names(market_dt)) {
-  stop("Local Yahoo OHLC cache is empty or malformed for ticker: ", ticker)
-}
-
-market_dt <- market_dt[
-  datetime >= as.POSIXct(from_date) &
-    datetime < as.POSIXct(to_date + 1)
-][order(datetime)]
-
-bad_ohlc <- !is.finite(market_dt$open) |
-  !is.finite(market_dt$high) |
-  !is.finite(market_dt$low) |
-  !is.finite(market_dt$close)
-if (any(bad_ohlc)) {
-  warning(
-    sprintf("Dropped %s %s rows with incomplete OHLC values before mining.", sum(bad_ohlc), ticker)
-  )
-  market_dt <- market_dt[!bad_ohlc]
-}
-
-if (nrow(market_dt) < 260L) {
-  stop("Need at least 260 rows of local OHLC data for MACD parameter mining.")
-}
-
-# Keep the first public example grid modest. Increase these ranges when running
-# a deeper offline mining job.
-param_grid <- data.table::CJ(
-  fast = c(8L, 10L, 12L, 14L),
-  slow = c(21L, 26L, 30L, 35L),
-  signal = c(7L, 9L, 12L),
-  target_size = 0.95
-)[fast < slow]
+seed_assets <- c("SPY", "AGG", "IAU", "IBIT", "USO", "UUP")
 
 load_local_yahoo <- function(symbol, min_rows = 260L) {
   out <- tryCatch(
@@ -82,69 +45,14 @@ load_local_yahoo <- function(symbol, min_rows = 260L) {
   out
 }
 
-mine_macd_strategy <- function(strategy_fun, strat_id) {
-  strategyr::mine_strategy_params(
-    DT = market_dt,
-    strategy_fun = strategy_fun,
-    param_grid = param_grid,
-    strat_id = strat_id,
-    asset_id = 8001L,
-    ctr_size = 0.01,
-    ctr_step = 0.01,
-    lev = 1.0,
-    fee_rt = 0.0007,
-    fund_rt = 0,
-    tol_pos = 0.1,
-    rec = FALSE,
-    keep_paths = FALSE,
-    annualization = 252
-  )
-}
-
-top_rows <- function(res, label, n = 10L) {
-  out <- res[seq_len(min(.N, n)), .(
-    strategy = label,
-    rank,
-    fast,
-    slow,
-    signal,
-    target_size,
-    sortino,
-    total_return,
-    annual_return,
-    max_drawdown
-  )]
-  out
-}
-
-macd_mining_res <- mine_macd_strategy(
-  strategy_fun = strategyr::strat_macd_cross_tgt_pos,
-  strat_id = 304L
-)
-macd_contrarian_mining_res <- mine_macd_strategy(
-  strategy_fun = strategyr::strat_macd_contrarian_tgt_pos,
-  strat_id = 305L
-)
-
-best_macd_params <- macd_mining_res[1L]
-best_macd_contrarian_params <- macd_contrarian_mining_res[1L]
-
-print(best_macd_params)
-print(best_macd_contrarian_params)
-
-top_macd_res <- top_rows(macd_mining_res, "macd_cross")
-top_macd_contrarian_res <- top_rows(macd_contrarian_mining_res, "macd_contrarian")
-
-print(top_macd_res)
-print(top_macd_contrarian_res)
-
-best_by_strategy <- data.table::rbindlist(list(
-  top_rows(macd_mining_res, "macd_cross", n = 1L),
-  top_rows(macd_contrarian_mining_res, "macd_contrarian", n = 1L)
-))
-data.table::setorder(best_by_strategy, -sortino)
-
-print(best_by_strategy)
+# Keep the first public example grid modest. Increase these ranges when running
+# a deeper offline mining job.
+param_grid <- data.table::CJ(
+  fast = c(8L, 10L, 12L, 14L),
+  slow = c(21L, 26L, 30L, 35L),
+  signal = c(7L, 9L, 12L),
+  target_size = 0.95
+)[fast < slow]
 
 registry_dt <- data.table::as.data.table(jsonlite::fromJSON(registry_path))
 
@@ -164,39 +72,82 @@ for (symbol in candidate_symbols) {
 }
 
 if (length(asset_market_data) < 2L) {
-  stop("Need at least two locally cached Yahoo assets for asset mining.")
+  stop("Need at least two locally cached Yahoo assets for asset-year mining.")
 }
 
-best_contrarian_strategy_params <- as.list(
-  best_macd_contrarian_params[, .(fast, slow, signal, target_size)]
+mine_macd_asset_years <- function(strategy_fun, strat_id) {
+  strategyr::mine_strategy_asset_years(
+    market_data_list = asset_market_data,
+    strategy_fun = strategy_fun,
+    param_grid = param_grid,
+    seed_assets = seed_assets,
+    from = from_date,
+    to = to_date,
+    min_year_rows = 200L,
+    strat_id = strat_id,
+    asset_id = 8001L,
+    ctr_size = 0.01,
+    ctr_step = 0.01,
+    lev = 1.0,
+    fee_rt = 0.0007,
+    fund_rt = 0,
+    tol_pos = 0.1,
+    rec = FALSE,
+    keep_paths = FALSE,
+    annualization = 252
+  )
+}
+
+print_macd_mining_result <- function(res, label) {
+  cat("\n", label, " seed-asset best parameter rows:\n", sep = "")
+  print(res$seed_params[, .(
+    seed_asset,
+    rank,
+    fast,
+    slow,
+    signal,
+    target_size,
+    sortino,
+    total_return,
+    annual_return,
+    max_drawdown
+  )])
+
+  cat("\n", label, " unique candidate parameter rows:\n", sep = "")
+  print(res$candidate_params)
+
+  asset_year_res <- res$asset_year_results
+  cat("\n", label, " asset-year winners above buy-and-hold:\n", sep = "")
+  print(asset_year_res[seq_len(min(.N, 20L)), .(
+    rank,
+    asset,
+    year,
+    param_id,
+    fast,
+    slow,
+    signal,
+    sortino,
+    total_return,
+    buy_hold_total_return,
+    excess_total_return,
+    signal_start,
+    trade_start,
+    trade_end,
+    warmup_n_obs,
+    warmup_insufficient,
+    n_obs
+  )])
+}
+
+macd_mining_res <- mine_macd_asset_years(
+  strategy_fun = strategyr::strat_macd_cross_tgt_pos,
+  strat_id = 304L
 )
 
-macd_contrarian_asset_res <- strategyr::mine_strategy_assets(
-  market_data_list = asset_market_data,
+macd_contrarian_mining_res <- mine_macd_asset_years(
   strategy_fun = strategyr::strat_macd_contrarian_tgt_pos,
-  strategy_params = best_contrarian_strategy_params,
-  from = from_date,
-  to = to_date,
-  strat_id = 305L,
-  asset_id = 8001L,
-  ctr_size = 0.01,
-  ctr_step = 0.01,
-  lev = 1.0,
-  fee_rt = 0.0007,
-  fund_rt = 0,
-  tol_pos = 0.1,
-  rec = FALSE,
-  keep_paths = FALSE,
-  annualization = 252
+  strat_id = 305L
 )
 
-print(best_contrarian_strategy_params)
-print(macd_contrarian_asset_res[seq_len(min(.N, 20L)), .(
-  rank,
-  asset,
-  sortino,
-  total_return,
-  annual_return,
-  max_drawdown,
-  n_obs
-)])
+print_macd_mining_result(macd_mining_res, "MACD cross")
+print_macd_mining_result(macd_contrarian_mining_res, "MACD contrarian")

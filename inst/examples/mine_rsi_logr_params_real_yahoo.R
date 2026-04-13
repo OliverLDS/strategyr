@@ -132,5 +132,10 @@ print(asset_year_res[seq_len(min(.N, 20L)), .(
   total_return,
   buy_hold_total_return,
   excess_total_return,
+  signal_start,
+  trade_start,
+  trade_end,
+  warmup_n_obs,
+  warmup_insufficient,
   n_obs
 )])
