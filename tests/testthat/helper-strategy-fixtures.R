@@ -39,6 +39,25 @@ make_test_portfolio_state <- function(assets = c("AAA", "BBB", "CCC", "DDD")) {
   )
 }
 
+make_test_fx_market <- function(n = 120L) {
+  DT <- data.table::data.table(
+    spot = 100 + cumsum(rep(0.1, n)),
+    r_domestic = rep(0.05, n),
+    r_foreign = rep(0.02, n)
+  )
+  DT
+}
+
+make_test_bond_market <- function(n = 5L) {
+  data.table::data.table(
+    par = rep(100, n),
+    c_rate = rep(0.05, n),
+    T = seq(2, 2 + n - 1),
+    freq = rep(2, n),
+    ytm = rep(0.04, n)
+  )
+}
+
 make_test_state <- function(last_px = 100) {
   list(
     ctr_size = 1,

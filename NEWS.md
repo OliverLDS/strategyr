@@ -1,3 +1,20 @@
+# strategyr 0.1.6
+
+- add four new strategy-variant waves across trend, oscillator, cross-sectional,
+  futures, options, pair-trading, and divergence families:
+  `strat_ema_cross_slope_confirm`, `strat_macd_zero_line`,
+  `strat_rsi_trend_aware_revert`, `strat_atr_breakout_trailing_stop`,
+  `strat_fx_carry_trend`, `strat_bollinger_low_adx_revert`,
+  `strat_donchian_retest_breakout`, `strat_vol_target_regime_floor`,
+  `strat_relative_strength_persistence`, `strat_bond_carry_roll_duration_cap`,
+  `strat_ema_triple_trend`, `strat_macd_histogram_momentum`,
+  `strat_rsi_dynamic_threshold_revert`, `strat_roll_yield_cross_sectional`,
+  `strat_iv_skew_realized_vol_confirm`, `strat_roll_yield_mean_revert`,
+  `strat_fx_carry_basket_rank`, `strat_iv_directional_overlay`,
+  `strat_pair_spread_half_life_revert`, and `strat_rsi_divergence`
+- extend `strat_*` test coverage and roxygen docs for the new families while
+  preserving the documented native action-plan and backtest interfaces
+
 # strategyr 0.1.5
 
 - add four new implementation waves of public `strat_*` families:
