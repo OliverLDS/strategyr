@@ -1,3 +1,15 @@
+# strategyr 0.1.4
+
+- add 10 new strategy families that follow the standard `*_tgt_pos()` and
+  `*_action_plan()` architecture:
+  `strat_donchian_turtle`, `strat_ema_cross_adx`,
+  `strat_bollinger_revert_rsi`, `strat_relative_strength_dual_momentum`,
+  `strat_pair_spread_bollinger`, `strat_trend_pullback_atr`,
+  `strat_curve_steepener_zscore`, `strat_bond_carry_roll_spread_filter`,
+  `strat_roll_yield_momentum`, and `strat_iv_skew_zscore`
+- add shared momentum helper support in `strat_utils.R`
+- add tests and roxygen docs for the new strategy families
+
 # strategyr 0.1.3.6
 
 - Added real-data Yahoo strategy-mining examples for ATR breakout, EMA cross,

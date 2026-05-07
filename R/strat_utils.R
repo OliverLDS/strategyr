@@ -74,3 +74,21 @@
   out[!is.na(idx) & idx >= upper] <- target_size
   out
 }
+
+.momentum_return <- function(x, n, use_log = TRUE) {
+  len <- length(x)
+  out <- rep(NA_real_, len)
+  if (n <= 0L || n >= len) {
+    return(out)
+  }
+
+  idx <- seq.int(n + 1L, len)
+  lag_idx <- seq_len(len - n)
+  if (use_log) {
+    out[idx] <- log(x[idx]) - log(x[lag_idx])
+  } else {
+    out[idx] <- x[idx] / x[lag_idx] - 1
+  }
+  out[!is.finite(out)] <- NA_real_
+  out
+}
