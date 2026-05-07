@@ -1,3 +1,16 @@
+# strategyr 0.1.5
+
+- add four new implementation waves of public `strat_*` families:
+  `strat_bollinger_squeeze_breakout`, `strat_curve_butterfly`,
+  `strat_credit_spread_momentum`, `strat_credit_spread_revert`,
+  `strat_vwap_revert`, `strat_vol_carry`,
+  `strat_funding_basis_convergence`, `strat_regime_switch`,
+  `strat_cross_sectional_rank_allocator`, and
+  `strat_gamma_scalp_support`
+- extend strategy test fixtures for cross-sectional and portfolio-level
+  strategy coverage
+- add roxygen docs and tests for the new strategy families
+
 # strategyr 0.1.4
 
 - add 10 new strategy families that follow the standard `*_tgt_pos()` and
