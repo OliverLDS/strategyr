@@ -327,6 +327,102 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// strat_rsi_revert_signal_cpp
+Rcpp::NumericVector strat_rsi_revert_signal_cpp(const Rcpp::NumericVector& rsi, double oversold, double overbought, double exit_level, double target_size);
+RcppExport SEXP _strategyr_strat_rsi_revert_signal_cpp(SEXP rsiSEXP, SEXP oversoldSEXP, SEXP overboughtSEXP, SEXP exit_levelSEXP, SEXP target_sizeSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type rsi(rsiSEXP);
+    Rcpp::traits::input_parameter< double >::type oversold(oversoldSEXP);
+    Rcpp::traits::input_parameter< double >::type overbought(overboughtSEXP);
+    Rcpp::traits::input_parameter< double >::type exit_level(exit_levelSEXP);
+    Rcpp::traits::input_parameter< double >::type target_size(target_sizeSEXP);
+    rcpp_result_gen = Rcpp::wrap(strat_rsi_revert_signal_cpp(rsi, oversold, overbought, exit_level, target_size));
+    return rcpp_result_gen;
+END_RCPP
+}
+// strat_donchian_turtle_signal_cpp
+Rcpp::NumericVector strat_donchian_turtle_signal_cpp(const Rcpp::NumericVector& close, const Rcpp::NumericVector& entry_high, const Rcpp::NumericVector& entry_low, const Rcpp::NumericVector& exit_high, const Rcpp::NumericVector& exit_low, double target_size);
+RcppExport SEXP _strategyr_strat_donchian_turtle_signal_cpp(SEXP closeSEXP, SEXP entry_highSEXP, SEXP entry_lowSEXP, SEXP exit_highSEXP, SEXP exit_lowSEXP, SEXP target_sizeSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type close(closeSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type entry_high(entry_highSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type entry_low(entry_lowSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type exit_high(exit_highSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type exit_low(exit_lowSEXP);
+    Rcpp::traits::input_parameter< double >::type target_size(target_sizeSEXP);
+    rcpp_result_gen = Rcpp::wrap(strat_donchian_turtle_signal_cpp(close, entry_high, entry_low, exit_high, exit_low, target_size));
+    return rcpp_result_gen;
+END_RCPP
+}
+// strat_atr_breakout_trailing_stop_signal_cpp
+Rcpp::NumericVector strat_atr_breakout_trailing_stop_signal_cpp(const Rcpp::NumericVector& close, const Rcpp::NumericVector& atr, double atr_mult, double trail_mult, double target_size);
+RcppExport SEXP _strategyr_strat_atr_breakout_trailing_stop_signal_cpp(SEXP closeSEXP, SEXP atrSEXP, SEXP atr_multSEXP, SEXP trail_multSEXP, SEXP target_sizeSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type close(closeSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type atr(atrSEXP);
+    Rcpp::traits::input_parameter< double >::type atr_mult(atr_multSEXP);
+    Rcpp::traits::input_parameter< double >::type trail_mult(trail_multSEXP);
+    Rcpp::traits::input_parameter< double >::type target_size(target_sizeSEXP);
+    rcpp_result_gen = Rcpp::wrap(strat_atr_breakout_trailing_stop_signal_cpp(close, atr, atr_mult, trail_mult, target_size));
+    return rcpp_result_gen;
+END_RCPP
+}
+// strat_pair_spread_revert_signal_cpp
+Rcpp::NumericVector strat_pair_spread_revert_signal_cpp(const Rcpp::NumericVector& zscore_value, double entry_z, double exit_z, double target_size);
+RcppExport SEXP _strategyr_strat_pair_spread_revert_signal_cpp(SEXP zscore_valueSEXP, SEXP entry_zSEXP, SEXP exit_zSEXP, SEXP target_sizeSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type zscore_value(zscore_valueSEXP);
+    Rcpp::traits::input_parameter< double >::type entry_z(entry_zSEXP);
+    Rcpp::traits::input_parameter< double >::type exit_z(exit_zSEXP);
+    Rcpp::traits::input_parameter< double >::type target_size(target_sizeSEXP);
+    rcpp_result_gen = Rcpp::wrap(strat_pair_spread_revert_signal_cpp(zscore_value, entry_z, exit_z, target_size));
+    return rcpp_result_gen;
+END_RCPP
+}
+// strat_rsi_divergence_signal_cpp
+Rcpp::NumericVector strat_rsi_divergence_signal_cpp(const Rcpp::NumericVector& close, const Rcpp::NumericVector& rsi, int pivot_left, int pivot_right, double exit_level, double target_size);
+RcppExport SEXP _strategyr_strat_rsi_divergence_signal_cpp(SEXP closeSEXP, SEXP rsiSEXP, SEXP pivot_leftSEXP, SEXP pivot_rightSEXP, SEXP exit_levelSEXP, SEXP target_sizeSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type close(closeSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type rsi(rsiSEXP);
+    Rcpp::traits::input_parameter< int >::type pivot_left(pivot_leftSEXP);
+    Rcpp::traits::input_parameter< int >::type pivot_right(pivot_rightSEXP);
+    Rcpp::traits::input_parameter< double >::type exit_level(exit_levelSEXP);
+    Rcpp::traits::input_parameter< double >::type target_size(target_sizeSEXP);
+    rcpp_result_gen = Rcpp::wrap(strat_rsi_divergence_signal_cpp(close, rsi, pivot_left, pivot_right, exit_level, target_size));
+    return rcpp_result_gen;
+END_RCPP
+}
+// backtest_portfolio_weights_core_cpp
+Rcpp::List backtest_portfolio_weights_core_cpp(const Rcpp::IntegerVector& date_id, const Rcpp::IntegerVector& asset_id, const Rcpp::NumericVector& open, const Rcpp::NumericVector& close, const Rcpp::NumericVector& target_weight, const Rcpp::NumericVector& contract_size, double initial_equity, double fee_rt, double rebalance_tol_weight, int n_assets);
+RcppExport SEXP _strategyr_backtest_portfolio_weights_core_cpp(SEXP date_idSEXP, SEXP asset_idSEXP, SEXP openSEXP, SEXP closeSEXP, SEXP target_weightSEXP, SEXP contract_sizeSEXP, SEXP initial_equitySEXP, SEXP fee_rtSEXP, SEXP rebalance_tol_weightSEXP, SEXP n_assetsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Rcpp::IntegerVector& >::type date_id(date_idSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::IntegerVector& >::type asset_id(asset_idSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type open(openSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type close(closeSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type target_weight(target_weightSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type contract_size(contract_sizeSEXP);
+    Rcpp::traits::input_parameter< double >::type initial_equity(initial_equitySEXP);
+    Rcpp::traits::input_parameter< double >::type fee_rt(fee_rtSEXP);
+    Rcpp::traits::input_parameter< double >::type rebalance_tol_weight(rebalance_tol_weightSEXP);
+    Rcpp::traits::input_parameter< int >::type n_assets(n_assetsSEXP);
+    rcpp_result_gen = Rcpp::wrap(backtest_portfolio_weights_core_cpp(date_id, asset_id, open, close, target_weight, contract_size, initial_equity, fee_rt, rebalance_tol_weight, n_assets));
+    return rcpp_result_gen;
+END_RCPP
+}
 // aroon_up_pct_cpp
 Rcpp::NumericVector aroon_up_pct_cpp(const Rcpp::NumericVector& high, int n);
 RcppExport SEXP _strategyr_aroon_up_pct_cpp(SEXP highSEXP, SEXP nSEXP) {
@@ -389,6 +485,12 @@ static const R_CallMethodDef CallEntries[] = {
     {"_strategyr_rolling_argmin_pct", (DL_FUNC) &_strategyr_rolling_argmin_pct, 2},
     {"_strategyr_rolling_quantiles", (DL_FUNC) &_strategyr_rolling_quantiles, 3},
     {"_strategyr_strat_buy_and_hold_rcpp", (DL_FUNC) &_strategyr_strat_buy_and_hold_rcpp, 1},
+    {"_strategyr_strat_rsi_revert_signal_cpp", (DL_FUNC) &_strategyr_strat_rsi_revert_signal_cpp, 5},
+    {"_strategyr_strat_donchian_turtle_signal_cpp", (DL_FUNC) &_strategyr_strat_donchian_turtle_signal_cpp, 6},
+    {"_strategyr_strat_atr_breakout_trailing_stop_signal_cpp", (DL_FUNC) &_strategyr_strat_atr_breakout_trailing_stop_signal_cpp, 5},
+    {"_strategyr_strat_pair_spread_revert_signal_cpp", (DL_FUNC) &_strategyr_strat_pair_spread_revert_signal_cpp, 4},
+    {"_strategyr_strat_rsi_divergence_signal_cpp", (DL_FUNC) &_strategyr_strat_rsi_divergence_signal_cpp, 6},
+    {"_strategyr_backtest_portfolio_weights_core_cpp", (DL_FUNC) &_strategyr_backtest_portfolio_weights_core_cpp, 10},
     {"_strategyr_aroon_up_pct_cpp", (DL_FUNC) &_strategyr_aroon_up_pct_cpp, 2},
     {"_strategyr_aroon_dn_pct_cpp", (DL_FUNC) &_strategyr_aroon_dn_pct_cpp, 2},
     {"_strategyr_sar_cpp", (DL_FUNC) &_strategyr_sar_cpp, 3},

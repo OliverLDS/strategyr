@@ -6,6 +6,10 @@ Related contributor note:
 
 - `docs/strategy_design.md` defines the implementation standard for public
   `strat_*` functions.
+- `docs/strategy_catalog.md` lists public strategy families by category,
+  inputs, output level, and default `strat_id`.
+- `docs/api_consistency.md` records current API conventions, intentional
+  exceptions, and cleanup targets.
 
 ## 1. Feature Layer
 
@@ -77,7 +81,9 @@ The strategy layer is the public rule layer. It should stay transparent and easy
 to test.
 
 The contributor standard for this layer is documented in
-`docs/strategy_design.md`.
+`docs/strategy_design.md`. The current public strategy surface is cataloged in
+`docs/strategy_catalog.md`, and API consistency notes are maintained in
+`docs/api_consistency.md`.
 
 ## 3. Action Layer
 
@@ -114,6 +120,16 @@ flowchart LR
   D --> E[Execution adapter]
 ```
 
+For portfolio backtesting, the current minimal path is:
+
+```mermaid
+flowchart LR
+  A[Panel target weights] --> B[backtest_portfolio_weights]
+  B --> C[Open-price rebalance]
+  C --> D[Close-price mark-to-market]
+  D --> E[Equity and exposure path]
+```
+
 For fixed-income hedge workflows, the current minimal path is:
 
 ```mermaid
@@ -141,6 +157,7 @@ This layer evaluates path-dependent behavior under execution assumptions.
 Core engine:
 
 - `backtest_rcpp()`
+- `backtest_portfolio_weights()`
 
 Key properties:
 
@@ -148,6 +165,8 @@ Key properties:
 - fees and funding affect equity
 - liquidation checks are explicit
 - recorder output preserves an execution trace
+- portfolio-weight paths can be evaluated with open-price rebalancing,
+  transaction fees, and close-price mark-to-market
 
 ## 5. Strategy Mining Layer
 
@@ -159,12 +178,37 @@ Examples:
 - `calc_backtest_performance()`
 - `mine_strategy_params()`
 - `mine_strategy_assets()`
+- `mine_strategy_asset_years()`
+- `mine_strategy_walk_forward()`
+- `select_strategy_params()`
+- `summarize_walk_forward_results()`
+- `filter_walk_forward_results()`
 
 The default ranking metric is Sortino ratio, computed inside `strategyr` from
 the backtest equity curve. The mining layer is deliberately data-provider
 agnostic: callers supply the fixed market data table or a named list of market
 data tables, and the mining helpers reuse the same `strat_*_tgt_pos()` rule and
 `backtest_rcpp()` execution assumptions used elsewhere in the package.
+
+Mining outputs are intentionally plain `data.table`s or lists of tables. The
+selection helper extracts reusable parameter rows for the next run, while the
+walk-forward summary helper reports out-of-sample score stability, train/test
+score decay, and insufficient-warmup counts. The filter helper applies simple
+anti-overfit gates such as minimum out-of-sample windows, positive-window rate,
+maximum train/test score decay, and warmup-quality thresholds.
+
+## Native Strategy Kernels
+
+High-value path-dependent signal loops should move to Rcpp when profiling or
+repeated mining use shows that R loop overhead matters. The current native
+strategy kernels cover buy-and-hold, RSI reversion, Donchian Turtle, ATR
+trailing stop, pair-spread reversion, and RSI divergence. The R wrappers remain
+the public API and still own feature construction, documentation, testing, and
+action-plan integration.
+
+The portfolio backtest has a native accounting core for the standard
+target-weight path. The R wrapper remains authoritative while the API is still
+evolving; position-path reporting currently stays in R for readability.
 
 ## Execution Timing
 

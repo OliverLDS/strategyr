@@ -3,52 +3,13 @@
 }
 
 .atr_breakout_trailing_stop_signal <- function(close, atr, atr_mult = 1, trail_mult = 2, target_size = 1.0) {
-  prev_close <- .lag_num(close, 1)
-  prev_atr <- .lag_num(atr, 1)
-  out <- rep(0.0, length(close))
-  pos_now <- 0.0
-  high_water <- NA_real_
-  low_water <- NA_real_
-
-  for (i in seq_along(close)) {
-    if (is.na(close[i]) || is.na(prev_close[i]) || is.na(prev_atr[i]) || is.na(atr[i])) {
-      out[i] <- pos_now
-      next
-    }
-
-    exited_now <- FALSE
-    if (pos_now > 0) {
-      high_water <- if (is.na(high_water)) close[i] else max(high_water, close[i])
-      if (close[i] <= high_water - trail_mult * atr[i]) {
-        pos_now <- 0.0
-        high_water <- NA_real_
-        exited_now <- TRUE
-      }
-    } else if (pos_now < 0) {
-      low_water <- if (is.na(low_water)) close[i] else min(low_water, close[i])
-      if (close[i] >= low_water + trail_mult * atr[i]) {
-        pos_now <- 0.0
-        low_water <- NA_real_
-        exited_now <- TRUE
-      }
-    }
-
-    if (pos_now == 0.0 && !exited_now) {
-      if (close[i] >= prev_close[i] + atr_mult * prev_atr[i]) {
-        pos_now <- target_size
-        high_water <- close[i]
-        low_water <- NA_real_
-      } else if (close[i] <= prev_close[i] - atr_mult * prev_atr[i]) {
-        pos_now <- -target_size
-        low_water <- close[i]
-        high_water <- NA_real_
-      }
-    }
-
-    out[i] <- pos_now
-  }
-
-  out
+  strat_atr_breakout_trailing_stop_signal_cpp(
+    close = close,
+    atr = atr,
+    atr_mult = atr_mult,
+    trail_mult = trail_mult,
+    target_size = target_size
+  )
 }
 
 #' ATR-Breakout-Trailing-Stop Target Positions

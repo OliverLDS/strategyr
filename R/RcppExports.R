@@ -93,6 +93,30 @@ strat_buy_and_hold_rcpp <- function(timestamp) {
     .Call(`_strategyr_strat_buy_and_hold_rcpp`, timestamp)
 }
 
+strat_rsi_revert_signal_cpp <- function(rsi, oversold = 30.0, overbought = 70.0, exit_level = 50.0, target_size = 1.0) {
+    .Call(`_strategyr_strat_rsi_revert_signal_cpp`, rsi, oversold, overbought, exit_level, target_size)
+}
+
+strat_donchian_turtle_signal_cpp <- function(close, entry_high, entry_low, exit_high, exit_low, target_size = 1.0) {
+    .Call(`_strategyr_strat_donchian_turtle_signal_cpp`, close, entry_high, entry_low, exit_high, exit_low, target_size)
+}
+
+strat_atr_breakout_trailing_stop_signal_cpp <- function(close, atr, atr_mult = 1.0, trail_mult = 2.0, target_size = 1.0) {
+    .Call(`_strategyr_strat_atr_breakout_trailing_stop_signal_cpp`, close, atr, atr_mult, trail_mult, target_size)
+}
+
+strat_pair_spread_revert_signal_cpp <- function(zscore_value, entry_z = 2.0, exit_z = 0.5, target_size = 1.0) {
+    .Call(`_strategyr_strat_pair_spread_revert_signal_cpp`, zscore_value, entry_z, exit_z, target_size)
+}
+
+strat_rsi_divergence_signal_cpp <- function(close, rsi, pivot_left = 2L, pivot_right = 2L, exit_level = 50.0, target_size = 1.0) {
+    .Call(`_strategyr_strat_rsi_divergence_signal_cpp`, close, rsi, pivot_left, pivot_right, exit_level, target_size)
+}
+
+backtest_portfolio_weights_core_cpp <- function(date_id, asset_id, open, close, target_weight, contract_size, initial_equity = 1.0, fee_rt = 0.0, rebalance_tol_weight = 0.0, n_assets = 0L) {
+    .Call(`_strategyr_backtest_portfolio_weights_core_cpp`, date_id, asset_id, open, close, target_weight, contract_size, initial_equity, fee_rt, rebalance_tol_weight, n_assets)
+}
+
 aroon_up_pct_cpp <- function(high, n) {
     .Call(`_strategyr_aroon_up_pct_cpp`, high, n)
 }

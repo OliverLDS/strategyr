@@ -14,37 +14,53 @@ devtools::install_github("OliverLDS/strategyr")
 
 ## Usage Cases
 
-### 1. Generate a target-position path and run a path-dependent backtest
+### 1. Single-asset strategy backtest
 
 ```r
 library(data.table)
 library(strategyr)
 
 DT <- data.table(
-  datetime = seq(0, by = 60, length.out = 200),
-  open = 100,
-  high = 101,
-  low = 99,
-  close = seq(100, 120, length.out = 200)
+  datetime = as.POSIXct("2020-01-01", tz = "UTC") + 86400 * 0:249
+)
+DT[, close := 100 + cumsum(sin(seq_len(.N) / 8) + 0.15)]
+DT[, open := shift(close, fill = close[1])]
+DT[, high := pmax(open, close) + 1]
+DT[, low := pmin(open, close) - 1]
+
+tgt_pos <- strat_donchian_turtle_tgt_pos(
+  DT,
+  entry_n = 30L,
+  exit_n = 10L,
+  target_size = 0.95
 )
 
-tgt_pos <- strat_buy_and_hold_tgt_pos(DT)
-
 eq <- backtest_rcpp(
-  timestamp = DT$datetime,
+  timestamp = as.numeric(DT$datetime),
   open = DT$open,
   high = DT$high,
   low = DT$low,
   close = DT$close,
   tgt_pos = tgt_pos,
-  pos_strat = rep(1L, nrow(DT)),
-  tol_pos = rep(0, nrow(DT)),
-  strat = 1L,
-  asset = 8001L
+  pos_strat = rep(307L, nrow(DT)),
+  tol_pos = rep(0.05, nrow(DT)),
+  strat = 307L,
+  asset = 8001L,
+  ctr_step = 0.01,
+  lev = 1,
+  fee_rt = 0.0005,
+  rec = TRUE
+)
+
+calc_strategy_performance_summary(
+  eq,
+  tgt_pos = tgt_pos,
+  recorder = attr(eq, "recorder"),
+  fee_rt = 0.0005
 )
 ```
 
-### 2. Convert the latest strategy target into an executable action plan
+### 2. Latest-state action plan
 
 ```r
 state <- list(
@@ -58,39 +74,98 @@ state <- list(
   pos_dir = 0L
 )
 
-plan <- strat_buy_and_hold_action_plan(DT, state, value = 1.0)
+plan <- strat_donchian_turtle_action_plan(
+  DT,
+  state,
+  entry_n = 30L,
+  exit_n = 10L,
+  target_size = 0.95,
+  strat_id = 307L
+)
 ```
 
-### 3. Turn target portfolio weights into rebalance intents
+### 3. Warmup-aware strategy mining
 
 ```r
-portfolio_state <- data.table(
-  asset = c("BTC", "ETH"),
-  price = c(100, 50),
-  current_units = c(10, 20),
-  target_weight = c(0.6, 0.4)
+walk_res <- mine_strategy_walk_forward(
+  DT,
+  strategy_fun = strat_ema_triple_trend_tgt_pos,
+  param_grid = data.table::CJ(
+    fast = c(10L, 20L),
+    mid = c(30L, 50L),
+    slow = c(80L, 120L),
+    target_size = 0.95
+  )[fast < mid & mid < slow],
+  train_years = 1,
+  test_years = 0.5,
+  step_years = 0.5,
+  n_best = 2L,
+  min_train_rows = 100L,
+  min_test_rows = 50L,
+  warmup_days = 120L,
+  strat_id = 106L,
+  ctr_step = 0.01,
+  lev = 1,
+  fee_rt = 0.0005
 )
 
-adjustment <- plan_portfolio_adjustment(portfolio_state, equity = 3000)
-intents <- build_order_intents(adjustment)
+summarize_walk_forward_results(walk_res, group_cols = c("fast", "mid", "slow"))
+filter_walk_forward_results(
+  walk_res,
+  group_cols = c("fast", "mid", "slow"),
+  min_windows = 1L,
+  min_positive_return_rate = 0.5,
+  max_avg_score_decay = 10
+)
 ```
 
-### 4. Add Donchian channel features for breakout or range logic
+### 4. Cross-sectional allocator and portfolio backtest
 
 ```r
-DT <- data.table(
-  high = c(10, 11, 12, 13, 14, 13),
-  low = c(5, 6, 7, 8, 9, 8)
+panel <- CJ(
+  date = as.Date("2020-01-01") + 0:9,
+  asset = c("AAA", "BBB", "CCC")
+)
+panel[, score := fifelse(asset == "AAA", 0.8, fifelse(asset == "BBB", 0.4, 0.2)) + as.numeric(date - min(date)) / 100]
+panel[, open := 100 + match(asset, c("AAA", "BBB", "CCC")) * 5 + as.numeric(date - min(date))]
+panel[, close := open * (1 + score / 100)]
+panel[, target_weight := strat_cross_sectional_rank_allocator_tgt_pos(
+  panel,
+  date_col = "date",
+  asset_col = "asset",
+  signal_col = "score",
+  long_n = 2L,
+  short_n = 0L,
+  gross_exposure = 1.0
+)]
+
+portfolio_bt <- backtest_portfolio_weights(
+  panel,
+  initial_equity = 100000,
+  fee_rt = 0.0005
 )
 
-calc_DonchianChannels(DT, ns = c(3, 5))
-
-DT[, .(dc_high_3, dc_low_3, dc_mid_3, dc_high_5, dc_low_5)]
+portfolio_bt$equity[, .(date, equity, gross_exposure, turnover, fee_paid)]
 ```
 
-### 5. Build a bond risk-state snapshot and a duration hedge plan
+### 5. Fixed-income carry/roll and hedge workflow
 
 ```r
+bond_dt <- data.table(
+  par = rep(100, 5),
+  c_rate = rep(0.05, 5),
+  T = seq(2, 6),
+  freq = rep(2, 5),
+  ytm = c(0.045, 0.044, 0.043, 0.042, 0.041)
+)
+
+carry_tgt <- strat_bond_carry_roll_tgt_pos(
+  bond_dt,
+  long_threshold = 0,
+  short_threshold = -0.02,
+  target_size = 0.5
+)
+
 bond_state <- calc_bond_risk_state(
   par = 100,
   c_rate = 0.06,
@@ -107,9 +182,26 @@ dv01_plan <- plan_duration_neutral_adjustment(
 )
 ```
 
-### 6. Build an option risk-state snapshot and a delta hedge plan
+### 6. Option and volatility workflow
 
 ```r
+option_chain <- CJ(
+  date = as.Date("2020-01-01") + 0:79,
+  T = c(30, 60) / 365,
+  type = c("put", "call")
+)
+option_chain[, option_log_forward_moneyness := fifelse(type == "put", -0.1, 0.1)]
+option_chain[, close := 100 + as.numeric(date - min(date)) * 0.1]
+option_chain[, iv := 0.2 + fifelse(type == "put", 0.03, -0.01) + sin(seq_len(.N) / 20) / 100]
+
+iv_tgt <- strat_iv_directional_overlay_tgt_pos(
+  option_chain,
+  trend_n = 20L,
+  skew_long_threshold = 0.02,
+  skew_short_threshold = -0.02,
+  overlay_mode = "confirm"
+)
+
 option_state <- calc_option_risk_state(
   S = 100,
   K = 100,
@@ -126,32 +218,13 @@ delta_plan <- plan_delta_neutral_adjustment(
 )
 ```
 
-### 7. Mine strategy parameters by Sortino-ranked backtests
-
-```r
-param_res <- mine_strategy_params(
-  DT,
-  strategy_fun = strat_macd_cross_tgt_pos,
-  param_grid = list(
-    fast = c(8L, 12L),
-    slow = c(21L, 26L),
-    signal = c(9L),
-    target_size = 0.95
-  ),
-  strat_id = 304L,
-  ctr_step = 0.01,
-  lev = 1,
-  fee_rt = 0.0007
-)
-
-param_res[, .(rank, fast, slow, signal, sortino, total_return, max_drawdown)]
-```
-
 ## Docs
 
 - [Package Philosophy](docs/philosophy.md)
 - [Architecture Notes](docs/architecture.md)
 - [Strategy Design Notes](docs/strategy_design.md)
+- [Strategy Catalog](docs/strategy_catalog.md)
+- [API Consistency Audit](docs/api_consistency.md)
 
 ## Current Scope
 
@@ -178,14 +251,20 @@ param_res[, .(rank, fast, slow, signal, sortino, total_return, max_drawdown)]
   strength, FX carry, bond carry-and-roll, curve steepener, roll yield, IV
   skew, IV term structure, and options structure-proxy workflows
 - portfolio-adjustment planning from target weights and current holdings
+- portfolio target-weight backtesting with open-price rebalancing and
+  close-price mark-to-market, backed by a native accounting core for the
+  standard no-position-path case
 - fixed-income risk-state snapshots and hedge-adjustment helpers
 - option risk-state snapshots and hedge-adjustment helpers
 - action-plan generation from current account state
 - order-intent tables for rebalancing workflows
 - path-dependent backtesting with execution and funding assumptions
-- strategy-mining helpers for Sortino-ranked parameter sweeps and
-  fixed-parameter asset sweeps, plus asset-year mining with buy-and-hold
-  filtering
+- strategy-mining helpers for Sortino-ranked parameter sweeps,
+  fixed-parameter asset sweeps, asset-year mining with buy-and-hold filtering,
+  walk-forward train/test mining, reusable parameter selection, and
+  walk-forward diagnostics and anti-overfit filtering
+- native signal kernels for selected high-use path-dependent strategies while
+  preserving R wrappers as the public API
 
 ## Author
 

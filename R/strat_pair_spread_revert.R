@@ -15,34 +15,12 @@
 }
 
 .pair_spread_revert_signal <- function(zscore_value, entry_z = 2, exit_z = 0.5, target_size = 1.0) {
-  out <- rep(0.0, length(zscore_value))
-  pos_now <- 0.0
-
-  for (i in seq_along(zscore_value)) {
-    z <- zscore_value[i]
-    if (is.na(z)) {
-      out[i] <- pos_now
-      next
-    }
-
-    if (pos_now > 0 && z >= -exit_z) {
-      pos_now <- 0.0
-    } else if (pos_now < 0 && z <= exit_z) {
-      pos_now <- 0.0
-    }
-
-    if (pos_now == 0.0) {
-      if (z <= -entry_z) {
-        pos_now <- target_size
-      } else if (z >= entry_z) {
-        pos_now <- -target_size
-      }
-    }
-
-    out[i] <- pos_now
-  }
-
-  out
+  strat_pair_spread_revert_signal_cpp(
+    zscore_value = zscore_value,
+    entry_z = entry_z,
+    exit_z = exit_z,
+    target_size = target_size
+  )
 }
 
 #' Pair-Spread-Reversion Target Positions

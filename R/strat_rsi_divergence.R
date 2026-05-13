@@ -32,58 +32,14 @@
 }
 
 .rsi_divergence_signal <- function(close, rsi, pivot_left = 2L, pivot_right = 2L, exit_level = 50, target_size = 1.0) {
-  n <- length(close)
-  price_piv <- .pivot_flags(close, left = pivot_left, right = pivot_right)
-  rsi_piv <- .pivot_flags(rsi, left = pivot_left, right = pivot_right)
-
-  bull_signal <- rep(FALSE, n)
-  bear_signal <- rep(FALSE, n)
-  last_low_idx <- NA_integer_
-  last_high_idx <- NA_integer_
-
-  for (i in seq_len(n)) {
-    if (price_piv$low[i] && rsi_piv$low[i]) {
-      if (!is.na(last_low_idx) && close[i] < close[last_low_idx] && rsi[i] > rsi[last_low_idx]) {
-        bull_signal[min(n, i + pivot_right)] <- TRUE
-      }
-      last_low_idx <- i
-    }
-
-    if (price_piv$high[i] && rsi_piv$high[i]) {
-      if (!is.na(last_high_idx) && close[i] > close[last_high_idx] && rsi[i] < rsi[last_high_idx]) {
-        bear_signal[min(n, i + pivot_right)] <- TRUE
-      }
-      last_high_idx <- i
-    }
-  }
-
-  out <- rep(0.0, n)
-  pos_now <- 0.0
-
-  for (i in seq_len(n)) {
-    if (is.na(rsi[i])) {
-      out[i] <- pos_now
-      next
-    }
-
-    if (pos_now > 0 && rsi[i] >= exit_level) {
-      pos_now <- 0.0
-    } else if (pos_now < 0 && rsi[i] <= exit_level) {
-      pos_now <- 0.0
-    }
-
-    if (pos_now == 0.0) {
-      if (bull_signal[i]) {
-        pos_now <- target_size
-      } else if (bear_signal[i]) {
-        pos_now <- -target_size
-      }
-    }
-
-    out[i] <- pos_now
-  }
-
-  out
+  strat_rsi_divergence_signal_cpp(
+    close = close,
+    rsi = rsi,
+    pivot_left = as.integer(pivot_left),
+    pivot_right = as.integer(pivot_right),
+    exit_level = exit_level,
+    target_size = target_size
+  )
 }
 
 #' RSI-Divergence Target Positions

@@ -1,3 +1,13 @@
+# strategyr 0.1.7
+
+- add standardized strategy evaluation helpers, comparison tools, walk-forward
+  mining, parameter selection, anti-overfit filtering, and richer performance
+  summaries with leverage and recorder-cost support
+- add release-quality README workflows, strategy taxonomy and API consistency
+  docs, warmup-aware real-data mining examples, and broader strategy fixtures
+- add native signal kernels for high-use path-dependent strategies and a native
+  portfolio-weight accounting core behind `backtest_portfolio_weights()`
+
 # strategyr 0.1.6
 
 - add four new strategy-variant waves across trend, oscillator, cross-sectional,

@@ -21,33 +21,13 @@
 }
 
 .rsi_revert_signal <- function(rsi, oversold = 30, overbought = 70, exit_level = 50, target_size = 1.0) {
-  out <- rep(0.0, length(rsi))
-  pos_now <- 0.0
-
-  for (i in seq_along(rsi)) {
-    if (is.na(rsi[i])) {
-      out[i] <- pos_now
-      next
-    }
-
-    if (pos_now > 0 && rsi[i] >= exit_level) {
-      pos_now <- 0.0
-    } else if (pos_now < 0 && rsi[i] <= exit_level) {
-      pos_now <- 0.0
-    }
-
-    if (pos_now == 0.0) {
-      if (rsi[i] <= oversold) {
-        pos_now <- target_size
-      } else if (rsi[i] >= overbought) {
-        pos_now <- -target_size
-      }
-    }
-
-    out[i] <- pos_now
-  }
-
-  out
+  strat_rsi_revert_signal_cpp(
+    rsi = rsi,
+    oversold = oversold,
+    overbought = overbought,
+    exit_level = exit_level,
+    target_size = target_size
+  )
 }
 
 #' RSI-Reversion Target Positions

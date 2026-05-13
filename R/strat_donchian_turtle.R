@@ -16,38 +16,14 @@
 }
 
 .donchian_turtle_signal <- function(close, entry_high, entry_low, exit_high, exit_low, target_size = 1.0) {
-  entry_high_prev <- .lag_num(entry_high, 1L)
-  entry_low_prev <- .lag_num(entry_low, 1L)
-  exit_high_prev <- .lag_num(exit_high, 1L)
-  exit_low_prev <- .lag_num(exit_low, 1L)
-  out <- rep(0.0, length(close))
-  pos_now <- 0.0
-
-  for (i in seq_along(close)) {
-    if (is.na(close[i]) || is.na(entry_high_prev[i]) || is.na(entry_low_prev[i]) ||
-        is.na(exit_high_prev[i]) || is.na(exit_low_prev[i])) {
-      out[i] <- pos_now
-      next
-    }
-
-    if (pos_now > 0 && close[i] < exit_low_prev[i]) {
-      pos_now <- 0.0
-    } else if (pos_now < 0 && close[i] > exit_high_prev[i]) {
-      pos_now <- 0.0
-    }
-
-    if (pos_now == 0.0) {
-      if (close[i] > entry_high_prev[i]) {
-        pos_now <- target_size
-      } else if (close[i] < entry_low_prev[i]) {
-        pos_now <- -target_size
-      }
-    }
-
-    out[i] <- pos_now
-  }
-
-  out
+  strat_donchian_turtle_signal_cpp(
+    close = close,
+    entry_high = entry_high,
+    entry_low = entry_low,
+    exit_high = exit_high,
+    exit_low = exit_low,
+    target_size = target_size
+  )
 }
 
 #' Donchian-Turtle Target Positions
