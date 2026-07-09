@@ -10,6 +10,7 @@ Related contributor note:
   inputs, output level, and default `strat_id`.
 - `docs/api_consistency.md` records current API conventions, intentional
   exceptions, and cleanup targets.
+- `docs/ml_rl.md` documents optional experimental LSTM and PPO workflows.
 
 ## 1. Feature Layer
 
@@ -196,6 +197,21 @@ walk-forward summary helper reports out-of-sample score stability, train/test
 score decay, and insufficient-warmup counts. The filter helper applies simple
 anti-overfit gates such as minimum out-of-sample windows, positive-window rate,
 maximum train/test score decay, and warmup-quality thresholds.
+
+## Optional ML/RL Layer
+
+Experimental ML/RL helpers sit beside the feature and strategy layers rather
+than replacing them. `calc_lstm_forecast()` may create a forecast column with
+optional `torch`, and `strat_lstm_forecast_tgt_pos()` converts that forecast
+into a standard target-position vector. `train_ppo_policy_py()` is a
+`reticulate` adapter for Python `stable-baselines3`, while
+`strat_ppo_policy_tgt_pos()` maps PPO actions into target positions.
+
+The boundary is explicit: model training and inference may be external or
+optional, but strategy outputs must remain compatible with `backtest_rcpp()`,
+`backtest_portfolio_weights()`, `.action_plan_from_tgt_pos()`, and portfolio
+target-weight workflows. See `docs/ml_rl.md` for the dependency and design
+rules.
 
 ## Native Strategy Kernels
 

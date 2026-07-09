@@ -206,6 +206,8 @@ calc_option_rho <- function(S, K, T, r, sigma, type = c("call", "put"), q = 0) {
 #' continuous dividend yield.
 #'
 #' @inheritParams calc_option_theta
+#' @param theta_scale Character scalar controlling theta units, either
+#'   `"annual"` or `"daily"`.
 #'
 #' @return A one-row `data.table` with `price`, `delta`, `gamma`, `vega`,
 #'   `theta`, and `rho`.

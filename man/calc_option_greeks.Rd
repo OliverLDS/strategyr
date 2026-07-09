@@ -29,6 +29,9 @@ calc_option_greeks(
 \item{type}{Character scalar, either `"call"` or `"put"`.}
 
 \item{q}{Numeric annualized continuous dividend yield.}
+
+\item{theta_scale}{Character scalar controlling theta units, either
+`"annual"` or `"daily"`.}
 }
 \value{
 A one-row `data.table` with `price`, `delta`, `gamma`, `vega`,

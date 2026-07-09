@@ -1,16 +1,18 @@
 Package: strategyr
 Type: Package
 Title: Execution-Oriented Strategy Workflows for Dynamic Trading Decisions
-Version: 0.1.7
+Version: 0.1.7.1
 Authors@R: 
     person("Oliver", "Zhou", , "oliver.yxzhou@gmail.com", role = c("aut", "cre"))
+Author: Oliver Zhou
+Maintainer: Oliver Zhou <oliver.yxzhou@gmail.com>
 Description: Tools for modular, execution-oriented strategy workflows that
     transform market features, portfolio state, and dynamic quantitative
     analysis into actionable signals, target positions, portfolio
     adjustments, and order intents. The package emphasizes path-dependent
     backtesting so strategy decisions remain consistent with evolving account
     state, execution assumptions, and market conditions.
-License: MIT
+License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 Depends: 
@@ -25,7 +27,9 @@ Suggests:
     devtools,
     testthat,
     ggplot2,
-    TTR
+    TTR,
+    torch,
+    reticulate
 URL: https://github.com/OliverLDS/strategyr
 BugReports: https://github.com/OliverLDS/strategyr/issues
 Collate:
@@ -54,6 +58,7 @@ Collate:
     'portfolio_options.R'
     'strategy_mining.R'
     'strat_utils.R'
+    'calc_ml_lstm.R'
     'strat_buy_and_hold.R'
     'strat_ladder_bounce.R'
     'strat_ladder_breakout.R'
@@ -117,4 +122,6 @@ Collate:
     'strat_straddle.R'
     'strat_strangle.R'
     'strat_vertical_spread.R'
-RoxygenNote: 7.2.3
+    'strat_lstm_forecast.R'
+    'strat_ppo_policy.R'
+Config/roxygen2/version: 7.2.3
