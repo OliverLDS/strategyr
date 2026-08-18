@@ -57,6 +57,7 @@ Collate:
     'portfolio_fixed_income.R'
     'portfolio_options.R'
     'strategy_mining.R'
+    'strategy_public_definition.R'
     'strat_utils.R'
     'calc_ml_lstm.R'
     'strat_buy_and_hold.R'

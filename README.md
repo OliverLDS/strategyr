@@ -251,6 +251,16 @@ ppo_tgt <- strat_ppo_policy_tgt_pos(
 experimental paths. See `docs/ml_rl.md`; model outputs should still become
 standard target positions, target weights, or action plans.
 
+### 8. Public strategy definitions for Vox
+
+```r
+strategy_public_definition("ema_cross")
+```
+
+`strategy_public_definition()` is the canonical public-safe source for Vox
+strategy descriptions and effective default parameters. Phase 1 supported ids
+are `buy_hold`, `ema_cross`, `rsi_revert`, and `vol_target`.
+
 ## Docs
 
 - [Package Philosophy](docs/philosophy.md)
