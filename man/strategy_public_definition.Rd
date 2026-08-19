@@ -8,7 +8,8 @@ strategy_public_definition(id)
 }
 \arguments{
 \item{id}{Character scalar strategy id. Supported ids are `"buy_hold"`,
-`"ema_cross"`, `"rsi_revert"`, and `"vol_target"`.}
+`"ema_cross"`, `"ema_cross_adx"`, `"ema_cross_slope_confirm"`,
+`"rsi_revert"`, and `"vol_target"`.}
 }
 \value{
 A named list with schema version, public description, target

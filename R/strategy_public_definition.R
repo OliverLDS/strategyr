@@ -44,6 +44,41 @@
         .strategy_public_parameter("atr_window", 300L, "bars", "Rolling window used by the ATR quantile.")
       )
     ),
+    ema_cross_adx = list(
+      schema_version = "1.0",
+      id = "ema_cross_adx",
+      display_name = "EMA Cross with ADX Filter",
+      target_function = "strat_ema_cross_adx_tgt_pos",
+      summary = "Uses EMA direction only when ADX indicates sufficient trend strength.",
+      signal_rule = "Go long when the fast EMA is above the slow EMA and ADX is at or above the threshold, go short for the reverse, and stay flat otherwise.",
+      position_semantics = "Positive values are long exposure, negative values are short exposure, and zero is flat.",
+      data_requirements = c("daily OHLC high", "daily OHLC low", "daily OHLC close"),
+      rebalance_rule = "A changed target is eligible after a completed source bar.",
+      parameters = list(
+        .strategy_public_parameter("fast", 20L, "bars", "Fast EMA window."),
+        .strategy_public_parameter("slow", 50L, "bars", "Slow EMA window."),
+        .strategy_public_parameter("adx_n", 14L, "bars", "ADX window."),
+        .strategy_public_parameter("adx_threshold", 20, "ADX level", "Minimum ADX level required for an active target."),
+        .strategy_public_parameter("target_size", 1.0, "target exposure", "Absolute target exposure when a signal is active.")
+      )
+    ),
+    ema_cross_slope_confirm = list(
+      schema_version = "1.0",
+      id = "ema_cross_slope_confirm",
+      display_name = "EMA Cross with Slope Confirmation",
+      target_function = "strat_ema_cross_slope_confirm_tgt_pos",
+      summary = "Uses EMA alignment only when both EMA slopes confirm the same direction.",
+      signal_rule = "Go long when the fast EMA is above the slow EMA and both slopes are positive, go short when the reverse is true, and stay flat otherwise.",
+      position_semantics = "Positive values are long exposure, negative values are short exposure, and zero is flat.",
+      data_requirements = c("daily OHLC close"),
+      rebalance_rule = "A changed target is eligible after a completed source bar.",
+      parameters = list(
+        .strategy_public_parameter("fast", 20L, "bars", "Fast EMA window."),
+        .strategy_public_parameter("slow", 50L, "bars", "Slow EMA window."),
+        .strategy_public_parameter("slope_lag", 1L, "bars", "Lag used to estimate EMA slope."),
+        .strategy_public_parameter("target_size", 1.0, "target exposure", "Absolute target exposure when a signal is active.")
+      )
+    ),
     rsi_revert = list(
       schema_version = "1.0",
       id = "rsi_revert",
@@ -89,7 +124,8 @@
 #' Vox for a supported strategy id.
 #'
 #' @param id Character scalar strategy id. Supported ids are `"buy_hold"`,
-#'   `"ema_cross"`, `"rsi_revert"`, and `"vol_target"`.
+#'   `"ema_cross"`, `"ema_cross_adx"`, `"ema_cross_slope_confirm"`,
+#'   `"rsi_revert"`, and `"vol_target"`.
 #'
 #' @return A named list with schema version, public description, target
 #'   function name, data requirements, rebalance rule, and effective default

@@ -259,7 +259,8 @@ strategy_public_definition("ema_cross")
 
 `strategy_public_definition()` is the canonical public-safe source for Vox
 strategy descriptions and effective default parameters. Phase 1 supported ids
-are `buy_hold`, `ema_cross`, `rsi_revert`, and `vol_target`.
+are `buy_hold`, `ema_cross`, `ema_cross_adx`,
+`ema_cross_slope_confirm`, `rsi_revert`, and `vol_target`.
 
 ## Docs
 

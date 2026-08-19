@@ -2,7 +2,7 @@
 
 - add `strategy_public_definition()` as the canonical public-safe strategy
   definition API for Vox Phase 1 strategies: `buy_hold`, `ema_cross`,
-  `rsi_revert`, and `vol_target`
+  `ema_cross_adx`, `ema_cross_slope_confirm`, `rsi_revert`, and `vol_target`
 - add optional experimental ML/RL support through `calc_lstm_forecast()`,
   `strat_lstm_forecast_*()`, `train_ppo_policy_py()`, and
   `strat_ppo_policy_*()`
