@@ -1,4 +1,9 @@
 .strategy_public_parameter <- function(name, value, unit, description) {
+  if (!is.null(value) &&
+      (!is.numeric(value) || length(value) != 1L || !is.finite(value))) {
+    stop("Public parameter values must be finite numeric scalars or NULL.", call. = FALSE)
+  }
+
   list(
     name = name,
     value = value,
@@ -167,8 +172,8 @@
         .strategy_public_parameter("trend_adx_threshold", 25, "ADX level", "ADX level at or above which the trend regime is allowed."),
         .strategy_public_parameter("revert_adx_threshold", 18, "ADX level", "ADX level at or below which the reversion regime is allowed."),
         .strategy_public_parameter("high_vol_threshold", 0.4, "annualized volatility", "Maximum realized volatility allowed for active regimes."),
-        .strategy_public_parameter("breadth_long_threshold", -Inf, "breadth value", "Minimum breadth value required for long trend states."),
-        .strategy_public_parameter("breadth_short_threshold", Inf, "breadth value", "Maximum breadth value required for short trend states."),
+        .strategy_public_parameter("breadth_long_threshold", NULL, "breadth value", "Disabled by default; no lower breadth bound is applied."),
+        .strategy_public_parameter("breadth_short_threshold", NULL, "breadth value", "Disabled by default; no upper breadth bound is applied."),
         .strategy_public_parameter("annualization", 252, "bars per year", "Annualization factor for realized volatility."),
         .strategy_public_parameter("target_size", 1.0, "target exposure", "Absolute target exposure when a signal is active.")
       )
@@ -251,7 +256,10 @@
 #'
 #' @return A named list with schema version, public description, target
 #'   function name, data requirements, rebalance rule, and effective default
-#'   strategy parameters.
+#'   strategy parameters. Each parameter has `name`, `value`, `unit`, and
+#'   `description`; `value` is a finite numeric scalar or `NULL`. A `NULL`
+#'   value explicitly represents an unbounded setting that is disabled by
+#'   default in the public JSON-safe contract.
 #' @export
 strategy_public_definition <- function(id) {
   stopifnot(is.character(id), length(id) == 1L, !is.na(id))

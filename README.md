@@ -259,7 +259,9 @@ strategy_monitor_definition("donchian_turtle")
 ```
 
 `strategy_public_definition()` is the canonical public-safe source for Vox
-strategy descriptions and effective default parameters.
+strategy descriptions and effective default parameters. Parameter values are
+finite numbers or `NULL`; `NULL` explicitly marks an unbounded setting that is
+disabled by default so definitions remain JSON-safe.
 `strategy_monitor_definition()` is the canonical public-safe source for
 Strategy Monitor family and regime metadata. Current Vox monitor ids are
 `buy_hold`, `ema_cross_adx`, `ema_cross_slope_confirm`, `rsi_revert`,

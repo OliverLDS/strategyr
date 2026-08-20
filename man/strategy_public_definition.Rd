@@ -15,7 +15,10 @@ strategy_public_definition(id)
 \value{
 A named list with schema version, public description, target
   function name, data requirements, rebalance rule, and effective default
-  strategy parameters.
+  strategy parameters. Each parameter has `name`, `value`, `unit`, and
+  `description`; `value` is a finite numeric scalar or `NULL`. A `NULL`
+  value explicitly represents an unbounded setting that is disabled by
+  default in the public JSON-safe contract.
 }
 \description{
 Returns the canonical public-safe deterministic strategy definition used by

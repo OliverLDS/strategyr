@@ -36,7 +36,12 @@ expect_public_defaults_match_formals <- function(id, fun, excluded = c("DT", "co
   expected_names <- setdiff(names(fmls), excluded)
   expect_equal(param_names(def), expected_names)
   for (nm in expected_names) {
-    expect_equal(param_value(def, nm), eval(fmls[[nm]]))
+    expected_value <- eval(fmls[[nm]])
+    if (is.numeric(expected_value) && length(expected_value) == 1L && !is.finite(expected_value)) {
+      expect_null(param_value(def, nm))
+    } else {
+      expect_equal(param_value(def, nm), expected_value)
+    }
   }
 }
 
@@ -77,7 +82,7 @@ test_that("public definitions use the stable schema", {
     for (param in def$parameters) {
       expect_named(param, c("name", "value", "unit", "description"))
       expect_type(param$name, "character")
-      expect_true(is.numeric(param$value))
+      expect_true(is.null(param$value) || (is.numeric(param$value) && length(param$value) == 1L && is.finite(param$value)))
       expect_type(param$unit, "character")
       expect_type(param$description, "character")
     }
@@ -114,6 +119,28 @@ test_that("public definitions precisely match executable target defaults", {
   expect_public_defaults_match_formals("rsi_revert", strat_rsi_revert_tgt_pos)
   expect_public_defaults_match_formals("vol_target", strat_vol_target_tgt_pos)
   expect_public_defaults_match_formals("regime_switch", strat_regime_switch_tgt_pos, excluded = c("DT", "breadth_col", "compute_features", "debug"))
+})
+
+test_that("unbounded public parameters are explicitly nullable", {
+  def <- strategy_public_definition("regime_switch")
+
+  expect_null(param_value(def, "breadth_long_threshold"))
+  expect_null(param_value(def, "breadth_short_threshold"))
+  expect_match(
+    def$parameters[[which(param_names(def) == "breadth_long_threshold")[[1L]]]]$description,
+    "Disabled by default"
+  )
+  expect_match(
+    def$parameters[[which(param_names(def) == "breadth_short_threshold")[[1L]]]]$description,
+    "Disabled by default"
+  )
+})
+
+test_that("public definitions serialize to JSON without non-finite values", {
+  for (id in public_definition_ids) {
+    json <- jsonlite::toJSON(strategy_public_definition(id), auto_unbox = TRUE, null = "null")
+    expect_false(grepl("Inf|NaN", json, fixed = FALSE))
+  }
 })
 
 test_that("public definitions reject unsupported ids clearly", {

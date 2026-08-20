@@ -1,5 +1,7 @@
 # strategyr 0.1.7.1
 
+- represent disabled public strategy parameter bounds as JSON-safe `NULL`
+  values while preserving the corresponding unbounded runtime defaults
 - add `strategy_public_definition()` as the canonical public-safe strategy
   definition API for Vox Phase 1 strategies: `buy_hold`, `ema_cross`,
   `ema_cross_adx`, `ema_cross_slope_confirm`, `rsi_revert`, and `vol_target`

@@ -28,6 +28,7 @@ Suggests:
     testthat,
     ggplot2,
     TTR,
+    jsonlite,
     torch,
     reticulate
 URL: https://github.com/OliverLDS/strategyr
