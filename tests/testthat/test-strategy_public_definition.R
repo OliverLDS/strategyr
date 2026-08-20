@@ -3,8 +3,22 @@ public_definition_ids <- c(
   "ema_cross",
   "ema_cross_adx",
   "ema_cross_slope_confirm",
+  "donchian_turtle",
+  "bollinger_revert",
   "rsi_revert",
-  "vol_target"
+  "vol_target",
+  "regime_switch"
+)
+
+monitor_definition_ids <- c(
+  "buy_hold",
+  "ema_cross_adx",
+  "ema_cross_slope_confirm",
+  "rsi_revert",
+  "vol_target",
+  "donchian_turtle",
+  "bollinger_revert",
+  "regime_switch"
 )
 
 param_value <- function(def, name) {
@@ -12,7 +26,21 @@ param_value <- function(def, name) {
   def$parameters[[which(idx)[[1L]]]]$value
 }
 
-test_that("public definitions support the four Phase 1 ids", {
+param_names <- function(def) {
+  vapply(def$parameters, `[[`, character(1L), "name")
+}
+
+expect_public_defaults_match_formals <- function(id, fun, excluded = c("DT", "compute_features", "debug")) {
+  def <- strategy_public_definition(id)
+  fmls <- formals(fun)
+  expected_names <- setdiff(names(fmls), excluded)
+  expect_equal(param_names(def), expected_names)
+  for (nm in expected_names) {
+    expect_equal(param_value(def, nm), eval(fmls[[nm]]))
+  }
+}
+
+test_that("public definitions support the expected ids", {
   defs <- lapply(public_definition_ids, strategy_public_definition)
   expect_equal(vapply(defs, `[[`, character(1L), "id"), public_definition_ids)
 })
@@ -62,8 +90,11 @@ test_that("public definitions map to exact target functions", {
     ema_cross = "strat_ema_cross_tgt_pos",
     ema_cross_adx = "strat_ema_cross_adx_tgt_pos",
     ema_cross_slope_confirm = "strat_ema_cross_slope_confirm_tgt_pos",
+    donchian_turtle = "strat_donchian_turtle_tgt_pos",
+    bollinger_revert = "strat_bollinger_revert_tgt_pos",
     rsi_revert = "strat_rsi_revert_tgt_pos",
-    vol_target = "strat_vol_target_tgt_pos"
+    vol_target = "strat_vol_target_tgt_pos",
+    regime_switch = "strat_regime_switch_tgt_pos"
   )
 
   actual <- vapply(public_definition_ids, function(id) {
@@ -73,69 +104,82 @@ test_that("public definitions map to exact target functions", {
   expect_equal(actual, expected)
 })
 
-test_that("public definitions expose key default parameter values", {
-  buy_hold <- strategy_public_definition("buy_hold")
-  ema_cross <- strategy_public_definition("ema_cross")
-  ema_cross_adx <- strategy_public_definition("ema_cross_adx")
-  ema_cross_slope_confirm <- strategy_public_definition("ema_cross_slope_confirm")
-  rsi_revert <- strategy_public_definition("rsi_revert")
-  vol_target <- strategy_public_definition("vol_target")
-
-  expect_equal(param_value(buy_hold, "value"), 1.0)
-
-  expect_equal(param_value(ema_cross, "fast"), 20L)
-  expect_equal(param_value(ema_cross, "slow"), 50L)
-  expect_equal(param_value(ema_cross, "low_atr_threshold"), 5L)
-  expect_equal(param_value(ema_cross, "freshness_floor"), 18L)
-  expect_equal(param_value(ema_cross, "tp_ratio"), 0.05)
-  expect_equal(param_value(ema_cross, "sl_ratio"), 0.02)
-  expect_equal(param_value(ema_cross, "atr_h"), 12L)
-  expect_equal(param_value(ema_cross, "atr_window"), 300L)
-
-  expect_equal(param_value(ema_cross_adx, "fast"), 20L)
-  expect_equal(param_value(ema_cross_adx, "slow"), 50L)
-  expect_equal(param_value(ema_cross_adx, "adx_n"), 14L)
-  expect_equal(param_value(ema_cross_adx, "adx_threshold"), 20)
-  expect_equal(param_value(ema_cross_adx, "target_size"), 1.0)
-
-  expect_equal(param_value(ema_cross_slope_confirm, "fast"), 20L)
-  expect_equal(param_value(ema_cross_slope_confirm, "slow"), 50L)
-  expect_equal(param_value(ema_cross_slope_confirm, "slope_lag"), 1L)
-  expect_equal(param_value(ema_cross_slope_confirm, "target_size"), 1.0)
-
-  expect_equal(param_value(rsi_revert, "n"), 14L)
-  expect_equal(param_value(rsi_revert, "oversold"), 30)
-  expect_equal(param_value(rsi_revert, "overbought"), 70)
-  expect_equal(param_value(rsi_revert, "exit_level"), 50)
-  expect_equal(param_value(rsi_revert, "target_size"), 1.0)
-
-  expect_equal(param_value(vol_target, "trend_n"), 20L)
-  expect_equal(param_value(vol_target, "rv_n"), 20L)
-  expect_equal(param_value(vol_target, "vol_target"), 0.2)
-  expect_equal(param_value(vol_target, "max_leverage"), 1.0)
-  expect_equal(param_value(vol_target, "annualization"), 252)
-})
-
-test_that("new EMA variant public defaults match executable formals", {
-  ema_cross_adx <- strategy_public_definition("ema_cross_adx")
-  adx_formals <- formals(strat_ema_cross_adx_tgt_pos)
-  expect_equal(param_value(ema_cross_adx, "fast"), eval(adx_formals$fast))
-  expect_equal(param_value(ema_cross_adx, "slow"), eval(adx_formals$slow))
-  expect_equal(param_value(ema_cross_adx, "adx_n"), eval(adx_formals$adx_n))
-  expect_equal(param_value(ema_cross_adx, "adx_threshold"), eval(adx_formals$adx_threshold))
-  expect_equal(param_value(ema_cross_adx, "target_size"), eval(adx_formals$target_size))
-
-  ema_cross_slope_confirm <- strategy_public_definition("ema_cross_slope_confirm")
-  slope_formals <- formals(strat_ema_cross_slope_confirm_tgt_pos)
-  expect_equal(param_value(ema_cross_slope_confirm, "fast"), eval(slope_formals$fast))
-  expect_equal(param_value(ema_cross_slope_confirm, "slow"), eval(slope_formals$slow))
-  expect_equal(param_value(ema_cross_slope_confirm, "slope_lag"), eval(slope_formals$slope_lag))
-  expect_equal(param_value(ema_cross_slope_confirm, "target_size"), eval(slope_formals$target_size))
+test_that("public definitions precisely match executable target defaults", {
+  expect_public_defaults_match_formals("buy_hold", strat_buy_and_hold_tgt_pos)
+  expect_public_defaults_match_formals("ema_cross", strat_ema_cross_tgt_pos)
+  expect_public_defaults_match_formals("ema_cross_adx", strat_ema_cross_adx_tgt_pos)
+  expect_public_defaults_match_formals("ema_cross_slope_confirm", strat_ema_cross_slope_confirm_tgt_pos)
+  expect_public_defaults_match_formals("donchian_turtle", strat_donchian_turtle_tgt_pos)
+  expect_public_defaults_match_formals("bollinger_revert", strat_bollinger_revert_tgt_pos)
+  expect_public_defaults_match_formals("rsi_revert", strat_rsi_revert_tgt_pos)
+  expect_public_defaults_match_formals("vol_target", strat_vol_target_tgt_pos)
+  expect_public_defaults_match_formals("regime_switch", strat_regime_switch_tgt_pos, excluded = c("DT", "breadth_col", "compute_features", "debug"))
 })
 
 test_that("public definitions reject unsupported ids clearly", {
   expect_error(
     strategy_public_definition("macd_cross"),
     "Unsupported public strategy id"
+  )
+})
+
+test_that("monitor definitions cover all intended Vox strategies", {
+  defs <- lapply(monitor_definition_ids, strategy_monitor_definition)
+  expect_equal(vapply(defs, `[[`, character(1L), "strategy_id"), monitor_definition_ids)
+})
+
+test_that("monitor definitions use valid public enums and array regimes", {
+  valid_families <- c("baseline", "trend", "mean_reversion", "risk_control", "adaptive")
+  valid_regimes <- c(
+    "trending",
+    "range_bound",
+    "high_volatility",
+    "normal_volatility",
+    "adaptive",
+    "regime_agnostic"
+  )
+  required_names <- c(
+    "schema_version",
+    "strategy_id",
+    "strategy_family",
+    "expected_regimes",
+    "regime_interpretation"
+  )
+
+  for (id in monitor_definition_ids) {
+    def <- strategy_monitor_definition(id)
+    expect_named(def, required_names)
+    expect_equal(def$schema_version, "1.0")
+    expect_equal(def$strategy_id, id)
+    expect_true(def$strategy_family %in% valid_families)
+    expect_type(def$expected_regimes, "character")
+    expect_gt(length(def$expected_regimes), 0L)
+    expect_true(all(def$expected_regimes %in% valid_regimes))
+    expect_type(def$regime_interpretation, "character")
+  }
+})
+
+test_that("monitor definitions do not expose execution or internal implementation data", {
+  private_fields <- c(
+    "target_function",
+    "parameters",
+    "signal_rule",
+    "data_requirements",
+    "rebalance_rule",
+    "compute_features",
+    "debug",
+    "feature_cols"
+  )
+
+  for (id in monitor_definition_ids) {
+    def <- strategy_monitor_definition(id)
+    expect_false(any(private_fields %in% names(def)))
+  }
+})
+
+test_that("monitor definitions reject unsupported ids clearly", {
+  expect_error(
+    strategy_monitor_definition("ema_cross"),
+    "Unsupported monitor strategy id"
   )
 })

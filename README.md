@@ -254,13 +254,16 @@ standard target positions, target weights, or action plans.
 ### 8. Public strategy definitions for Vox
 
 ```r
-strategy_public_definition("ema_cross")
+strategy_public_definition("donchian_turtle")
+strategy_monitor_definition("donchian_turtle")
 ```
 
 `strategy_public_definition()` is the canonical public-safe source for Vox
-strategy descriptions and effective default parameters. Phase 1 supported ids
-are `buy_hold`, `ema_cross`, `ema_cross_adx`,
-`ema_cross_slope_confirm`, `rsi_revert`, and `vol_target`.
+strategy descriptions and effective default parameters.
+`strategy_monitor_definition()` is the canonical public-safe source for
+Strategy Monitor family and regime metadata. Current Vox monitor ids are
+`buy_hold`, `ema_cross_adx`, `ema_cross_slope_confirm`, `rsi_revert`,
+`vol_target`, `donchian_turtle`, `bollinger_revert`, and `regime_switch`.
 
 ## Docs
 
