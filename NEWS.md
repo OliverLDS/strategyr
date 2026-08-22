@@ -1,3 +1,10 @@
+# Development version
+
+- remove experimental LSTM and PPO training APIs from the CRAN core; future
+  ML and RL functionality will be released as separate extensions
+- remove development-only and external-runtime packages from `Suggests`
+- add CRAN release and extension-boundary contributor documentation
+
 # strategyr 0.1.7.1
 
 - represent disabled public strategy parameter bounds as JSON-safe `NULL`
@@ -8,13 +15,6 @@
 - add public definitions for `donchian_turtle`, `bollinger_revert`, and
   `regime_switch`, plus `strategy_monitor_definition()` metadata for the eight
   intended Vox monitor strategies
-- add optional experimental ML/RL support through `calc_lstm_forecast()`,
-  `strat_lstm_forecast_*()`, `train_ppo_policy_py()`, and
-  `strat_ppo_policy_*()`
-- keep `torch` and `reticulate` in `Suggests` so LSTM/PPO workflows remain
-  opt-in and do not affect the core strategy engine runtime
-- document the ML/RL architecture boundary and PPO environment contract, and add
-  a synthetic precomputed-forecast LSTM example
 
 # strategyr 0.1.7
 

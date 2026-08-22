@@ -66,9 +66,9 @@ calc_backtest_performance <- function(equity, annualization = 252, risk_free_ret
 
   eq_norm <- equity / equity[[1L]]
   drawdown <- 1 - eq_norm / cummax(eq_norm)
-  total_return <- tail(eq_norm, 1L) - 1
+  total_return <- utils::tail(eq_norm, 1L) - 1
   years <- length(log_ret) / annualization
-  annual_return <- if (years > 0) tail(eq_norm, 1L)^(1 / years) - 1 else NA_real_
+  annual_return <- if (years > 0) utils::tail(eq_norm, 1L)^(1 / years) - 1 else NA_real_
 
   data.table::data.table(
     n_obs = n_obs,

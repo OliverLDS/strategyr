@@ -218,40 +218,7 @@ delta_plan <- plan_delta_neutral_adjustment(
 )
 ```
 
-### 7. Optional ML/RL model-output workflow
-
-```r
-ml_dt <- copy(DT)
-ml_dt[, lstm_forecast_close_20_1 := close * 1.01]
-
-lstm_tgt <- strat_lstm_forecast_tgt_pos(
-  ml_dt,
-  lookback = 20L,
-  horizon = 1L,
-  long_threshold = 0.005,
-  short_threshold = -0.005,
-  target_size = 0.5,
-  compute_features = FALSE
-)
-
-ppo_policy <- function(obs) {
-  fifelse(obs[, "close"] > mean(obs[, "close"]), 2L, 1L)
-}
-
-ppo_tgt <- strat_ppo_policy_tgt_pos(
-  ml_dt,
-  model = ppo_policy,
-  feature_cols = "close",
-  action_map = c(-1, 0, 1),
-  target_size = 0.5
-)
-```
-
-`torch`-based LSTM training and `reticulate`-based PPO training are optional
-experimental paths. See `docs/ml_rl.md`; model outputs should still become
-standard target positions, target weights, or action plans.
-
-### 8. Public strategy definitions for Vox
+### 7. Public strategy definitions for Vox
 
 ```r
 strategy_public_definition("donchian_turtle")
@@ -274,6 +241,8 @@ Strategy Monitor family and regime metadata. Current Vox monitor ids are
 - [Strategy Design Notes](docs/strategy_design.md)
 - [Strategy Catalog](docs/strategy_catalog.md)
 - [API Consistency Audit](docs/api_consistency.md)
+- [CRAN Release Checklist](docs/cran_release.md)
+- [Extension Boundaries](docs/extensions.md)
 
 ## Current Scope
 

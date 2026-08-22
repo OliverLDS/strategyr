@@ -168,7 +168,7 @@ plan_curve_trade_adjustment <- function(current_krd, target_krd, hedge_krd) {
   stopifnot(!is.null(names(current_krd)), !is.null(names(target_krd)), !is.null(names(hedge_krd)))
 
   tenor <- union(names(current_krd), union(names(target_krd), names(hedge_krd)))
-  current <- setNames(rep(0, length(tenor)), tenor)
+  current <- stats::setNames(rep(0, length(tenor)), tenor)
   target <- current
   hedge <- current
 
