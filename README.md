@@ -236,13 +236,13 @@ Strategy Monitor family and regime metadata. Current Vox monitor ids are
 
 ## Docs
 
-- [Package Philosophy](docs/philosophy.md)
-- [Architecture Notes](docs/architecture.md)
-- [Strategy Design Notes](docs/strategy_design.md)
-- [Strategy Catalog](docs/strategy_catalog.md)
-- [API Consistency Audit](docs/api_consistency.md)
-- [CRAN Release Checklist](docs/cran_release.md)
-- [Extension Boundaries](docs/extensions.md)
+- [Package Philosophy](https://github.com/OliverLDS/strategyr/blob/main/docs/philosophy.md)
+- [Architecture Notes](https://github.com/OliverLDS/strategyr/blob/main/docs/architecture.md)
+- [Strategy Design Notes](https://github.com/OliverLDS/strategyr/blob/main/docs/strategy_design.md)
+- [Strategy Catalog](https://github.com/OliverLDS/strategyr/blob/main/docs/strategy_catalog.md)
+- [API Consistency Audit](https://github.com/OliverLDS/strategyr/blob/main/docs/api_consistency.md)
+- [CRAN Release Checklist](https://github.com/OliverLDS/strategyr/blob/main/docs/cran_release.md)
+- [Extension Boundaries](https://github.com/OliverLDS/strategyr/blob/main/docs/extensions.md)
 
 ## Current Scope
 

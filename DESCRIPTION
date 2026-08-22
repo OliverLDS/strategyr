@@ -8,14 +8,14 @@ Description: Tools for modular, execution-oriented strategy workflows that
     transform market features, portfolio state, and dynamic quantitative
     analysis into actionable signals, target positions, portfolio
     adjustments, and order intents. The package emphasizes path-dependent
-    backtesting so strategy decisions remain consistent with evolving account
+    historical simulation so strategy decisions remain consistent with evolving account
     state, execution assumptions, and market conditions.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Language: en-US
 LazyData: true
 Depends: 
-    R (>= 3.6.0)
+    R (>= 4.1.0)
 Imports: 
     data.table,
     stats,
