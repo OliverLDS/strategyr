@@ -12,7 +12,7 @@
 ### R-devel
 
 * R-hub GitHub Actions checks: passed on Linux, Windows, and macOS
-* Workflow: https://github.com/OliverLDS/strategyr/actions/runs/32561102017
+* Workflow: https://github.com/OliverLDS/strategyr/actions/runs/33643523997
 
 ### Win-builder
 
@@ -24,7 +24,7 @@
 * Linux R-devel: passed
 * Windows R-devel: passed
 * macOS R-devel: passed
-* Workflow: https://github.com/OliverLDS/strategyr/actions/runs/32561102017
+* Workflow: https://github.com/OliverLDS/strategyr/actions/runs/33643523997
 
 ## Notes
 
