@@ -9,7 +9,7 @@ calc_bond_price_change_approx(
   yield_shock,
   par = 1,
   c_rate,
-  T,
+  maturity,
   freq = 2,
   accrual_frac = 0,
   price_type = c("dirty", "clean")
@@ -24,7 +24,7 @@ calc_bond_price_change_approx(
 
 \item{c_rate}{Numeric annual coupon rate.}
 
-\item{T}{Numeric scheduled maturity in years.}
+\item{maturity}{Numeric scheduled maturity in years.}
 
 \item{freq}{Integer coupon frequency per year.}
 

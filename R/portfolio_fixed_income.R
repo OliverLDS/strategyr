@@ -5,7 +5,7 @@
 #'
 #' @param par Numeric face value.
 #' @param c_rate Numeric annual coupon rate.
-#' @param T Numeric scheduled maturity in years.
+#' @param maturity Numeric scheduled maturity in years.
 #' @param freq Integer coupon frequency per year.
 #' @param ytm Numeric annualized yield-to-maturity.
 #' @param accrual_frac Numeric fraction of the current coupon period already
@@ -20,7 +20,7 @@
 calc_bond_risk_state <- function(
   par = 1,
   c_rate,
-  T,
+  maturity,
   freq = 2,
   ytm,
   accrual_frac = 0,
@@ -30,14 +30,14 @@ calc_bond_risk_state <- function(
 ) {
   stopifnot(is.numeric(par), length(par) == 1, par > 0)
   stopifnot(is.numeric(c_rate), length(c_rate) == 1, c_rate >= 0)
-  stopifnot(is.numeric(T), length(T) == 1, T > 0)
+  stopifnot(is.numeric(maturity), length(maturity) == 1, maturity > 0)
   stopifnot(is.numeric(freq), length(freq) == 1, freq > 0)
   stopifnot(is.numeric(ytm), length(ytm) == 1)
 
   clean_price <- calc_bond_clean_price(
     par = par,
     c_rate = c_rate,
-    T = T,
+    maturity = maturity,
     freq = freq,
     ytm = ytm,
     accrual_frac = accrual_frac
@@ -45,7 +45,7 @@ calc_bond_risk_state <- function(
   dirty_price <- calc_bond_dirty_price(
     par = par,
     c_rate = c_rate,
-    T = T,
+    maturity = maturity,
     freq = freq,
     ytm = ytm,
     accrual_frac = accrual_frac
@@ -53,28 +53,28 @@ calc_bond_risk_state <- function(
   duration <- calc_bond_duration(
     par = par,
     c_rate = c_rate,
-    T = T,
+    maturity = maturity,
     freq = freq,
     ytm = ytm
   )
   mduration <- calc_bond_mduration(
     par = par,
     c_rate = c_rate,
-    T = T,
+    maturity = maturity,
     freq = freq,
     ytm = ytm
   )
   convexity <- calc_bond_convexity(
     par = par,
     c_rate = c_rate,
-    T = T,
+    maturity = maturity,
     freq = freq,
     ytm = ytm
   )
   dv01 <- calc_bond_dv01(
     par = par,
     c_rate = c_rate,
-    T = T,
+    maturity = maturity,
     freq = freq,
     ytm = ytm,
     accrual_frac = accrual_frac
@@ -82,7 +82,7 @@ calc_bond_risk_state <- function(
   pv01 <- calc_bond_pv01(
     par = par,
     c_rate = c_rate,
-    T = T,
+    maturity = maturity,
     freq = freq,
     ytm = ytm,
     accrual_frac = accrual_frac
@@ -105,13 +105,13 @@ calc_bond_risk_state <- function(
       zspread <- calc_bond_zspread(
         price = dirty_price,
         spot_rates = calc_curve_zero_rate(
-          tenor_out = .bond_discount_periods(as.integer(round(T * freq)), accrual_frac = accrual_frac) / freq,
+          tenor_out = .bond_discount_periods(as.integer(round(maturity * freq)), accrual_frac = accrual_frac) / freq,
           tenor = tenor,
           zero_rate = zero_rate
         ) / freq,
         par = par,
         c_rate = c_rate,
-        T = T,
+        maturity = maturity,
         freq = freq,
         accrual_frac = accrual_frac,
         price_type = "dirty"

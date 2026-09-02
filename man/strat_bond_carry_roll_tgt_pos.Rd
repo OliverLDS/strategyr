@@ -8,7 +8,7 @@ strat_bond_carry_roll_tgt_pos(
   DT,
   par_col = "par",
   c_rate_col = "c_rate",
-  T_col = "T",
+  maturity_col = "maturity",
   freq_col = "freq",
   ytm_col = "ytm",
   accrual_frac_col = NULL,
@@ -29,7 +29,7 @@ strat_bond_carry_roll_tgt_pos(
 
 \item{c_rate_col}{Coupon-rate column name.}
 
-\item{T_col}{Maturity column name in years.}
+\item{maturity_col}{Maturity column name in years.}
 
 \item{freq_col}{Coupon-frequency column name.}
 

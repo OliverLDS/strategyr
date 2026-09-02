@@ -1,5 +1,5 @@
 .ensure_gamma_scalp_support_features <- function(DT, rv_n = 20L, iv_col = "iv", annualization = 252) {
-  .validate_market_dt(DT, c("close", "T", iv_col))
+  .validate_market_dt(DT, c("close", "time_to_expiry", iv_col))
   rv_col <- paste0("rv_", rv_n)
   if (!rv_col %in% names(DT)) {
     calc_realized_vol(DT, ns = rv_n, annualization = annualization)
@@ -10,12 +10,12 @@
     edge[!is.finite(edge)] <- NA_real_
     data.table::set(DT, j = edge_col, value = edge)
   }
-  invisible(c(iv_col, "T", rv_col, edge_col))
+  invisible(c(iv_col, "time_to_expiry", rv_col, edge_col))
 }
 
-.gamma_scalp_support_signal <- function(edge_value, T_value, edge_threshold = 0, min_T = 5 / 252, max_T = 90 / 252, target_size = 1.0) {
+.gamma_scalp_support_signal <- function(edge_value, time_to_expiry_value, edge_threshold = 0, min_time_to_expiry = 5 / 252, max_time_to_expiry = 90 / 252, target_size = 1.0) {
   out <- rep(0.0, length(edge_value))
-  valid <- !is.na(edge_value) & !is.na(T_value) & T_value >= min_T & T_value <= max_T
+  valid <- !is.na(edge_value) & !is.na(time_to_expiry_value) & time_to_expiry_value >= min_time_to_expiry & time_to_expiry_value <= max_time_to_expiry
   out[valid & edge_value >= edge_threshold] <- target_size
   out
 }
@@ -26,7 +26,7 @@
 #' strategy is active when realized volatility is sufficiently rich relative to
 #' implied volatility and option expiry remains within a tradable window.
 #'
-#' @param DT A `data.table` containing `close`, time-to-expiry `T`, and an
+#' @param DT A `data.table` containing `close`, time-to-expiry `time_to_expiry`, and an
 #'   implied-volatility column.
 #' @param rv_n Integer realized-volatility window.
 #' @param iv_col Implied-volatility column name.
@@ -34,8 +34,8 @@
 #'   `calc_realized_vol()`.
 #' @param edge_threshold Minimum realized-minus-implied volatility edge required
 #'   to activate the long-gamma support position.
-#' @param min_T Minimum time to expiry in years.
-#' @param max_T Maximum time to expiry in years.
+#' @param min_time_to_expiry Minimum time to expiry in years.
+#' @param max_time_to_expiry Maximum time to expiry in years.
 #' @param target_size Numeric absolute target exposure.
 #' @param compute_features Logical; when `TRUE`, missing realized-volatility and
 #'   gamma-edge features are added to `DT` in place.
@@ -44,21 +44,21 @@
 #'
 #' @return A numeric vector of target positions, or a list when `debug = TRUE`.
 #' @export
-strat_gamma_scalp_support_tgt_pos <- function(DT, rv_n = 20L, iv_col = "iv", annualization = 252, edge_threshold = 0, min_T = 5 / 252, max_T = 90 / 252, target_size = 1.0, compute_features = TRUE, debug = FALSE) {
+strat_gamma_scalp_support_tgt_pos <- function(DT, rv_n = 20L, iv_col = "iv", annualization = 252, edge_threshold = 0, min_time_to_expiry = 5 / 252, max_time_to_expiry = 90 / 252, target_size = 1.0, compute_features = TRUE, debug = FALSE) {
   edge_col <- paste0("gamma_scalp_edge_", rv_n)
   if (compute_features) {
     cols_needed <- .ensure_gamma_scalp_support_features(DT, rv_n = rv_n, iv_col = iv_col, annualization = annualization)
   } else {
-    cols_needed <- c("T", edge_col)
+    cols_needed <- c("time_to_expiry", edge_col)
     .validate_market_dt(DT, cols_needed)
   }
 
   tgt_pos <- .gamma_scalp_support_signal(
     edge_value = DT[[edge_col]],
-    T_value = DT[["T"]],
+    time_to_expiry_value = DT[["time_to_expiry"]],
     edge_threshold = edge_threshold,
-    min_T = min_T,
-    max_T = max_T,
+    min_time_to_expiry = min_time_to_expiry,
+    max_time_to_expiry = max_time_to_expiry,
     target_size = target_size
   )
 
@@ -87,15 +87,15 @@ strat_gamma_scalp_support_tgt_pos <- function(DT, rv_n = 20L, iv_col = "iv", ann
 #' @return A list with an action plan and, when hedge inputs are supplied, a
 #'   delta-hedge adjustment table.
 #' @export
-strat_gamma_scalp_support_action_plan <- function(DT, state, rv_n = 20L, iv_col = "iv", annualization = 252, edge_threshold = 0, min_T = 5 / 252, max_T = 90 / 252, target_size = 1.0, compute_features = TRUE, strat_id = 708L, tol_pos = 0.1, current_delta = NULL, hedge_delta = NULL, target_delta = 0, debug = FALSE) {
+strat_gamma_scalp_support_action_plan <- function(DT, state, rv_n = 20L, iv_col = "iv", annualization = 252, edge_threshold = 0, min_time_to_expiry = 5 / 252, max_time_to_expiry = 90 / 252, target_size = 1.0, compute_features = TRUE, strat_id = 708L, tol_pos = 0.1, current_delta = NULL, hedge_delta = NULL, target_delta = 0, debug = FALSE) {
   tgt_pos <- strat_gamma_scalp_support_tgt_pos(
     DT,
     rv_n = rv_n,
     iv_col = iv_col,
     annualization = annualization,
     edge_threshold = edge_threshold,
-    min_T = min_T,
-    max_T = max_T,
+    min_time_to_expiry = min_time_to_expiry,
+    max_time_to_expiry = max_time_to_expiry,
     target_size = target_size,
     compute_features = compute_features,
     debug = FALSE

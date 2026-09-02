@@ -4,14 +4,22 @@
 \alias{calc_bond_dv01}
 \title{Compute Bond DV01}
 \usage{
-calc_bond_dv01(par = 1, c_rate, T, freq = 2, ytm, accrual_frac = 0, bases = 1)
+calc_bond_dv01(
+  par = 1,
+  c_rate,
+  maturity,
+  freq = 2,
+  ytm,
+  accrual_frac = 0,
+  bases = 1
+)
 }
 \arguments{
 \item{par}{Numeric face value.}
 
 \item{c_rate}{Numeric annual coupon rate.}
 
-\item{T}{Numeric scheduled maturity in years.}
+\item{maturity}{Numeric scheduled maturity in years.}
 
 \item{freq}{Integer coupon frequency per year.}
 

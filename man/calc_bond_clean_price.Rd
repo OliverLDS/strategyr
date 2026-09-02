@@ -4,14 +4,21 @@
 \alias{calc_bond_clean_price}
 \title{Compute Bond Clean Price}
 \usage{
-calc_bond_clean_price(par = 1, c_rate, T, freq = 2, ytm, accrual_frac = 0)
+calc_bond_clean_price(
+  par = 1,
+  c_rate,
+  maturity,
+  freq = 2,
+  ytm,
+  accrual_frac = 0
+)
 }
 \arguments{
 \item{par}{Numeric face value.}
 
 \item{c_rate}{Numeric annual coupon rate.}
 
-\item{T}{Numeric scheduled maturity in years.}
+\item{maturity}{Numeric scheduled maturity in years.}
 
 \item{freq}{Integer coupon frequency per year.}
 

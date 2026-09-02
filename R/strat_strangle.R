@@ -1,4 +1,4 @@
-.ensure_strangle_features <- function(DT, date_col = "date", expiry_col = "T", type_col = "type", moneyness_col = "option_log_forward_moneyness", iv_col = "iv", target_abs_moneyness = 0.1) {
+.ensure_strangle_features <- function(DT, date_col = "date", expiry_col = "time_to_expiry", type_col = "type", moneyness_col = "option_log_forward_moneyness", iv_col = "iv", target_abs_moneyness = 0.1) {
   out <- calc_option_iv_skew(
     DT,
     date_col = date_col,
@@ -40,7 +40,7 @@
 #'
 #' @return A numeric vector of target positions, or a list when `debug = TRUE`.
 #' @export
-strat_strangle_tgt_pos <- function(DT, date_col = "date", expiry_col = "T", type_col = "type", moneyness_col = "option_log_forward_moneyness", iv_col = "iv", target_abs_moneyness = 0.1, long_iv_threshold = 0.2, short_iv_threshold = 0.4, target_size = 1.0, compute_features = TRUE, debug = FALSE) {
+strat_strangle_tgt_pos <- function(DT, date_col = "date", expiry_col = "time_to_expiry", type_col = "type", moneyness_col = "option_log_forward_moneyness", iv_col = "iv", target_abs_moneyness = 0.1, long_iv_threshold = 0.2, short_iv_threshold = 0.4, target_size = 1.0, compute_features = TRUE, debug = FALSE) {
   if (compute_features) {
     feat <- .ensure_strangle_features(
       DT,
@@ -82,7 +82,7 @@ strat_strangle_tgt_pos <- function(DT, date_col = "date", expiry_col = "T", type
 #'
 #' @return A list produced by `gen_action_plan_rcpp()`.
 #' @export
-strat_strangle_action_plan <- function(DT, state, date_col = "date", expiry_col = "T", type_col = "type", moneyness_col = "option_log_forward_moneyness", iv_col = "iv", target_abs_moneyness = 0.1, long_iv_threshold = 0.2, short_iv_threshold = 0.4, target_size = 1.0, compute_features = TRUE, strat_id = 704L, tol_pos = 0.1, debug = FALSE) {
+strat_strangle_action_plan <- function(DT, state, date_col = "date", expiry_col = "time_to_expiry", type_col = "type", moneyness_col = "option_log_forward_moneyness", iv_col = "iv", target_abs_moneyness = 0.1, long_iv_threshold = 0.2, short_iv_threshold = 0.4, target_size = 1.0, compute_features = TRUE, strat_id = 704L, tol_pos = 0.1, debug = FALSE) {
   tgt_out <- strat_strangle_tgt_pos(
     DT,
     date_col = date_col,

@@ -1,9 +1,9 @@
-.ensure_bond_carry_roll_spread_filter_features <- function(DT, par_col = "par", c_rate_col = "c_rate", T_col = "T", freq_col = "freq", ytm_col = "ytm", spread_col = "credit_spread", accrual_frac_col = NULL, holding_years_col = NULL, funding_rate_col = NULL, min_long_spread = NULL, max_short_spread = NULL) {
+.ensure_bond_carry_roll_spread_filter_features <- function(DT, par_col = "par", c_rate_col = "c_rate", maturity_col = "maturity", freq_col = "freq", ytm_col = "ytm", spread_col = "credit_spread", accrual_frac_col = NULL, holding_years_col = NULL, funding_rate_col = NULL, min_long_spread = NULL, max_short_spread = NULL) {
   cols_needed <- .ensure_bond_carry_roll_features(
     DT,
     par_col = par_col,
     c_rate_col = c_rate_col,
-    T_col = T_col,
+    maturity_col = maturity_col,
     freq_col = freq_col,
     ytm_col = ytm_col,
     accrual_frac_col = accrual_frac_col,
@@ -45,7 +45,7 @@
 #'   `bond_carry` and `bond_roll_down_return` columns.
 #' @param par_col Face-value column name.
 #' @param c_rate_col Coupon-rate column name.
-#' @param T_col Maturity column name in years.
+#' @param maturity_col Maturity column name in years.
 #' @param freq_col Coupon-frequency column name.
 #' @param ytm_col Yield-to-maturity column name.
 #' @param spread_col Credit-spread column name used for optional trade filters.
@@ -68,13 +68,13 @@
 #'
 #' @return A numeric vector of target positions, or a list when `debug = TRUE`.
 #' @export
-strat_bond_carry_roll_spread_filter_tgt_pos <- function(DT, par_col = "par", c_rate_col = "c_rate", T_col = "T", freq_col = "freq", ytm_col = "ytm", spread_col = "credit_spread", accrual_frac_col = NULL, holding_years_col = NULL, funding_rate_col = NULL, long_threshold = 0, short_threshold = 0, min_long_spread = NULL, max_short_spread = NULL, target_size = 1.0, compute_features = TRUE, debug = FALSE) {
+strat_bond_carry_roll_spread_filter_tgt_pos <- function(DT, par_col = "par", c_rate_col = "c_rate", maturity_col = "maturity", freq_col = "freq", ytm_col = "ytm", spread_col = "credit_spread", accrual_frac_col = NULL, holding_years_col = NULL, funding_rate_col = NULL, long_threshold = 0, short_threshold = 0, min_long_spread = NULL, max_short_spread = NULL, target_size = 1.0, compute_features = TRUE, debug = FALSE) {
   if (compute_features) {
     cols_needed <- .ensure_bond_carry_roll_spread_filter_features(
       DT,
       par_col = par_col,
       c_rate_col = c_rate_col,
-      T_col = T_col,
+      maturity_col = maturity_col,
       freq_col = freq_col,
       ytm_col = ytm_col,
       spread_col = spread_col,
@@ -123,12 +123,12 @@ strat_bond_carry_roll_spread_filter_tgt_pos <- function(DT, par_col = "par", c_r
 #'
 #' @return A list produced by `gen_action_plan_rcpp()`.
 #' @export
-strat_bond_carry_roll_spread_filter_action_plan <- function(DT, state, par_col = "par", c_rate_col = "c_rate", T_col = "T", freq_col = "freq", ytm_col = "ytm", spread_col = "credit_spread", accrual_frac_col = NULL, holding_years_col = NULL, funding_rate_col = NULL, long_threshold = 0, short_threshold = 0, min_long_spread = NULL, max_short_spread = NULL, target_size = 1.0, compute_features = TRUE, strat_id = 606L, tol_pos = 0.1, debug = FALSE) {
+strat_bond_carry_roll_spread_filter_action_plan <- function(DT, state, par_col = "par", c_rate_col = "c_rate", maturity_col = "maturity", freq_col = "freq", ytm_col = "ytm", spread_col = "credit_spread", accrual_frac_col = NULL, holding_years_col = NULL, funding_rate_col = NULL, long_threshold = 0, short_threshold = 0, min_long_spread = NULL, max_short_spread = NULL, target_size = 1.0, compute_features = TRUE, strat_id = 606L, tol_pos = 0.1, debug = FALSE) {
   tgt_pos <- strat_bond_carry_roll_spread_filter_tgt_pos(
     DT,
     par_col = par_col,
     c_rate_col = c_rate_col,
-    T_col = T_col,
+    maturity_col = maturity_col,
     freq_col = freq_col,
     ytm_col = ytm_col,
     spread_col = spread_col,

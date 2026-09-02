@@ -1,4 +1,4 @@
-.ensure_iv_skew_realized_vol_confirm_features <- function(DT, date_col = "date", expiry_col = "T", type_col = "type", moneyness_col = "option_log_forward_moneyness", iv_col = "iv", target_abs_moneyness = 0.1, close_col = "close", rv_n = 20L, annualization = 252) {
+.ensure_iv_skew_realized_vol_confirm_features <- function(DT, date_col = "date", expiry_col = "time_to_expiry", type_col = "type", moneyness_col = "option_log_forward_moneyness", iv_col = "iv", target_abs_moneyness = 0.1, close_col = "close", rv_n = 20L, annualization = 252) {
   .validate_market_dt(DT, c(date_col, expiry_col, type_col, moneyness_col, iv_col, close_col))
 
   feat <- .ensure_iv_skew_features(
@@ -82,7 +82,7 @@
 #'
 #' @return A numeric vector of target positions, or a list when `debug = TRUE`.
 #' @export
-strat_iv_skew_realized_vol_confirm_tgt_pos <- function(DT, date_col = "date", expiry_col = "T", type_col = "type", moneyness_col = "option_log_forward_moneyness", iv_col = "iv", target_abs_moneyness = 0.1, close_col = "close", rv_n = 20L, annualization = 252, long_threshold = 0.02, short_threshold = -0.02, iv_rv_confirm = 0, target_size = 1.0, compute_features = TRUE, debug = FALSE) {
+strat_iv_skew_realized_vol_confirm_tgt_pos <- function(DT, date_col = "date", expiry_col = "time_to_expiry", type_col = "type", moneyness_col = "option_log_forward_moneyness", iv_col = "iv", target_abs_moneyness = 0.1, close_col = "close", rv_n = 20L, annualization = 252, long_threshold = 0.02, short_threshold = -0.02, iv_rv_confirm = 0, target_size = 1.0, compute_features = TRUE, debug = FALSE) {
   if (compute_features) {
     feat <- .ensure_iv_skew_realized_vol_confirm_features(
       DT,
@@ -133,7 +133,7 @@ strat_iv_skew_realized_vol_confirm_tgt_pos <- function(DT, date_col = "date", ex
 #'
 #' @return A list produced by `gen_action_plan_rcpp()`.
 #' @export
-strat_iv_skew_realized_vol_confirm_action_plan <- function(DT, state, date_col = "date", expiry_col = "T", type_col = "type", moneyness_col = "option_log_forward_moneyness", iv_col = "iv", target_abs_moneyness = 0.1, close_col = "close", rv_n = 20L, annualization = 252, long_threshold = 0.02, short_threshold = -0.02, iv_rv_confirm = 0, target_size = 1.0, compute_features = TRUE, strat_id = 709L, tol_pos = 0.1, debug = FALSE) {
+strat_iv_skew_realized_vol_confirm_action_plan <- function(DT, state, date_col = "date", expiry_col = "time_to_expiry", type_col = "type", moneyness_col = "option_log_forward_moneyness", iv_col = "iv", target_abs_moneyness = 0.1, close_col = "close", rv_n = 20L, annualization = 252, long_threshold = 0.02, short_threshold = -0.02, iv_rv_confirm = 0, target_size = 1.0, compute_features = TRUE, strat_id = 709L, tol_pos = 0.1, debug = FALSE) {
   tgt_out <- strat_iv_skew_realized_vol_confirm_tgt_pos(
     DT,
     date_col = date_col,

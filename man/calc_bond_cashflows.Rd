@@ -4,14 +4,14 @@
 \alias{calc_bond_cashflows}
 \title{Compute Bond Cash Flows}
 \usage{
-calc_bond_cashflows(par = 1, c_rate, T, freq = 2)
+calc_bond_cashflows(par = 1, c_rate, maturity, freq = 2)
 }
 \arguments{
 \item{par}{Numeric face value.}
 
 \item{c_rate}{Numeric annual coupon rate.}
 
-\item{T}{Numeric maturity in years.}
+\item{maturity}{Numeric maturity in years.}
 
 \item{freq}{Integer coupon frequency per year.}
 }

@@ -1,4 +1,4 @@
-.ensure_iv_directional_overlay_features <- function(DT, date_col = "date", expiry_col = "T", type_col = "type", moneyness_col = "option_log_forward_moneyness", iv_col = "iv", target_abs_moneyness = 0.1, trend_col = "close", trend_n = 50L) {
+.ensure_iv_directional_overlay_features <- function(DT, date_col = "date", expiry_col = "time_to_expiry", type_col = "type", moneyness_col = "option_log_forward_moneyness", iv_col = "iv", target_abs_moneyness = 0.1, trend_col = "close", trend_n = 50L) {
   .validate_market_dt(DT, c(date_col, expiry_col, type_col, moneyness_col, iv_col, trend_col))
 
   feat <- .ensure_iv_skew_features(
@@ -81,7 +81,7 @@
 #'
 #' @return A numeric vector of target positions, or a list when `debug = TRUE`.
 #' @export
-strat_iv_directional_overlay_tgt_pos <- function(DT, date_col = "date", expiry_col = "T", type_col = "type", moneyness_col = "option_log_forward_moneyness", iv_col = "iv", target_abs_moneyness = 0.1, trend_col = "close", trend_n = 50L, skew_long_threshold = 0.02, skew_short_threshold = -0.02, overlay_mode = c("confirm", "flip"), target_size = 1.0, compute_features = TRUE, debug = FALSE) {
+strat_iv_directional_overlay_tgt_pos <- function(DT, date_col = "date", expiry_col = "time_to_expiry", type_col = "type", moneyness_col = "option_log_forward_moneyness", iv_col = "iv", target_abs_moneyness = 0.1, trend_col = "close", trend_n = 50L, skew_long_threshold = 0.02, skew_short_threshold = -0.02, overlay_mode = c("confirm", "flip"), target_size = 1.0, compute_features = TRUE, debug = FALSE) {
   overlay_mode <- match.arg(overlay_mode)
   ema_col <- paste0("trend_ema_", trend_n)
 
@@ -136,7 +136,7 @@ strat_iv_directional_overlay_tgt_pos <- function(DT, date_col = "date", expiry_c
 #'
 #' @return A list produced by `gen_action_plan_rcpp()`.
 #' @export
-strat_iv_directional_overlay_action_plan <- function(DT, state, date_col = "date", expiry_col = "T", type_col = "type", moneyness_col = "option_log_forward_moneyness", iv_col = "iv", target_abs_moneyness = 0.1, trend_col = "close", trend_n = 50L, skew_long_threshold = 0.02, skew_short_threshold = -0.02, overlay_mode = c("confirm", "flip"), target_size = 1.0, compute_features = TRUE, strat_id = 710L, tol_pos = 0.1, debug = FALSE) {
+strat_iv_directional_overlay_action_plan <- function(DT, state, date_col = "date", expiry_col = "time_to_expiry", type_col = "type", moneyness_col = "option_log_forward_moneyness", iv_col = "iv", target_abs_moneyness = 0.1, trend_col = "close", trend_n = 50L, skew_long_threshold = 0.02, skew_short_threshold = -0.02, overlay_mode = c("confirm", "flip"), target_size = 1.0, compute_features = TRUE, strat_id = 710L, tol_pos = 0.1, debug = FALSE) {
   overlay_mode <- match.arg(overlay_mode)
   tgt_out <- strat_iv_directional_overlay_tgt_pos(
     DT,

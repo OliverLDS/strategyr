@@ -5,7 +5,7 @@ test_that("option moneyness features are added in place", {
   DT <- data.table(
     S = c(100, 100),
     K = c(95, 105),
-    T = c(30 / 365, 30 / 365),
+    time_to_expiry = c(30 / 365, 30 / 365),
     r = c(0.05, 0.05),
     q = c(0.01, 0.01)
   )
@@ -20,7 +20,7 @@ test_that("option moneyness features are added in place", {
 test_that("option IV skew and put-call spread reflect chain asymmetry", {
   DT <- data.table(
     date = rep(1, 4),
-    T = rep(30 / 365, 4),
+    time_to_expiry = rep(30 / 365, 4),
     type = c("put", "call", "put", "call"),
     option_log_forward_moneyness = c(-0.1, 0.1, -0.01, 0.01),
     iv = c(0.30, 0.22, 0.26, 0.24)
@@ -36,7 +36,7 @@ test_that("option IV skew and put-call spread reflect chain asymmetry", {
 test_that("option IV term structure and smile slope summarize chain state", {
   DT <- data.table(
     date = rep(1, 6),
-    T = c(rep(30 / 365, 3), rep(60 / 365, 3)),
+    time_to_expiry = c(rep(30 / 365, 3), rep(60 / 365, 3)),
     option_log_forward_moneyness = c(-0.1, 0, 0.1, -0.1, 0, 0.1),
     iv = c(0.28, 0.25, 0.27, 0.30, 0.27, 0.29)
   )

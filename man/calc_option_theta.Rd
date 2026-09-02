@@ -7,7 +7,7 @@
 calc_option_theta(
   S,
   K,
-  T,
+  time_to_expiry,
   r,
   sigma,
   type = c("call", "put"),
@@ -20,7 +20,7 @@ calc_option_theta(
 
 \item{K}{Numeric strike price.}
 
-\item{T}{Numeric time to expiry in years.}
+\item{time_to_expiry}{Numeric time to expiry in years.}
 
 \item{r}{Numeric annualized risk-free rate.}
 

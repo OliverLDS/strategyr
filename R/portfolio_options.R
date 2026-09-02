@@ -4,7 +4,7 @@
 #' contract size so the result is ready for portfolio aggregation.
 #'
 #' @param option_state A `data.table` containing at least `asset`, `S`, `K`,
-#'   `T`, `r`, `sigma`, `type`, and `units`.
+#'   `time_to_expiry`, `r`, `sigma`, `type`, and `units`.
 #' @param contract_size_col Column name containing contract-size multipliers.
 #' @param units_col Column name containing signed position units.
 #'
@@ -13,7 +13,7 @@
 calc_position_greeks <- function(option_state, contract_size_col = "contract_size", units_col = "units") {
   stopifnot(data.table::is.data.table(option_state))
 
-  required_cols <- c("asset", "S", "K", "T", "r", "sigma", "type", units_col)
+  required_cols <- c("asset", "S", "K", "time_to_expiry", "r", "sigma", "type", units_col)
   stopifnot(all(required_cols %in% names(option_state)))
 
   DT <- data.table::copy(option_state)
@@ -24,12 +24,12 @@ calc_position_greeks <- function(option_state, contract_size_col = "contract_siz
     DT[, q := 0.0]
   }
 
-  DT[, price := mapply(.calc_option_price_bs, S, K, T, r, sigma, type, q)]
-  DT[, delta := mapply(calc_option_delta, S, K, T, r, sigma, type, q)]
-  DT[, gamma := mapply(calc_option_gamma, S, K, T, r, sigma, q)]
-  DT[, vega := mapply(calc_option_vega, S, K, T, r, sigma, q)]
-  DT[, theta := mapply(calc_option_theta, S, K, T, r, sigma, type, q, MoreArgs = list(scale = "daily"))]
-  DT[, rho := mapply(calc_option_rho, S, K, T, r, sigma, type, q)]
+  DT[, price := mapply(.calc_option_price_bs, S, K, time_to_expiry, r, sigma, type, q)]
+  DT[, delta := mapply(calc_option_delta, S, K, time_to_expiry, r, sigma, type, q)]
+  DT[, gamma := mapply(calc_option_gamma, S, K, time_to_expiry, r, sigma, q)]
+  DT[, vega := mapply(calc_option_vega, S, K, time_to_expiry, r, sigma, q)]
+  DT[, theta := mapply(calc_option_theta, S, K, time_to_expiry, r, sigma, type, q, MoreArgs = list(scale = "daily"))]
+  DT[, rho := mapply(calc_option_rho, S, K, time_to_expiry, r, sigma, type, q)]
 
   DT[, delta_pos := get(units_col) * get(contract_size_col) * delta]
   DT[, gamma_pos := get(units_col) * get(contract_size_col) * gamma]
@@ -46,7 +46,7 @@ calc_position_greeks <- function(option_state, contract_size_col = "contract_siz
 #'
 #' @param S Numeric spot price.
 #' @param K Numeric strike price.
-#' @param T Numeric time to expiry in years.
+#' @param time_to_expiry Numeric time to expiry in years.
 #' @param r Numeric annualized risk-free rate.
 #' @param sigma Optional numeric annualized volatility.
 #' @param type Character scalar, either `"call"` or `"put"`.
@@ -57,17 +57,17 @@ calc_position_greeks <- function(option_state, contract_size_col = "contract_siz
 #' @return A one-row `data.table` with observed/model price, implied
 #'   volatility, IV source, and Greeks.
 #' @export
-calc_option_risk_state <- function(S, K, T, r, sigma = NULL, type = c("call", "put"), q = 0, price = NULL) {
+calc_option_risk_state <- function(S, K, time_to_expiry, r, sigma = NULL, type = c("call", "put"), q = 0, price = NULL) {
   type <- .validate_option_type(type)
 
   iv_source <- "input_sigma"
   if (is.null(sigma)) {
     stopifnot(!is.null(price))
-    sigma <- calc_option_iv(price = price, S = S, K = K, T = T, r = r, type = type, q = q)
+    sigma <- calc_option_iv(price = price, S = S, K = K, time_to_expiry = time_to_expiry, r = r, type = type, q = q)
     iv_source <- "inferred_from_price"
   }
 
-  greeks <- calc_option_greeks(S = S, K = K, T = T, r = r, sigma = sigma, type = type, q = q, theta_scale = "daily")
+  greeks <- calc_option_greeks(S = S, K = K, time_to_expiry = time_to_expiry, r = r, sigma = sigma, type = type, q = q, theta_scale = "daily")
   model_price <- greeks$price
   market_price <- if (is.null(price)) model_price else price
 

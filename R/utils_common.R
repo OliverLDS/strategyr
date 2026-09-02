@@ -20,6 +20,7 @@ utils::globalVariables(c(
   "prior_high", "prior_low", "px_1", "px_2", "px_3", "r",
   "raw_delta_units", "raw_target_units", "rho", "rho_pos", "sigma",
   "target_notional", "target_units", "target_weight", "theta", "theta_pos",
+  "time_to_expiry",
   "trend_value", "type", "vega", "vega_pos", "warmup_insufficient_count",
   "warmup_insufficient_rate"
 ))
@@ -66,5 +67,3 @@ utils::globalVariables(c(
 .h_to_tau <- function(h) {
   h/log(2)
 }
-
-

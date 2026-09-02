@@ -5,7 +5,7 @@ test_that("calc_bond_risk_state returns a compact bond risk snapshot", {
   out <- calc_bond_risk_state(
     par = 100,
     c_rate = 0.06,
-    T = 3,
+    maturity = 3,
     freq = 2,
     ytm = 0.05,
     accrual_frac = 0.25
@@ -24,7 +24,7 @@ test_that("calc_bond_risk_state can include z-spread from an explicit curve", {
   out <- calc_bond_risk_state(
     par = 100,
     c_rate = 0.06,
-    T = 3,
+    maturity = 3,
     freq = 2,
     ytm = 0.05,
     tenor = c(0.5, 1, 2, 3),

@@ -8,7 +8,7 @@ strat_iv_skew_realized_vol_confirm_action_plan(
   DT,
   state,
   date_col = "date",
-  expiry_col = "T",
+  expiry_col = "time_to_expiry",
   type_col = "type",
   moneyness_col = "option_log_forward_moneyness",
   iv_col = "iv",

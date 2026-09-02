@@ -7,7 +7,7 @@
 calc_bond_key_rate_duration_tenor(
   par = 1,
   c_rate,
-  T,
+  maturity,
   freq = 2,
   tenor,
   zero_rate,
@@ -22,7 +22,7 @@ calc_bond_key_rate_duration_tenor(
 
 \item{c_rate}{Numeric annual coupon rate.}
 
-\item{T}{Numeric scheduled maturity in years.}
+\item{maturity}{Numeric scheduled maturity in years.}
 
 \item{freq}{Integer coupon frequency per year.}
 

@@ -6,7 +6,7 @@ test_that("calc_position_greeks scales Greeks by units and contract size", {
     asset = c("SPY_C", "SPY_P"),
     S = c(100, 100),
     K = c(100, 100),
-    T = c(1, 1),
+    time_to_expiry = c(1, 1),
     r = c(0.05, 0.05),
     sigma = c(0.2, 0.2),
     type = c("call", "put"),
@@ -30,7 +30,7 @@ test_that("calc_option_risk_state returns a compact option snapshot", {
   out <- calc_option_risk_state(
     S = 100,
     K = 100,
-    T = 1,
+    time_to_expiry = 1,
     r = 0.05,
     sigma = 0.2,
     type = "call"
@@ -54,7 +54,7 @@ test_that("calc_option_risk_state can infer implied volatility from price", {
   out <- calc_option_risk_state(
     S = 100,
     K = 100,
-    T = 1,
+    time_to_expiry = 1,
     r = 0.05,
     sigma = NULL,
     type = "put",

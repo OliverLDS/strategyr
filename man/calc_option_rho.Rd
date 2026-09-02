@@ -4,14 +4,14 @@
 \alias{calc_option_rho}
 \title{Compute Option Rho}
 \usage{
-calc_option_rho(S, K, T, r, sigma, type = c("call", "put"), q = 0)
+calc_option_rho(S, K, time_to_expiry, r, sigma, type = c("call", "put"), q = 0)
 }
 \arguments{
 \item{S}{Numeric spot price.}
 
 \item{K}{Numeric strike price.}
 
-\item{T}{Numeric time to expiry in years.}
+\item{time_to_expiry}{Numeric time to expiry in years.}
 
 \item{r}{Numeric annualized risk-free rate.}
 

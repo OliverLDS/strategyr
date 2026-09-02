@@ -5,7 +5,7 @@ test_that("calc_period_rate converts annual yield to per-period rate", {
 
 test_that("calc_bond_cashflows generates level coupon bond cash flows", {
   expect_equal(
-    calc_bond_cashflows(par = 100, c_rate = 0.06, T = 2, freq = 2),
+    calc_bond_cashflows(par = 100, c_rate = 0.06, maturity = 2, freq = 2),
     c(3, 3, 3, 103)
   )
 })
@@ -17,7 +17,7 @@ test_that("calc_bond_npv matches manual present value", {
 
   expect_equal(calc_bond_npv(cashflows = cashflows, rates = rates), ref)
   expect_equal(
-    calc_bond_npv(par = 100, c_rate = 0.06, T = 2, freq = 2, ytm = 0.06),
+    calc_bond_npv(par = 100, c_rate = 0.06, maturity = 2, freq = 2, ytm = 0.06),
     ref
   )
 })
@@ -56,24 +56,24 @@ test_that("effective duration and convexity match finite-difference formulas", {
 
 test_that("accrued interest, dirty price, and clean price are internally consistent", {
   accrued <- calc_bond_accrued_interest(par = 100, c_rate = 0.06, freq = 2, accrual_frac = 0.4)
-  dirty <- calc_bond_dirty_price(par = 100, c_rate = 0.06, T = 2, freq = 2, ytm = 0.05, accrual_frac = 0.4)
-  clean <- calc_bond_clean_price(par = 100, c_rate = 0.06, T = 2, freq = 2, ytm = 0.05, accrual_frac = 0.4)
+  dirty <- calc_bond_dirty_price(par = 100, c_rate = 0.06, maturity = 2, freq = 2, ytm = 0.05, accrual_frac = 0.4)
+  clean <- calc_bond_clean_price(par = 100, c_rate = 0.06, maturity = 2, freq = 2, ytm = 0.05, accrual_frac = 0.4)
 
   expect_equal(accrued, 3 * 0.4)
   expect_equal(clean, dirty - accrued)
 })
 
 test_that("bond yield solves back to the target dirty and clean prices", {
-  dirty <- calc_bond_dirty_price(par = 100, c_rate = 0.06, T = 2, freq = 2, ytm = 0.05, accrual_frac = 0.25)
-  clean <- calc_bond_clean_price(par = 100, c_rate = 0.06, T = 2, freq = 2, ytm = 0.05, accrual_frac = 0.25)
+  dirty <- calc_bond_dirty_price(par = 100, c_rate = 0.06, maturity = 2, freq = 2, ytm = 0.05, accrual_frac = 0.25)
+  clean <- calc_bond_clean_price(par = 100, c_rate = 0.06, maturity = 2, freq = 2, ytm = 0.05, accrual_frac = 0.25)
 
   expect_equal(
-    calc_bond_yield(dirty, par = 100, c_rate = 0.06, T = 2, freq = 2, accrual_frac = 0.25, price_type = "dirty"),
+    calc_bond_yield(dirty, par = 100, c_rate = 0.06, maturity = 2, freq = 2, accrual_frac = 0.25, price_type = "dirty"),
     0.05,
     tolerance = 1e-10
   )
   expect_equal(
-    calc_bond_yield(clean, par = 100, c_rate = 0.06, T = 2, freq = 2, accrual_frac = 0.25, price_type = "clean"),
+    calc_bond_yield(clean, par = 100, c_rate = 0.06, maturity = 2, freq = 2, accrual_frac = 0.25, price_type = "clean"),
     0.05,
     tolerance = 1e-10
   )
@@ -82,12 +82,12 @@ test_that("bond yield solves back to the target dirty and clean prices", {
 test_that("bond dv01 matches central-difference dirty price shock", {
   ytm <- 0.05
   bump <- 1 / 10000
-  p_up <- calc_bond_dirty_price(par = 100, c_rate = 0.06, T = 2, freq = 2, ytm = ytm + bump, accrual_frac = 0.3)
-  p_dn <- calc_bond_dirty_price(par = 100, c_rate = 0.06, T = 2, freq = 2, ytm = ytm - bump, accrual_frac = 0.3)
+  p_up <- calc_bond_dirty_price(par = 100, c_rate = 0.06, maturity = 2, freq = 2, ytm = ytm + bump, accrual_frac = 0.3)
+  p_dn <- calc_bond_dirty_price(par = 100, c_rate = 0.06, maturity = 2, freq = 2, ytm = ytm - bump, accrual_frac = 0.3)
   ref <- (p_dn - p_up) / 2
 
   expect_equal(
-    calc_bond_dv01(par = 100, c_rate = 0.06, T = 2, freq = 2, ytm = ytm, accrual_frac = 0.3),
+    calc_bond_dv01(par = 100, c_rate = 0.06, maturity = 2, freq = 2, ytm = ytm, accrual_frac = 0.3),
     ref,
     tolerance = 1e-10
   )
@@ -95,8 +95,8 @@ test_that("bond dv01 matches central-difference dirty price shock", {
 
 test_that("bond pv01 equals dv01 under the same shock convention", {
   expect_equal(
-    calc_bond_pv01(par = 100, c_rate = 0.06, T = 2, freq = 2, ytm = 0.05, accrual_frac = 0.3),
-    calc_bond_dv01(par = 100, c_rate = 0.06, T = 2, freq = 2, ytm = 0.05, accrual_frac = 0.3),
+    calc_bond_pv01(par = 100, c_rate = 0.06, maturity = 2, freq = 2, ytm = 0.05, accrual_frac = 0.3),
+    calc_bond_dv01(par = 100, c_rate = 0.06, maturity = 2, freq = 2, ytm = 0.05, accrual_frac = 0.3),
     tolerance = 1e-12
   )
 })
@@ -104,13 +104,13 @@ test_that("bond pv01 equals dv01 under the same shock convention", {
 test_that("bond price change approximation matches duration-convexity formula", {
   ytm <- 0.05
   shock <- 0.01
-  price <- calc_bond_dirty_price(par = 100, c_rate = 0.06, T = 2, freq = 2, ytm = ytm, accrual_frac = 0.2)
-  mdur <- calc_bond_mduration(par = 100, c_rate = 0.06, T = 2, freq = 2, ytm = ytm)
-  conv <- calc_bond_convexity(par = 100, c_rate = 0.06, T = 2, freq = 2, ytm = ytm)
+  price <- calc_bond_dirty_price(par = 100, c_rate = 0.06, maturity = 2, freq = 2, ytm = ytm, accrual_frac = 0.2)
+  mdur <- calc_bond_mduration(par = 100, c_rate = 0.06, maturity = 2, freq = 2, ytm = ytm)
+  conv <- calc_bond_convexity(par = 100, c_rate = 0.06, maturity = 2, freq = 2, ytm = ytm)
   ref <- price * (-mdur * shock + 0.5 * conv * shock^2)
 
   expect_equal(
-    calc_bond_price_change_approx(ytm = ytm, yield_shock = shock, par = 100, c_rate = 0.06, T = 2, freq = 2, accrual_frac = 0.2),
+    calc_bond_price_change_approx(ytm = ytm, yield_shock = shock, par = 100, c_rate = 0.06, maturity = 2, freq = 2, accrual_frac = 0.2),
     ref,
     tolerance = 1e-10
   )
@@ -167,32 +167,32 @@ test_that("bond key rate duration isolates sensitivity at the shocked period", {
 })
 
 test_that("bond carry matches coupon-accrual minus financing definition", {
-  begin_dirty <- calc_bond_dirty_price(par = 100, c_rate = 0.06, T = 2, freq = 2, ytm = 0.05, accrual_frac = 0.2)
+  begin_dirty <- calc_bond_dirty_price(par = 100, c_rate = 0.06, maturity = 2, freq = 2, ytm = 0.05, accrual_frac = 0.2)
   ref <- (100 * 0.06 * 0.5 - begin_dirty * 0.02 * 0.5) / begin_dirty
 
   expect_equal(
-    calc_bond_carry(par = 100, c_rate = 0.06, T = 2, freq = 2, ytm = 0.05, accrual_frac = 0.2, holding_years = 0.5, funding_rate = 0.02),
+    calc_bond_carry(par = 100, c_rate = 0.06, maturity = 2, freq = 2, ytm = 0.05, accrual_frac = 0.2, holding_years = 0.5, funding_rate = 0.02),
     ref,
     tolerance = 1e-10
   )
 })
 
 test_that("bond roll-down return matches unchanged-yield shorter-maturity price move", {
-  begin_dirty <- calc_bond_dirty_price(par = 100, c_rate = 0.06, T = 2, freq = 2, ytm = 0.05, accrual_frac = 0.2)
-  end_dirty <- calc_bond_dirty_price(par = 100, c_rate = 0.06, T = 1.5, freq = 2, ytm = 0.05, accrual_frac = 0.2)
+  begin_dirty <- calc_bond_dirty_price(par = 100, c_rate = 0.06, maturity = 2, freq = 2, ytm = 0.05, accrual_frac = 0.2)
+  end_dirty <- calc_bond_dirty_price(par = 100, c_rate = 0.06, maturity = 1.5, freq = 2, ytm = 0.05, accrual_frac = 0.2)
   ref <- (end_dirty - begin_dirty) / begin_dirty
 
   expect_equal(
-    calc_bond_roll_down_return(par = 100, c_rate = 0.06, T = 2, freq = 2, ytm = 0.05, accrual_frac = 0.2, holding_years = 0.5),
+    calc_bond_roll_down_return(par = 100, c_rate = 0.06, maturity = 2, freq = 2, ytm = 0.05, accrual_frac = 0.2, holding_years = 0.5),
     ref,
     tolerance = 1e-10
   )
 })
 
 test_that("bond z-spread recovers flat-curve spread difference", {
-  cashflows <- calc_bond_cashflows(par = 100, c_rate = 0.06, T = 2, freq = 2)
+  cashflows <- calc_bond_cashflows(par = 100, c_rate = 0.06, maturity = 2, freq = 2)
   spot_rates <- rep(0.04 / 2, length(cashflows))
-  price <- calc_bond_dirty_price(par = 100, c_rate = 0.06, T = 2, freq = 2, ytm = 0.05)
+  price <- calc_bond_dirty_price(par = 100, c_rate = 0.06, maturity = 2, freq = 2, ytm = 0.05)
 
   expect_equal(
     calc_bond_zspread(price = price, spot_rates = spot_rates, cashflows = cashflows, freq = 2, price_type = "dirty"),
@@ -276,7 +276,7 @@ test_that("tenor-based bond key rate duration is positive for a standard long bo
   out <- calc_bond_key_rate_duration_tenor(
     par = 100,
     c_rate = 0.06,
-    T = 3,
+    maturity = 3,
     freq = 2,
     tenor = c(0.5, 1, 2, 3),
     zero_rate = c(0.04, 0.042, 0.045, 0.047),
@@ -292,7 +292,7 @@ test_that("bond spread duration is positive for a standard long bond", {
   out <- calc_bond_spread_duration(
     par = 100,
     c_rate = 0.06,
-    T = 3,
+    maturity = 3,
     freq = 2,
     tenor = c(0.5, 1, 2, 3),
     zero_rate = c(0.04, 0.042, 0.045, 0.047),

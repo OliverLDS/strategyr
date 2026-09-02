@@ -8,7 +8,7 @@ calc_option_forward_moneyness(
   DT,
   spot_col = "S",
   strike_col = "K",
-  expiry_col = "T",
+  expiry_col = "time_to_expiry",
   rate_col = "r",
   dividend_col = "q"
 )

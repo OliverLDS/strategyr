@@ -4,14 +4,14 @@
 \alias{calc_option_gamma}
 \title{Compute Option Gamma}
 \usage{
-calc_option_gamma(S, K, T, r, sigma, q = 0)
+calc_option_gamma(S, K, time_to_expiry, r, sigma, q = 0)
 }
 \arguments{
 \item{S}{Numeric spot price.}
 
 \item{K}{Numeric strike price.}
 
-\item{T}{Numeric time to expiry in years.}
+\item{time_to_expiry}{Numeric time to expiry in years.}
 
 \item{r}{Numeric annualized risk-free rate.}
 

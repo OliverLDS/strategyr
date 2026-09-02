@@ -154,7 +154,7 @@ portfolio_bt$equity[, .(date, equity, gross_exposure, turnover, fee_paid)]
 bond_dt <- data.table(
   par = rep(100, 5),
   c_rate = rep(0.05, 5),
-  T = seq(2, 6),
+  maturity = seq(2, 6),
   freq = rep(2, 5),
   ytm = c(0.045, 0.044, 0.043, 0.042, 0.041)
 )
@@ -169,7 +169,7 @@ carry_tgt <- strat_bond_carry_roll_tgt_pos(
 bond_state <- calc_bond_risk_state(
   par = 100,
   c_rate = 0.06,
-  T = 3,
+  maturity = 3,
   freq = 2,
   ytm = 0.05,
   accrual_frac = 0.25
@@ -187,7 +187,7 @@ dv01_plan <- plan_duration_neutral_adjustment(
 ```r
 option_chain <- CJ(
   date = as.Date("2020-01-01") + 0:79,
-  T = c(30, 60) / 365,
+  time_to_expiry = c(30, 60) / 365,
   type = c("put", "call")
 )
 option_chain[, option_log_forward_moneyness := fifelse(type == "put", -0.1, 0.1)]
@@ -205,7 +205,7 @@ iv_tgt <- strat_iv_directional_overlay_tgt_pos(
 option_state <- calc_option_risk_state(
   S = 100,
   K = 100,
-  T = 30 / 365,
+  time_to_expiry = 30 / 365,
   r = 0.04,
   sigma = 0.25,
   type = "call"

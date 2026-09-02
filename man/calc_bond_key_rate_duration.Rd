@@ -9,7 +9,7 @@ calc_bond_key_rate_duration(
   rates = NULL,
   par = NULL,
   c_rate = NULL,
-  T = NULL,
+  maturity = NULL,
   freq = 2,
   ytm = NULL,
   accrual_frac = 0,
@@ -26,7 +26,7 @@ calc_bond_key_rate_duration(
 
 \item{c_rate}{Optional annual coupon rate for term-based input.}
 
-\item{T}{Optional maturity in years for term-based input.}
+\item{maturity}{Optional maturity in years for term-based input.}
 
 \item{freq}{Integer compounding frequency per year for term-based input and
 annualized basis-point conversion.}

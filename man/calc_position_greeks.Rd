@@ -12,7 +12,7 @@ calc_position_greeks(
 }
 \arguments{
 \item{option_state}{A `data.table` containing at least `asset`, `S`, `K`,
-`T`, `r`, `sigma`, `type`, and `units`.}
+`time_to_expiry`, `r`, `sigma`, `type`, and `units`.}
 
 \item{contract_size_col}{Column name containing contract-size multipliers.}
 

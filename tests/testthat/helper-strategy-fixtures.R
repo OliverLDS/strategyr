@@ -79,7 +79,7 @@ make_test_futures_curve <- function(n_dates = 100L) {
 
 make_test_option_surface <- function(n_dates = 80L) {
   dates <- as.Date("2020-01-01") + seq_len(n_dates) - 1L
-  out <- data.table::CJ(date = dates, T = c(30, 60) / 365, type = c("put", "call"))
+  out <- data.table::CJ(date = dates, time_to_expiry = c(30, 60) / 365, type = c("put", "call"))
   out[, day_idx := as.integer(date - min(date))]
   out[, option_log_forward_moneyness := data.table::fifelse(type == "put", -0.1, 0.1)]
   out[, close := 100 + day_idx * 0.2 + sin(day_idx / 6)]
@@ -112,7 +112,7 @@ make_test_bond_market <- function(n = 5L) {
   data.table::data.table(
     par = rep(100, n),
     c_rate = rep(0.05, n),
-    T = seq(2, 2 + n - 1),
+    time_to_expiry = seq(2, 2 + n - 1),
     freq = rep(2, n),
     ytm = rep(0.04, n)
   )

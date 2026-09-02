@@ -1,4 +1,4 @@
-.ensure_vertical_spread_features <- function(DT, date_col = "date", expiry_col = "T", type_col = "type", moneyness_col = "option_log_forward_moneyness", iv_col = "iv") {
+.ensure_vertical_spread_features <- function(DT, date_col = "date", expiry_col = "time_to_expiry", type_col = "type", moneyness_col = "option_log_forward_moneyness", iv_col = "iv") {
   out <- calc_option_put_call_iv_spread(
     DT,
     date_col = date_col,
@@ -37,7 +37,7 @@
 #'
 #' @return A numeric vector of target positions, or a list when `debug = TRUE`.
 #' @export
-strat_vertical_spread_tgt_pos <- function(DT, date_col = "date", expiry_col = "T", type_col = "type", moneyness_col = "option_log_forward_moneyness", iv_col = "iv", long_threshold = 0.02, short_threshold = -0.02, target_size = 1.0, compute_features = TRUE, debug = FALSE) {
+strat_vertical_spread_tgt_pos <- function(DT, date_col = "date", expiry_col = "time_to_expiry", type_col = "type", moneyness_col = "option_log_forward_moneyness", iv_col = "iv", long_threshold = 0.02, short_threshold = -0.02, target_size = 1.0, compute_features = TRUE, debug = FALSE) {
   if (compute_features) {
     feat <- .ensure_vertical_spread_features(
       DT,
@@ -78,7 +78,7 @@ strat_vertical_spread_tgt_pos <- function(DT, date_col = "date", expiry_col = "T
 #'
 #' @return A list produced by `gen_action_plan_rcpp()`.
 #' @export
-strat_vertical_spread_action_plan <- function(DT, state, date_col = "date", expiry_col = "T", type_col = "type", moneyness_col = "option_log_forward_moneyness", iv_col = "iv", long_threshold = 0.02, short_threshold = -0.02, target_size = 1.0, compute_features = TRUE, strat_id = 705L, tol_pos = 0.1, debug = FALSE) {
+strat_vertical_spread_action_plan <- function(DT, state, date_col = "date", expiry_col = "time_to_expiry", type_col = "type", moneyness_col = "option_log_forward_moneyness", iv_col = "iv", long_threshold = 0.02, short_threshold = -0.02, target_size = 1.0, compute_features = TRUE, strat_id = 705L, tol_pos = 0.1, debug = FALSE) {
   tgt_out <- strat_vertical_spread_tgt_pos(
     DT,
     date_col = date_col,

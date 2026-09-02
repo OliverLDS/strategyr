@@ -49,7 +49,7 @@ test_that("panel fixtures support portfolio and option strategy paths", {
 
   expect_true(all(c("date", "asset", "open", "close", "target_weight") %in% names(portfolio_dt)))
   expect_true(all(c("date", "contract_rank", "close", "time_to_expiry") %in% names(curve_dt)))
-  expect_true(all(c("date", "T", "type", "option_log_forward_moneyness", "iv", "close") %in% names(option_dt)))
+  expect_true(all(c("date", "time_to_expiry", "type", "option_log_forward_moneyness", "iv", "close") %in% names(option_dt)))
 
   roll_tgt <- strat_roll_yield_mean_revert_tgt_pos(curve_dt, z_n = 10L)
   iv_tgt <- strat_iv_directional_overlay_tgt_pos(option_dt, trend_n = 10L)

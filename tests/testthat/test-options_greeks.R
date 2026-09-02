@@ -5,7 +5,7 @@ test_that("option Greeks return a consistent call snapshot", {
   out <- calc_option_greeks(
     S = 100,
     K = 100,
-    T = 1,
+    time_to_expiry = 1,
     r = 0.05,
     sigma = 0.2,
     type = "call"
@@ -41,30 +41,30 @@ test_that("gamma and vega are positive for a standard option", {
 test_that("Greeks are consistent with finite-difference price bumps", {
   S <- 100
   K <- 100
-  T <- 1
+  time_to_expiry <- 1
   r <- 0.05
   sigma <- 0.2
   h_S <- 1e-3
   h_sigma <- 1e-4
   h_r <- 1e-4
 
-  price_0 <- strategyr:::.calc_option_price_bs(S, K, T, r, sigma, type = "call")
-  price_S_up <- strategyr:::.calc_option_price_bs(S + h_S, K, T, r, sigma, type = "call")
-  price_S_dn <- strategyr:::.calc_option_price_bs(S - h_S, K, T, r, sigma, type = "call")
-  price_sigma_up <- strategyr:::.calc_option_price_bs(S, K, T, r, sigma + h_sigma, type = "call")
-  price_sigma_dn <- strategyr:::.calc_option_price_bs(S, K, T, r, sigma - h_sigma, type = "call")
-  price_r_up <- strategyr:::.calc_option_price_bs(S, K, T, r + h_r, sigma, type = "call")
-  price_r_dn <- strategyr:::.calc_option_price_bs(S, K, T, r - h_r, sigma, type = "call")
+  price_0 <- strategyr:::.calc_option_price_bs(S, K, time_to_expiry, r, sigma, type = "call")
+  price_S_up <- strategyr:::.calc_option_price_bs(S + h_S, K, time_to_expiry, r, sigma, type = "call")
+  price_S_dn <- strategyr:::.calc_option_price_bs(S - h_S, K, time_to_expiry, r, sigma, type = "call")
+  price_sigma_up <- strategyr:::.calc_option_price_bs(S, K, time_to_expiry, r, sigma + h_sigma, type = "call")
+  price_sigma_dn <- strategyr:::.calc_option_price_bs(S, K, time_to_expiry, r, sigma - h_sigma, type = "call")
+  price_r_up <- strategyr:::.calc_option_price_bs(S, K, time_to_expiry, r + h_r, sigma, type = "call")
+  price_r_dn <- strategyr:::.calc_option_price_bs(S, K, time_to_expiry, r - h_r, sigma, type = "call")
 
   delta_fd <- (price_S_up - price_S_dn) / (2 * h_S)
   gamma_fd <- (price_S_up - 2 * price_0 + price_S_dn) / h_S^2
   vega_fd <- (price_sigma_up - price_sigma_dn) / (2 * h_sigma)
   rho_fd <- (price_r_up - price_r_dn) / (2 * h_r)
 
-  expect_equal(calc_option_delta(S, K, T, r, sigma, type = "call"), delta_fd, tolerance = 1e-5)
-  expect_equal(calc_option_gamma(S, K, T, r, sigma), gamma_fd, tolerance = 1e-5)
-  expect_equal(calc_option_vega(S, K, T, r, sigma), vega_fd, tolerance = 1e-4)
-  expect_equal(calc_option_rho(S, K, T, r, sigma, type = "call"), rho_fd, tolerance = 1e-3)
+  expect_equal(calc_option_delta(S, K, time_to_expiry, r, sigma, type = "call"), delta_fd, tolerance = 1e-5)
+  expect_equal(calc_option_gamma(S, K, time_to_expiry, r, sigma), gamma_fd, tolerance = 1e-5)
+  expect_equal(calc_option_vega(S, K, time_to_expiry, r, sigma), vega_fd, tolerance = 1e-4)
+  expect_equal(calc_option_rho(S, K, time_to_expiry, r, sigma, type = "call"), rho_fd, tolerance = 1e-3)
 })
 
 test_that("daily theta scales annual theta by 365", {
@@ -78,7 +78,7 @@ test_that("implied volatility recovers the Black-Scholes input for a call", {
   price <- strategyr:::.calc_option_price_bs(100, 100, 1, 0.05, 0.2, type = "call")
 
   expect_equal(
-    calc_option_iv(price = price, S = 100, K = 100, T = 1, r = 0.05, type = "call"),
+    calc_option_iv(price = price, S = 100, K = 100, time_to_expiry = 1, r = 0.05, type = "call"),
     0.2,
     tolerance = 1e-8
   )
@@ -88,7 +88,7 @@ test_that("implied volatility recovers the Black-Scholes input for a put", {
   price <- strategyr:::.calc_option_price_bs(100, 100, 1, 0.05, 0.2, type = "put")
 
   expect_equal(
-    calc_option_iv(price = price, S = 100, K = 100, T = 1, r = 0.05, type = "put"),
+    calc_option_iv(price = price, S = 100, K = 100, time_to_expiry = 1, r = 0.05, type = "put"),
     0.2,
     tolerance = 1e-8
   )

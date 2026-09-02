@@ -30,7 +30,7 @@ underlying_dt[is.na(rv_20), rv_20 := median(rv_20, na.rm = TRUE)]
 surface_dt <- rbindlist(list(
   underlying_dt[, .(
     date,
-    T = 30 / 365,
+    time_to_expiry = 30 / 365,
     type = "put",
     option_log_forward_moneyness = -0.1,
     iv = pmax(0.05, rv_20 + 0.03 + 0.01 * sin(seq_len(.N) / 20)),
@@ -38,7 +38,7 @@ surface_dt <- rbindlist(list(
   )],
   underlying_dt[, .(
     date,
-    T = 30 / 365,
+    time_to_expiry = 30 / 365,
     type = "call",
     option_log_forward_moneyness = 0.1,
     iv = pmax(0.05, rv_20 - 0.01 + 0.01 * cos(seq_len(.N) / 20)),

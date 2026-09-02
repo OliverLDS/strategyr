@@ -7,7 +7,7 @@
 strat_straddle_tgt_pos(
   DT,
   date_col = "date",
-  expiry_col = "T",
+  expiry_col = "time_to_expiry",
   moneyness_col = "option_log_forward_moneyness",
   iv_col = "iv",
   long_iv_threshold = 0.2,

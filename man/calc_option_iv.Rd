@@ -8,7 +8,7 @@ calc_option_iv(
   price,
   S,
   K,
-  T,
+  time_to_expiry,
   r,
   type = c("call", "put"),
   q = 0,
@@ -22,7 +22,7 @@ calc_option_iv(
 
 \item{K}{Numeric strike price.}
 
-\item{T}{Numeric time to expiry in years.}
+\item{time_to_expiry}{Numeric time to expiry in years.}
 
 \item{r}{Numeric annualized risk-free rate.}
 

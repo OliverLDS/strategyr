@@ -104,18 +104,18 @@ calc_period_rate <- function(ytm, freq = 2) {
 #'
 #' @param par Numeric face value.
 #' @param c_rate Numeric annual coupon rate.
-#' @param T Numeric maturity in years.
+#' @param maturity Numeric maturity in years.
 #' @param freq Integer coupon frequency per year.
 #'
 #' @return Numeric vector of period cash flows excluding time-zero.
 #' @export
-calc_bond_cashflows <- function(par = 1, c_rate, T, freq = 2) {
+calc_bond_cashflows <- function(par = 1, c_rate, maturity, freq = 2) {
   stopifnot(is.numeric(par), length(par) == 1, par > 0)
   stopifnot(is.numeric(c_rate), length(c_rate) == 1, c_rate >= 0)
-  stopifnot(is.numeric(T), length(T) == 1, T > 0)
+  stopifnot(is.numeric(maturity), length(maturity) == 1, maturity > 0)
   stopifnot(is.numeric(freq), length(freq) == 1, freq > 0)
 
-  n_periods <- as.integer(round(T * freq))
+  n_periods <- as.integer(round(maturity * freq))
   stopifnot(n_periods >= 1)
 
   coupon <- par * c_rate / freq
@@ -124,9 +124,9 @@ calc_bond_cashflows <- function(par = 1, c_rate, T, freq = 2) {
   cashflows
 }
 
-.bond_dirty_price_from_ytm <- function(par, c_rate, T, freq, ytm, accrual_frac = 0) {
+.bond_dirty_price_from_ytm <- function(par, c_rate, maturity, freq, ytm, accrual_frac = 0) {
   accrual_frac <- .validate_accrual_frac(accrual_frac)
-  cashflows <- calc_bond_cashflows(par = par, c_rate = c_rate, T = T, freq = freq)
+  cashflows <- calc_bond_cashflows(par = par, c_rate = c_rate, maturity = maturity, freq = freq)
   rates <- calc_period_rate(ytm, freq = freq)
   periods <- .bond_discount_periods(length(cashflows), accrual_frac = accrual_frac)
   sum(cashflows / (1 + rates)^periods)
@@ -157,16 +157,16 @@ calc_bond_cashflows <- function(par = 1, c_rate, T, freq = 2) {
 #' @param rates Optional numeric scalar or vector of per-period discount rates.
 #' @param par Optional numeric face value for term-based input.
 #' @param c_rate Optional annual coupon rate for term-based input.
-#' @param T Optional maturity in years for term-based input.
+#' @param maturity Optional maturity in years for term-based input.
 #' @param freq Integer compounding frequency per year for term-based input.
 #' @param ytm Optional annualized yield-to-maturity for term-based input.
 #'
 #' @return Numeric scalar present value.
 #' @export
-calc_bond_npv <- function(cashflows = NULL, rates = NULL, par = NULL, c_rate = NULL, T = NULL, freq = 2, ytm = NULL) {
+calc_bond_npv <- function(cashflows = NULL, rates = NULL, par = NULL, c_rate = NULL, maturity = NULL, freq = 2, ytm = NULL) {
   if (is.null(cashflows) || is.null(rates)) {
-    stopifnot(!is.null(par), !is.null(c_rate), !is.null(T), !is.null(ytm))
-    cashflows <- calc_bond_cashflows(par = par, c_rate = c_rate, T = T, freq = freq)
+    stopifnot(!is.null(par), !is.null(c_rate), !is.null(maturity), !is.null(ytm))
+    cashflows <- calc_bond_cashflows(par = par, c_rate = c_rate, maturity = maturity, freq = freq)
     rates <- calc_period_rate(ytm, freq = freq)
   }
 
@@ -183,10 +183,10 @@ calc_bond_npv <- function(cashflows = NULL, rates = NULL, par = NULL, c_rate = N
 #'
 #' @return Numeric scalar duration in years.
 #' @export
-calc_bond_duration <- function(cashflows = NULL, rates = NULL, par = NULL, c_rate = NULL, T = NULL, freq = 2, ytm = NULL) {
+calc_bond_duration <- function(cashflows = NULL, rates = NULL, par = NULL, c_rate = NULL, maturity = NULL, freq = 2, ytm = NULL) {
   if (is.null(cashflows) || is.null(rates)) {
-    stopifnot(!is.null(par), !is.null(c_rate), !is.null(T), !is.null(ytm))
-    cashflows <- calc_bond_cashflows(par = par, c_rate = c_rate, T = T, freq = freq)
+    stopifnot(!is.null(par), !is.null(c_rate), !is.null(maturity), !is.null(ytm))
+    cashflows <- calc_bond_cashflows(par = par, c_rate = c_rate, maturity = maturity, freq = freq)
     rates <- calc_period_rate(ytm, freq = freq)
   }
 
@@ -204,10 +204,10 @@ calc_bond_duration <- function(cashflows = NULL, rates = NULL, par = NULL, c_rat
 #'
 #' @return Numeric scalar modified duration in years.
 #' @export
-calc_bond_mduration <- function(cashflows = NULL, rates = NULL, par = NULL, c_rate = NULL, T = NULL, freq = 2, ytm = NULL) {
+calc_bond_mduration <- function(cashflows = NULL, rates = NULL, par = NULL, c_rate = NULL, maturity = NULL, freq = 2, ytm = NULL) {
   if (is.null(cashflows) || is.null(rates)) {
-    stopifnot(!is.null(par), !is.null(c_rate), !is.null(T), !is.null(ytm))
-    cashflows <- calc_bond_cashflows(par = par, c_rate = c_rate, T = T, freq = freq)
+    stopifnot(!is.null(par), !is.null(c_rate), !is.null(maturity), !is.null(ytm))
+    cashflows <- calc_bond_cashflows(par = par, c_rate = c_rate, maturity = maturity, freq = freq)
     rates <- calc_period_rate(ytm, freq = freq)
   }
 
@@ -225,10 +225,10 @@ calc_bond_mduration <- function(cashflows = NULL, rates = NULL, par = NULL, c_ra
 #'
 #' @return Numeric scalar convexity.
 #' @export
-calc_bond_convexity <- function(cashflows = NULL, rates = NULL, par = NULL, c_rate = NULL, T = NULL, freq = 2, ytm = NULL) {
+calc_bond_convexity <- function(cashflows = NULL, rates = NULL, par = NULL, c_rate = NULL, maturity = NULL, freq = 2, ytm = NULL) {
   if (is.null(cashflows) || is.null(rates)) {
-    stopifnot(!is.null(par), !is.null(c_rate), !is.null(T), !is.null(ytm))
-    cashflows <- calc_bond_cashflows(par = par, c_rate = c_rate, T = T, freq = freq)
+    stopifnot(!is.null(par), !is.null(c_rate), !is.null(maturity), !is.null(ytm))
+    cashflows <- calc_bond_cashflows(par = par, c_rate = c_rate, maturity = maturity, freq = freq)
     rates <- calc_period_rate(ytm, freq = freq)
   }
 
@@ -247,10 +247,10 @@ calc_bond_convexity <- function(cashflows = NULL, rates = NULL, par = NULL, c_ra
 #'
 #' @return Numeric scalar effective duration.
 #' @export
-calc_bond_eduration <- function(cashflows = NULL, rates = NULL, par = NULL, c_rate = NULL, T = NULL, freq = 2, ytm = NULL, bases = 100) {
+calc_bond_eduration <- function(cashflows = NULL, rates = NULL, par = NULL, c_rate = NULL, maturity = NULL, freq = 2, ytm = NULL, bases = 100) {
   if (is.null(cashflows) || is.null(rates)) {
-    stopifnot(!is.null(par), !is.null(c_rate), !is.null(T), !is.null(ytm))
-    cashflows <- calc_bond_cashflows(par = par, c_rate = c_rate, T = T, freq = freq)
+    stopifnot(!is.null(par), !is.null(c_rate), !is.null(maturity), !is.null(ytm))
+    cashflows <- calc_bond_cashflows(par = par, c_rate = c_rate, maturity = maturity, freq = freq)
     rates <- calc_period_rate(ytm, freq = freq)
   }
 
@@ -271,10 +271,10 @@ calc_bond_eduration <- function(cashflows = NULL, rates = NULL, par = NULL, c_ra
 #'
 #' @return Numeric scalar effective convexity.
 #' @export
-calc_bond_econvexity <- function(cashflows = NULL, rates = NULL, par = NULL, c_rate = NULL, T = NULL, freq = 2, ytm = NULL, bases = 100) {
+calc_bond_econvexity <- function(cashflows = NULL, rates = NULL, par = NULL, c_rate = NULL, maturity = NULL, freq = 2, ytm = NULL, bases = 100) {
   if (is.null(cashflows) || is.null(rates)) {
-    stopifnot(!is.null(par), !is.null(c_rate), !is.null(T), !is.null(ytm))
-    cashflows <- calc_bond_cashflows(par = par, c_rate = c_rate, T = T, freq = freq)
+    stopifnot(!is.null(par), !is.null(c_rate), !is.null(maturity), !is.null(ytm))
+    cashflows <- calc_bond_cashflows(par = par, c_rate = c_rate, maturity = maturity, freq = freq)
     rates <- calc_period_rate(ytm, freq = freq)
   }
 
@@ -316,7 +316,7 @@ calc_bond_accrued_interest <- function(par = 1, c_rate, freq = 2, accrual_frac =
 #'
 #' @param par Numeric face value.
 #' @param c_rate Numeric annual coupon rate.
-#' @param T Numeric scheduled maturity in years.
+#' @param maturity Numeric scheduled maturity in years.
 #' @param freq Integer coupon frequency per year.
 #' @param ytm Numeric annualized yield-to-maturity.
 #' @param accrual_frac Numeric fraction of the current coupon period already
@@ -324,9 +324,9 @@ calc_bond_accrued_interest <- function(par = 1, c_rate, freq = 2, accrual_frac =
 #'
 #' @return Numeric scalar dirty price.
 #' @export
-calc_bond_dirty_price <- function(par = 1, c_rate, T, freq = 2, ytm, accrual_frac = 0) {
+calc_bond_dirty_price <- function(par = 1, c_rate, maturity, freq = 2, ytm, accrual_frac = 0) {
   stopifnot(is.numeric(ytm), length(ytm) == 1)
-  .bond_dirty_price_from_ytm(par = par, c_rate = c_rate, T = T, freq = freq, ytm = ytm, accrual_frac = accrual_frac)
+  .bond_dirty_price_from_ytm(par = par, c_rate = c_rate, maturity = maturity, freq = freq, ytm = ytm, accrual_frac = accrual_frac)
 }
 
 #' Compute Bond Clean Price
@@ -338,8 +338,8 @@ calc_bond_dirty_price <- function(par = 1, c_rate, T, freq = 2, ytm, accrual_fra
 #'
 #' @return Numeric scalar clean price.
 #' @export
-calc_bond_clean_price <- function(par = 1, c_rate, T, freq = 2, ytm, accrual_frac = 0) {
-  calc_bond_dirty_price(par = par, c_rate = c_rate, T = T, freq = freq, ytm = ytm, accrual_frac = accrual_frac) -
+calc_bond_clean_price <- function(par = 1, c_rate, maturity, freq = 2, ytm, accrual_frac = 0) {
+  calc_bond_dirty_price(par = par, c_rate = c_rate, maturity = maturity, freq = freq, ytm = ytm, accrual_frac = accrual_frac) -
     calc_bond_accrued_interest(par = par, c_rate = c_rate, freq = freq, accrual_frac = accrual_frac)
 }
 
@@ -351,7 +351,7 @@ calc_bond_clean_price <- function(par = 1, c_rate, T, freq = 2, ytm, accrual_fra
 #' @param price Numeric observed bond price.
 #' @param par Numeric face value.
 #' @param c_rate Numeric annual coupon rate.
-#' @param T Numeric scheduled maturity in years.
+#' @param maturity Numeric scheduled maturity in years.
 #' @param freq Integer coupon frequency per year.
 #' @param accrual_frac Numeric fraction of the current coupon period already
 #'   accrued, on `[0, 1)`.
@@ -361,11 +361,11 @@ calc_bond_clean_price <- function(par = 1, c_rate, T, freq = 2, ytm, accrual_fra
 #'
 #' @return Numeric scalar annualized yield-to-maturity.
 #' @export
-calc_bond_yield <- function(price, par = 1, c_rate, T, freq = 2, accrual_frac = 0, price_type = c("dirty", "clean"), interval = NULL) {
+calc_bond_yield <- function(price, par = 1, c_rate, maturity, freq = 2, accrual_frac = 0, price_type = c("dirty", "clean"), interval = NULL) {
   stopifnot(is.numeric(price), length(price) == 1, price > 0)
   stopifnot(is.numeric(par), length(par) == 1, par > 0)
   stopifnot(is.numeric(c_rate), length(c_rate) == 1, c_rate >= 0)
-  stopifnot(is.numeric(T), length(T) == 1, T > 0)
+  stopifnot(is.numeric(maturity), length(maturity) == 1, maturity > 0)
   stopifnot(is.numeric(freq), length(freq) == 1, freq > 0)
   accrual_frac <- .validate_accrual_frac(accrual_frac)
   price_type <- match.arg(price_type)
@@ -383,7 +383,7 @@ calc_bond_yield <- function(price, par = 1, c_rate, T, freq = 2, accrual_frac = 
   }
 
   f <- function(ytm) {
-    .bond_dirty_price_from_ytm(par = par, c_rate = c_rate, T = T, freq = freq, ytm = ytm, accrual_frac = accrual_frac) - target_dirty
+    .bond_dirty_price_from_ytm(par = par, c_rate = c_rate, maturity = maturity, freq = freq, ytm = ytm, accrual_frac = accrual_frac) - target_dirty
   }
 
   stats::uniroot(f, interval = interval, tol = .Machine$double.eps^0.5)$root
@@ -396,7 +396,7 @@ calc_bond_yield <- function(price, par = 1, c_rate, T, freq = 2, accrual_frac = 
 #'
 #' @param par Numeric face value.
 #' @param c_rate Numeric annual coupon rate.
-#' @param T Numeric scheduled maturity in years.
+#' @param maturity Numeric scheduled maturity in years.
 #' @param freq Integer coupon frequency per year.
 #' @param ytm Numeric annualized yield-to-maturity.
 #' @param accrual_frac Numeric fraction of the current coupon period already
@@ -405,13 +405,13 @@ calc_bond_yield <- function(price, par = 1, c_rate, T, freq = 2, accrual_frac = 
 #'
 #' @return Numeric scalar DV01.
 #' @export
-calc_bond_dv01 <- function(par = 1, c_rate, T, freq = 2, ytm, accrual_frac = 0, bases = 1) {
+calc_bond_dv01 <- function(par = 1, c_rate, maturity, freq = 2, ytm, accrual_frac = 0, bases = 1) {
   stopifnot(is.numeric(ytm), length(ytm) == 1)
   stopifnot(is.numeric(bases), length(bases) == 1, bases > 0)
 
   bump <- bases / 10000
-  p_up <- calc_bond_dirty_price(par = par, c_rate = c_rate, T = T, freq = freq, ytm = ytm + bump, accrual_frac = accrual_frac)
-  p_dn <- calc_bond_dirty_price(par = par, c_rate = c_rate, T = T, freq = freq, ytm = ytm - bump, accrual_frac = accrual_frac)
+  p_up <- calc_bond_dirty_price(par = par, c_rate = c_rate, maturity = maturity, freq = freq, ytm = ytm + bump, accrual_frac = accrual_frac)
+  p_dn <- calc_bond_dirty_price(par = par, c_rate = c_rate, maturity = maturity, freq = freq, ytm = ytm - bump, accrual_frac = accrual_frac)
   (p_dn - p_up) / 2
 }
 
@@ -424,11 +424,11 @@ calc_bond_dv01 <- function(par = 1, c_rate, T, freq = 2, ytm, accrual_frac = 0, 
 #'
 #' @return Numeric scalar PV01.
 #' @export
-calc_bond_pv01 <- function(par = 1, c_rate, T, freq = 2, ytm, accrual_frac = 0, bases = 1) {
+calc_bond_pv01 <- function(par = 1, c_rate, maturity, freq = 2, ytm, accrual_frac = 0, bases = 1) {
   calc_bond_dv01(
     par = par,
     c_rate = c_rate,
-    T = T,
+    maturity = maturity,
     freq = freq,
     ytm = ytm,
     accrual_frac = accrual_frac,
@@ -445,7 +445,7 @@ calc_bond_pv01 <- function(par = 1, c_rate, T, freq = 2, ytm, accrual_frac = 0, 
 #' @param yield_shock Numeric annualized yield shock in decimal units.
 #' @param par Numeric face value.
 #' @param c_rate Numeric annual coupon rate.
-#' @param T Numeric scheduled maturity in years.
+#' @param maturity Numeric scheduled maturity in years.
 #' @param freq Integer coupon frequency per year.
 #' @param accrual_frac Numeric fraction of the current coupon period already
 #'   accrued, on `[0, 1)`.
@@ -453,19 +453,19 @@ calc_bond_pv01 <- function(par = 1, c_rate, T, freq = 2, ytm, accrual_frac = 0, 
 #'
 #' @return Numeric scalar approximate absolute price change.
 #' @export
-calc_bond_price_change_approx <- function(ytm, yield_shock, par = 1, c_rate, T, freq = 2, accrual_frac = 0, price_type = c("dirty", "clean")) {
+calc_bond_price_change_approx <- function(ytm, yield_shock, par = 1, c_rate, maturity, freq = 2, accrual_frac = 0, price_type = c("dirty", "clean")) {
   stopifnot(is.numeric(ytm), length(ytm) == 1)
   stopifnot(is.numeric(yield_shock), length(yield_shock) == 1)
   price_type <- match.arg(price_type)
 
   base_price <- if (price_type == "dirty") {
-    calc_bond_dirty_price(par = par, c_rate = c_rate, T = T, freq = freq, ytm = ytm, accrual_frac = accrual_frac)
+    calc_bond_dirty_price(par = par, c_rate = c_rate, maturity = maturity, freq = freq, ytm = ytm, accrual_frac = accrual_frac)
   } else {
-    calc_bond_clean_price(par = par, c_rate = c_rate, T = T, freq = freq, ytm = ytm, accrual_frac = accrual_frac)
+    calc_bond_clean_price(par = par, c_rate = c_rate, maturity = maturity, freq = freq, ytm = ytm, accrual_frac = accrual_frac)
   }
 
-  mduration <- calc_bond_mduration(par = par, c_rate = c_rate, T = T, freq = freq, ytm = ytm)
-  convexity <- calc_bond_convexity(par = par, c_rate = c_rate, T = T, freq = freq, ytm = ytm)
+  mduration <- calc_bond_mduration(par = par, c_rate = c_rate, maturity = maturity, freq = freq, ytm = ytm)
+  convexity <- calc_bond_convexity(par = par, c_rate = c_rate, maturity = maturity, freq = freq, ytm = ytm)
   base_price * (-mduration * yield_shock + 0.5 * convexity * yield_shock^2)
 }
 
@@ -562,7 +562,7 @@ calc_bond_holding_period_return <- function(
 #' @param rates Optional numeric scalar or vector of per-period discount rates.
 #' @param par Optional numeric face value for term-based input.
 #' @param c_rate Optional annual coupon rate for term-based input.
-#' @param T Optional maturity in years for term-based input.
+#' @param maturity Optional maturity in years for term-based input.
 #' @param freq Integer compounding frequency per year for term-based input and
 #'   annualized basis-point conversion.
 #' @param ytm Optional annualized yield-to-maturity for term-based flat-curve
@@ -580,7 +580,7 @@ calc_bond_key_rate_duration <- function(
   rates = NULL,
   par = NULL,
   c_rate = NULL,
-  T = NULL,
+  maturity = NULL,
   freq = 2,
   ytm = NULL,
   accrual_frac = 0,
@@ -588,8 +588,8 @@ calc_bond_key_rate_duration <- function(
   bases = 1
 ) {
   if (is.null(cashflows) || is.null(rates)) {
-    stopifnot(!is.null(par), !is.null(c_rate), !is.null(T), !is.null(ytm))
-    cashflows <- calc_bond_cashflows(par = par, c_rate = c_rate, T = T, freq = freq)
+    stopifnot(!is.null(par), !is.null(c_rate), !is.null(maturity), !is.null(ytm))
+    cashflows <- calc_bond_cashflows(par = par, c_rate = c_rate, maturity = maturity, freq = freq)
     rates <- rep(calc_period_rate(ytm, freq = freq), length(cashflows))
   }
 
@@ -630,7 +630,7 @@ calc_bond_key_rate_duration <- function(
 #'
 #' @param par Numeric face value.
 #' @param c_rate Numeric annual coupon rate.
-#' @param T Numeric scheduled maturity in years.
+#' @param maturity Numeric scheduled maturity in years.
 #' @param freq Integer coupon frequency per year.
 #' @param ytm Numeric annualized yield-to-maturity.
 #' @param accrual_frac Numeric fraction of the current coupon period already
@@ -641,14 +641,14 @@ calc_bond_key_rate_duration <- function(
 #'
 #' @return Numeric scalar carry return.
 #' @export
-calc_bond_carry <- function(par = 1, c_rate, T, freq = 2, ytm, accrual_frac = 0, holding_years = 1 / freq, funding_rate = 0) {
-  stopifnot(is.numeric(holding_years), length(holding_years) == 1, holding_years >= 0, holding_years <= T)
+calc_bond_carry <- function(par = 1, c_rate, maturity, freq = 2, ytm, accrual_frac = 0, holding_years = 1 / freq, funding_rate = 0) {
+  stopifnot(is.numeric(holding_years), length(holding_years) == 1, holding_years >= 0, holding_years <= maturity)
   stopifnot(is.numeric(funding_rate), length(funding_rate) == 1)
 
   begin_dirty <- calc_bond_dirty_price(
     par = par,
     c_rate = c_rate,
-    T = T,
+    maturity = maturity,
     freq = freq,
     ytm = ytm,
     accrual_frac = accrual_frac
@@ -665,7 +665,7 @@ calc_bond_carry <- function(par = 1, c_rate, T, freq = 2, ytm, accrual_frac = 0,
 #'
 #' @param par Numeric face value.
 #' @param c_rate Numeric annual coupon rate.
-#' @param T Numeric scheduled maturity in years.
+#' @param maturity Numeric scheduled maturity in years.
 #' @param freq Integer coupon frequency per year.
 #' @param ytm Numeric annualized yield-to-maturity.
 #' @param accrual_frac Numeric fraction of the current coupon period already
@@ -674,13 +674,13 @@ calc_bond_carry <- function(par = 1, c_rate, T, freq = 2, ytm, accrual_frac = 0,
 #'
 #' @return Numeric scalar roll-down return.
 #' @export
-calc_bond_roll_down_return <- function(par = 1, c_rate, T, freq = 2, ytm, accrual_frac = 0, holding_years = 1 / freq) {
-  stopifnot(is.numeric(holding_years), length(holding_years) == 1, holding_years >= 0, holding_years < T)
+calc_bond_roll_down_return <- function(par = 1, c_rate, maturity, freq = 2, ytm, accrual_frac = 0, holding_years = 1 / freq) {
+  stopifnot(is.numeric(holding_years), length(holding_years) == 1, holding_years >= 0, holding_years < maturity)
 
   begin_dirty <- calc_bond_dirty_price(
     par = par,
     c_rate = c_rate,
-    T = T,
+    maturity = maturity,
     freq = freq,
     ytm = ytm,
     accrual_frac = accrual_frac
@@ -688,7 +688,7 @@ calc_bond_roll_down_return <- function(par = 1, c_rate, T, freq = 2, ytm, accrua
   end_dirty <- calc_bond_dirty_price(
     par = par,
     c_rate = c_rate,
-    T = T - holding_years,
+    maturity = maturity - holding_years,
     freq = freq,
     ytm = ytm,
     accrual_frac = accrual_frac
@@ -706,7 +706,7 @@ calc_bond_roll_down_return <- function(par = 1, c_rate, T, freq = 2, ytm, accrua
 #' @param cashflows Optional numeric vector of period cash flows.
 #' @param par Optional numeric face value for term-based input.
 #' @param c_rate Optional annual coupon rate for term-based input.
-#' @param T Optional maturity in years for term-based input.
+#' @param maturity Optional maturity in years for term-based input.
 #' @param freq Integer compounding frequency per year.
 #' @param accrual_frac Numeric fraction of the current coupon period already
 #'   accrued, on `[0, 1)`.
@@ -722,7 +722,7 @@ calc_bond_zspread <- function(
   cashflows = NULL,
   par = NULL,
   c_rate = NULL,
-  T = NULL,
+  maturity = NULL,
   freq = 2,
   accrual_frac = 0,
   price_type = c("dirty", "clean"),
@@ -735,8 +735,8 @@ calc_bond_zspread <- function(
   price_type <- match.arg(price_type)
 
   if (is.null(cashflows)) {
-    stopifnot(!is.null(par), !is.null(c_rate), !is.null(T))
-    cashflows <- calc_bond_cashflows(par = par, c_rate = c_rate, T = T, freq = freq)
+    stopifnot(!is.null(par), !is.null(c_rate), !is.null(maturity))
+    cashflows <- calc_bond_cashflows(par = par, c_rate = c_rate, maturity = maturity, freq = freq)
   }
 
   if (length(spot_rates) == 1) {
@@ -777,7 +777,7 @@ calc_bond_zspread <- function(
 #'
 #' @param par Numeric face value.
 #' @param c_rate Numeric annual coupon rate.
-#' @param T Numeric scheduled maturity in years.
+#' @param maturity Numeric scheduled maturity in years.
 #' @param freq Integer coupon frequency per year.
 #' @param tenor Numeric vector of curve tenors in years.
 #' @param zero_rate Numeric vector of annualized zero rates aligned with
@@ -794,7 +794,7 @@ calc_bond_zspread <- function(
 calc_bond_spread_duration <- function(
   par = 1,
   c_rate,
-  T,
+  maturity,
   freq = 2,
   tenor,
   zero_rate,
@@ -805,7 +805,7 @@ calc_bond_spread_duration <- function(
 ) {
   stopifnot(is.numeric(par), length(par) == 1, par > 0)
   stopifnot(is.numeric(c_rate), length(c_rate) == 1, c_rate >= 0)
-  stopifnot(is.numeric(T), length(T) == 1, T > 0)
+  stopifnot(is.numeric(maturity), length(maturity) == 1, maturity > 0)
   stopifnot(is.numeric(freq), length(freq) == 1, freq > 0)
   stopifnot(is.numeric(zspread), length(zspread) == 1)
   stopifnot(is.numeric(shock_bp), length(shock_bp) == 1, shock_bp > 0)
@@ -813,7 +813,7 @@ calc_bond_spread_duration <- function(
   method <- match.arg(method)
 
   curve <- .validate_curve_inputs(tenor, zero_rate)
-  cashflows <- calc_bond_cashflows(par = par, c_rate = c_rate, T = T, freq = freq)
+  cashflows <- calc_bond_cashflows(par = par, c_rate = c_rate, maturity = maturity, freq = freq)
   pay_tenor <- .bond_discount_periods(length(cashflows), accrual_frac = accrual_frac) / freq
   base_rates <- calc_curve_zero_rate(
     tenor_out = pay_tenor,
@@ -946,7 +946,7 @@ calc_curve_shock <- function(tenor, zero_rate, shock_bp, shock_tenor = NULL) {
 #'
 #' @param par Numeric face value.
 #' @param c_rate Numeric annual coupon rate.
-#' @param T Numeric scheduled maturity in years.
+#' @param maturity Numeric scheduled maturity in years.
 #' @param freq Integer coupon frequency per year.
 #' @param tenor Numeric vector of curve tenors in years.
 #' @param zero_rate Numeric vector of annualized zero rates aligned with
@@ -963,7 +963,7 @@ calc_curve_shock <- function(tenor, zero_rate, shock_bp, shock_tenor = NULL) {
 calc_bond_key_rate_duration_tenor <- function(
   par = 1,
   c_rate,
-  T,
+  maturity,
   freq = 2,
   tenor,
   zero_rate,
@@ -974,7 +974,7 @@ calc_bond_key_rate_duration_tenor <- function(
 ) {
   stopifnot(is.numeric(par), length(par) == 1, par > 0)
   stopifnot(is.numeric(c_rate), length(c_rate) == 1, c_rate >= 0)
-  stopifnot(is.numeric(T), length(T) == 1, T > 0)
+  stopifnot(is.numeric(maturity), length(maturity) == 1, maturity > 0)
   stopifnot(is.numeric(freq), length(freq) == 1, freq > 0)
   stopifnot(is.numeric(key_tenor), length(key_tenor) == 1)
   stopifnot(is.numeric(shock_bp), length(shock_bp) == 1, shock_bp > 0)
@@ -984,7 +984,7 @@ calc_bond_key_rate_duration_tenor <- function(
   curve <- .validate_curve_inputs(tenor, zero_rate)
   stopifnot(any(abs(curve$tenor - key_tenor) < .Machine$double.eps^0.5))
 
-  cashflows <- calc_bond_cashflows(par = par, c_rate = c_rate, T = T, freq = freq)
+  cashflows <- calc_bond_cashflows(par = par, c_rate = c_rate, maturity = maturity, freq = freq)
   pay_tenor <- .bond_discount_periods(length(cashflows), accrual_frac = accrual_frac) / freq
   base_zero <- calc_curve_zero_rate(
     tenor_out = pay_tenor,

@@ -1,5 +1,5 @@
-.ensure_bond_carry_roll_features <- function(DT, par_col = "par", c_rate_col = "c_rate", T_col = "T", freq_col = "freq", ytm_col = "ytm", accrual_frac_col = NULL, holding_years_col = NULL, funding_rate_col = NULL) {
-  required <- c(par_col, c_rate_col, T_col, freq_col, ytm_col)
+.ensure_bond_carry_roll_features <- function(DT, par_col = "par", c_rate_col = "c_rate", maturity_col = "maturity", freq_col = "freq", ytm_col = "ytm", accrual_frac_col = NULL, holding_years_col = NULL, funding_rate_col = NULL) {
+  required <- c(par_col, c_rate_col, maturity_col, freq_col, ytm_col)
   if (!is.null(accrual_frac_col)) required <- c(required, accrual_frac_col)
   if (!is.null(holding_years_col)) required <- c(required, holding_years_col)
   if (!is.null(funding_rate_col)) required <- c(required, funding_rate_col)
@@ -7,11 +7,11 @@
 
   if (!"bond_carry" %in% names(DT)) {
     carry_vec <- mapply(
-      function(par, c_rate, T, freq, ytm, accrual_frac, holding_years, funding_rate) {
+      function(par, c_rate, maturity, freq, ytm, accrual_frac, holding_years, funding_rate) {
         calc_bond_carry(
           par = par,
           c_rate = c_rate,
-          T = T,
+          maturity = maturity,
           freq = freq,
           ytm = ytm,
           accrual_frac = accrual_frac,
@@ -21,7 +21,7 @@
       },
       par = DT[[par_col]],
       c_rate = DT[[c_rate_col]],
-      T = DT[[T_col]],
+      maturity = DT[[maturity_col]],
       freq = DT[[freq_col]],
       ytm = DT[[ytm_col]],
       accrual_frac = if (is.null(accrual_frac_col)) rep(0, nrow(DT)) else DT[[accrual_frac_col]],
@@ -33,11 +33,11 @@
 
   if (!"bond_roll_down_return" %in% names(DT)) {
     roll_vec <- mapply(
-      function(par, c_rate, T, freq, ytm, accrual_frac, holding_years) {
+      function(par, c_rate, maturity, freq, ytm, accrual_frac, holding_years) {
         calc_bond_roll_down_return(
           par = par,
           c_rate = c_rate,
-          T = T,
+          maturity = maturity,
           freq = freq,
           ytm = ytm,
           accrual_frac = accrual_frac,
@@ -46,7 +46,7 @@
       },
       par = DT[[par_col]],
       c_rate = DT[[c_rate_col]],
-      T = DT[[T_col]],
+      maturity = DT[[maturity_col]],
       freq = DT[[freq_col]],
       ytm = DT[[ytm_col]],
       accrual_frac = if (is.null(accrual_frac_col)) rep(0, nrow(DT)) else DT[[accrual_frac_col]],
@@ -77,7 +77,7 @@
 #'   `bond_carry` and `bond_roll_down_return` columns.
 #' @param par_col Face-value column name.
 #' @param c_rate_col Coupon-rate column name.
-#' @param T_col Maturity column name in years.
+#' @param maturity_col Maturity column name in years.
 #' @param freq_col Coupon-frequency column name.
 #' @param ytm_col Yield-to-maturity column name.
 #' @param accrual_frac_col Optional accrual-fraction column name.
@@ -95,13 +95,13 @@
 #'
 #' @return A numeric vector of target positions, or a list when `debug = TRUE`.
 #' @export
-strat_bond_carry_roll_tgt_pos <- function(DT, par_col = "par", c_rate_col = "c_rate", T_col = "T", freq_col = "freq", ytm_col = "ytm", accrual_frac_col = NULL, holding_years_col = NULL, funding_rate_col = NULL, long_threshold = 0, short_threshold = 0, target_size = 1.0, compute_features = TRUE, debug = FALSE) {
+strat_bond_carry_roll_tgt_pos <- function(DT, par_col = "par", c_rate_col = "c_rate", maturity_col = "maturity", freq_col = "freq", ytm_col = "ytm", accrual_frac_col = NULL, holding_years_col = NULL, funding_rate_col = NULL, long_threshold = 0, short_threshold = 0, target_size = 1.0, compute_features = TRUE, debug = FALSE) {
   if (compute_features) {
     cols_needed <- .ensure_bond_carry_roll_features(
       DT,
       par_col = par_col,
       c_rate_col = c_rate_col,
-      T_col = T_col,
+      maturity_col = maturity_col,
       freq_col = freq_col,
       ytm_col = ytm_col,
       accrual_frac_col = accrual_frac_col,
@@ -139,12 +139,12 @@ strat_bond_carry_roll_tgt_pos <- function(DT, par_col = "par", c_rate_col = "c_r
 #'
 #' @return A list produced by `gen_action_plan_rcpp()`.
 #' @export
-strat_bond_carry_roll_action_plan <- function(DT, state, par_col = "par", c_rate_col = "c_rate", T_col = "T", freq_col = "freq", ytm_col = "ytm", accrual_frac_col = NULL, holding_years_col = NULL, funding_rate_col = NULL, long_threshold = 0, short_threshold = 0, target_size = 1.0, compute_features = TRUE, strat_id = 602L, tol_pos = 0.1, debug = FALSE) {
+strat_bond_carry_roll_action_plan <- function(DT, state, par_col = "par", c_rate_col = "c_rate", maturity_col = "maturity", freq_col = "freq", ytm_col = "ytm", accrual_frac_col = NULL, holding_years_col = NULL, funding_rate_col = NULL, long_threshold = 0, short_threshold = 0, target_size = 1.0, compute_features = TRUE, strat_id = 602L, tol_pos = 0.1, debug = FALSE) {
   tgt_pos <- strat_bond_carry_roll_tgt_pos(
     DT,
     par_col = par_col,
     c_rate_col = c_rate_col,
-    T_col = T_col,
+    maturity_col = maturity_col,
     freq_col = freq_col,
     ytm_col = ytm_col,
     accrual_frac_col = accrual_frac_col,

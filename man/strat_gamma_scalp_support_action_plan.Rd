@@ -11,8 +11,8 @@ strat_gamma_scalp_support_action_plan(
   iv_col = "iv",
   annualization = 252,
   edge_threshold = 0,
-  min_T = 5/252,
-  max_T = 90/252,
+  min_time_to_expiry = 5/252,
+  max_time_to_expiry = 90/252,
   target_size = 1,
   compute_features = TRUE,
   strat_id = 708L,
@@ -24,7 +24,7 @@ strat_gamma_scalp_support_action_plan(
 )
 }
 \arguments{
-\item{DT}{A `data.table` containing `close`, time-to-expiry `T`, and an
+\item{DT}{A `data.table` containing `close`, time-to-expiry `time_to_expiry`, and an
 implied-volatility column.}
 
 \item{state}{Named list describing the current trading state.}
@@ -39,9 +39,9 @@ implied-volatility column.}
 \item{edge_threshold}{Minimum realized-minus-implied volatility edge required
 to activate the long-gamma support position.}
 
-\item{min_T}{Minimum time to expiry in years.}
+\item{min_time_to_expiry}{Minimum time to expiry in years.}
 
-\item{max_T}{Maximum time to expiry in years.}
+\item{max_time_to_expiry}{Maximum time to expiry in years.}
 
 \item{target_size}{Numeric absolute target exposure.}
 

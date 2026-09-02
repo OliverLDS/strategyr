@@ -11,18 +11,20 @@
 
 ### R-devel
 
-* Platform: pending
-* `R CMD check --as-cran`: pending
+* R-hub GitHub Actions checks: passed on Linux, Windows, and macOS
+* Workflow: https://github.com/OliverLDS/strategyr/actions/runs/32561102017
 
 ### Win-builder
 
-* R-devel: pending
+* R-devel: passed with one expected NOTE: new submission
+* Log: https://win-builder.r-project.org/j47ll1eFOZn4
 
 ### R-hub
 
-* Linux: pending
-* Windows: pending
-* macOS: pending
+* Linux R-devel: passed
+* Windows R-devel: passed
+* macOS R-devel: passed
+* Workflow: https://github.com/OliverLDS/strategyr/actions/runs/32561102017
 
 ## Notes
 
