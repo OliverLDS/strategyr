@@ -1,7 +1,10 @@
 .strategy_public_parameter <- function(name, value, unit, description) {
-  if (!is.null(value) &&
-      (!is.numeric(value) || length(value) != 1L || !is.finite(value))) {
-    stop("Public parameter values must be finite numeric scalars or NULL.", call. = FALSE)
+  valid_value <- is.null(value) ||
+    (is.numeric(value) && length(value) == 1L && is.finite(value)) ||
+    (is.character(value) && length(value) == 1L && !is.na(value)) ||
+    (is.logical(value) && length(value) == 1L && !is.na(value))
+  if (!valid_value) {
+    stop("Public parameter values must be JSON-safe scalars or NULL.", call. = FALSE)
   }
 
   list(
@@ -177,7 +180,99 @@
         .strategy_public_parameter("annualization", 252, "bars per year", "Annualization factor for realized volatility."),
         .strategy_public_parameter("target_size", 1.0, "target exposure", "Absolute target exposure when a signal is active.")
       )
+    ),
+    equal_weight_rebalance = list(
+      schema_version = "1.0",
+      id = "equal_weight_rebalance",
+      display_name = "Equal Weight Rebalance",
+      target_function = "strat_equal_weight_rebalance_target_weights",
+      summary = "Allocates equally across eligible daily instruments on a fixed cadence.",
+      signal_rule = "At each rebalance signal, divide the allowed gross exposure equally across eligible assets and hold the resulting targets until the next eligible open.",
+      position_semantics = "Weights are long-only portfolio fractions; unallocated equity remains cash.",
+      data_requirements = c("daily OHLC open", "daily OHLC high", "daily OHLC low", "daily OHLC close", "asset identifier", "date"),
+      rebalance_rule = "Signals use completed bars and targets execute at the next eligible open.",
+      parameters = list(
+        .strategy_public_parameter("date_col", "date", "column name", "Date column name."),
+        .strategy_public_parameter("asset_col", "asset", "column name", "Asset identifier column name."),
+        .strategy_public_parameter("open_col", "open", "column name", "Daily open-price column name."),
+        .strategy_public_parameter("high_col", "high", "column name", "Daily high-price column name."),
+        .strategy_public_parameter("low_col", "low", "column name", "Daily low-price column name."),
+        .strategy_public_parameter("close_col", "close", "column name", "Daily close-price column name."),
+        .strategy_public_parameter("rebalance_n", 21L, "bars", "Completed daily bars between rebalance signals."),
+        .strategy_public_parameter("min_obs", 1L, "observations", "Minimum observed closes required for eligibility."),
+        .strategy_public_parameter("gross_exposure", 1.0, "portfolio weight", "Maximum long gross exposure; residual remains cash."),
+        .strategy_public_parameter("weight_cap", 1.0, "portfolio weight", "Maximum target weight for one asset.")
+      )
+    ),
+    inverse_volatility_allocation = list(
+      schema_version = "1.0",
+      id = "inverse_volatility_allocation",
+      display_name = "Inverse Volatility Allocation",
+      target_function = "strat_inverse_volatility_allocation_target_weights",
+      summary = "Allocates across eligible daily instruments in inverse proportion to realized volatility.",
+      signal_rule = "At each rebalance signal, allocate the allowed gross exposure by inverse realized volatility and hold targets until the next eligible open.",
+      position_semantics = "Weights are long-only portfolio fractions; unallocated equity remains cash.",
+      data_requirements = c("daily OHLC open", "daily OHLC high", "daily OHLC low", "daily OHLC close", "asset identifier", "date"),
+      rebalance_rule = "Signals use completed bars and targets execute at the next eligible open.",
+      parameters = list(
+        .strategy_public_parameter("date_col", "date", "column name", "Date column name."),
+        .strategy_public_parameter("asset_col", "asset", "column name", "Asset identifier column name."),
+        .strategy_public_parameter("open_col", "open", "column name", "Daily open-price column name."),
+        .strategy_public_parameter("high_col", "high", "column name", "Daily high-price column name."),
+        .strategy_public_parameter("low_col", "low", "column name", "Daily low-price column name."),
+        .strategy_public_parameter("close_col", "close", "column name", "Daily close-price column name."),
+        .strategy_public_parameter("vol_n", 20L, "bars", "Realized-volatility lookback in daily returns."),
+        .strategy_public_parameter("min_obs", 20L, "observations", "Minimum observed closes required for eligibility."),
+        .strategy_public_parameter("annualization", 252, "bars per year", "Annualization factor for realized volatility."),
+        .strategy_public_parameter("rebalance_n", 21L, "bars", "Completed daily bars between rebalance signals."),
+        .strategy_public_parameter("gross_exposure", 1.0, "portfolio weight", "Maximum long gross exposure; residual remains cash."),
+        .strategy_public_parameter("weight_cap", 0.4, "portfolio weight", "Maximum target weight for one asset.")
+      )
+    ),
+    cross_asset_trend_allocation = list(
+      schema_version = "1.0",
+      id = "cross_asset_trend_allocation",
+      display_name = "Cross-Asset Trend Allocation",
+      target_function = "strat_cross_asset_trend_allocation_target_weights",
+      summary = "Allocates across assets with positive medium-term momentum and otherwise remains in cash.",
+      signal_rule = "At each rebalance signal, include only assets with positive completed-bar momentum and allocate by equal or inverse-volatility weights.",
+      position_semantics = "Weights are long-only portfolio fractions; unallocated equity remains cash.",
+      data_requirements = c("daily OHLC open", "daily OHLC high", "daily OHLC low", "daily OHLC close", "asset identifier", "date"),
+      rebalance_rule = "Signals use completed bars and targets execute at the next eligible open.",
+      parameters = list(
+        .strategy_public_parameter("date_col", "date", "column name", "Date column name."),
+        .strategy_public_parameter("asset_col", "asset", "column name", "Asset identifier column name."),
+        .strategy_public_parameter("open_col", "open", "column name", "Daily open-price column name."),
+        .strategy_public_parameter("high_col", "high", "column name", "Daily high-price column name."),
+        .strategy_public_parameter("low_col", "low", "column name", "Daily low-price column name."),
+        .strategy_public_parameter("close_col", "close", "column name", "Daily close-price column name."),
+        .strategy_public_parameter("trend_n", 126L, "bars", "Medium-term momentum lookback."),
+        .strategy_public_parameter("vol_n", 20L, "bars", "Realized-volatility lookback in daily returns."),
+        .strategy_public_parameter("min_obs", 126L, "observations", "Minimum observed closes required for eligibility."),
+        .strategy_public_parameter("annualization", 252, "bars per year", "Annualization factor for realized volatility."),
+        .strategy_public_parameter("volatility_scale", TRUE, "logical", "Use inverse realized-volatility scaling after the trend filter."),
+        .strategy_public_parameter("rebalance_n", 21L, "bars", "Completed daily bars between rebalance signals."),
+        .strategy_public_parameter("gross_exposure", 1.0, "portfolio weight", "Maximum long gross exposure; residual remains cash."),
+        .strategy_public_parameter("weight_cap", 0.4, "portfolio weight", "Maximum target weight for one asset.")
+      )
     )
+  )
+}
+
+.strategy_public_families <- function() {
+  c(
+    buy_hold = "baseline",
+    ema_cross = "trend",
+    ema_cross_adx = "trend",
+    ema_cross_slope_confirm = "trend",
+    donchian_turtle = "trend",
+    bollinger_revert = "mean_reversion",
+    rsi_revert = "mean_reversion",
+    vol_target = "risk_control",
+    regime_switch = "adaptive",
+    equal_weight_rebalance = "portfolio_allocation",
+    inverse_volatility_allocation = "portfolio_allocation",
+    cross_asset_trend_allocation = "portfolio_allocation"
   )
 }
 
@@ -252,12 +347,13 @@
 #' @param id Character scalar strategy id. Supported ids are `"buy_hold"`,
 #'   `"ema_cross"`, `"ema_cross_adx"`, `"ema_cross_slope_confirm"`,
 #'   `"donchian_turtle"`, `"bollinger_revert"`, `"rsi_revert"`,
-#'   `"vol_target"`, and `"regime_switch"`.
+#'   `"vol_target"`, `"regime_switch"`, `"equal_weight_rebalance"`,
+#'   `"inverse_volatility_allocation"`, and `"cross_asset_trend_allocation"`.
 #'
 #' @return A named list with schema version, public description, target
-#'   function name, data requirements, rebalance rule, and effective default
+#'   function name, canonical strategy family, data requirements, rebalance rule, and effective default
 #'   strategy parameters. Each parameter has `name`, `value`, `unit`, and
-#'   `description`; `value` is a finite numeric scalar or `NULL`. A `NULL`
+#'   `description`; `value` is a JSON-safe scalar or `NULL`. A `NULL`
 #'   value explicitly represents an unbounded setting that is disabled by
 #'   default in the public JSON-safe contract.
 #' @export
@@ -272,7 +368,9 @@ strategy_public_definition <- function(id) {
       call. = FALSE
     )
   }
-  definitions[[id]]
+  definition <- definitions[[id]]
+  definition$strategy_family <- unname(.strategy_public_families()[[id]])
+  definition
 }
 
 #' Strategy Monitor Definition

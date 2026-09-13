@@ -1,5 +1,9 @@
 # Development version
 
+- add public deterministic daily portfolio target generators for equal-weight,
+  inverse-volatility, and positive cross-asset trend allocation
+- add canonical JSON-safe public definitions and target-weight contract
+  documentation for the portfolio allocation family
 - remove experimental LSTM and PPO training APIs from the CRAN core; future
   ML and RL functionality will be released as separate extensions
 - remove development-only and external-runtime packages from `Suggests`

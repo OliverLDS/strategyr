@@ -1,7 +1,7 @@
 Package: strategyr
 Type: Package
 Title: Execution-Oriented Strategy Workflows for Dynamic Trading Decisions
-Version: 0.1.7.1
+Version: 0.1.8
 Authors@R: 
     person("Oliver", "Zhou", , "oliver.yxzhou@gmail.com", role = c("aut", "cre"))
 Description: Modular, execution-oriented strategy workflows that
@@ -53,6 +53,7 @@ Collate:
     'portfolio_backtest.R'
     'portfolio_fixed_income.R'
     'portfolio_options.R'
+    'strat_portfolio_daily_allocation.R'
     'strategy_mining.R'
     'strategy_public_definition.R'
     'strat_utils.R'

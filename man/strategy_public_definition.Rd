@@ -10,13 +10,14 @@ strategy_public_definition(id)
 \item{id}{Character scalar strategy id. Supported ids are `"buy_hold"`,
 `"ema_cross"`, `"ema_cross_adx"`, `"ema_cross_slope_confirm"`,
 `"donchian_turtle"`, `"bollinger_revert"`, `"rsi_revert"`,
-`"vol_target"`, and `"regime_switch"`.}
+`"vol_target"`, `"regime_switch"`, `"equal_weight_rebalance"`,
+`"inverse_volatility_allocation"`, and `"cross_asset_trend_allocation"`.}
 }
 \value{
 A named list with schema version, public description, target
-  function name, data requirements, rebalance rule, and effective default
+  function name, canonical strategy family, data requirements, rebalance rule, and effective default
   strategy parameters. Each parameter has `name`, `value`, `unit`, and
-  `description`; `value` is a finite numeric scalar or `NULL`. A `NULL`
+  `description`; `value` is a JSON-safe scalar or `NULL`. A `NULL`
   value explicitly represents an unbounded setting that is disabled by
   default in the public JSON-safe contract.
 }

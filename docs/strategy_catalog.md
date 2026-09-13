@@ -20,6 +20,19 @@ Portfolio-level families return target weights and route through
 | Summarized panel | Curve or option-chain data summarized before target generation | `.action_plan_from_tgt_pos()` on latest summary target |
 | Portfolio level | Cross-sectional weights across assets | `plan_portfolio_adjustment()` and `build_order_intents()` |
 
+## Daily Portfolio Allocation
+
+These public strategies return a long target-weight panel that can be passed
+directly to backtest_portfolio_weights(). The row for date t is formed from
+data completed on date t - 1 and is eligible at date t open. Weights are
+long-only and finite; unused gross exposure remains cash.
+
+| Strategy family | Category | Main inputs | Level | Default strat_id |
+|---|---|---|---|---:|
+| strat_equal_weight_rebalance_target_weights() | baseline allocation | daily OHLC, cadence, eligibility threshold | portfolio | none |
+| strat_inverse_volatility_allocation_target_weights() | risk-balanced allocation | daily OHLC, volatility window, cap | portfolio | none |
+| strat_cross_asset_trend_allocation_target_weights() | trend allocation | daily OHLC, momentum/volatility windows, cap | portfolio | none |
+
 ## Core And Ladder
 
 | Strategy family | Category | Main inputs | Level | Default `strat_id` |

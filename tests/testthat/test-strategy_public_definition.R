@@ -7,7 +7,10 @@ public_definition_ids <- c(
   "bollinger_revert",
   "rsi_revert",
   "vol_target",
-  "regime_switch"
+  "regime_switch",
+  "equal_weight_rebalance",
+  "inverse_volatility_allocation",
+  "cross_asset_trend_allocation"
 )
 
 monitor_definition_ids <- c(
@@ -61,7 +64,8 @@ test_that("public definitions use the stable schema", {
     "position_semantics",
     "data_requirements",
     "rebalance_rule",
-    "parameters"
+    "parameters",
+    "strategy_family"
   )
 
   for (id in public_definition_ids) {
@@ -77,12 +81,18 @@ test_that("public definitions use the stable schema", {
     expect_type(def$data_requirements, "character")
     expect_type(def$rebalance_rule, "character")
     expect_type(def$parameters, "list")
+    expect_type(def$strategy_family, "character")
     expect_gt(length(def$parameters), 0L)
 
     for (param in def$parameters) {
       expect_named(param, c("name", "value", "unit", "description"))
       expect_type(param$name, "character")
-      expect_true(is.null(param$value) || (is.numeric(param$value) && length(param$value) == 1L && is.finite(param$value)))
+      expect_true(
+        is.null(param$value) ||
+          (is.numeric(param$value) && length(param$value) == 1L && is.finite(param$value)) ||
+          (is.character(param$value) && length(param$value) == 1L && !is.na(param$value)) ||
+          (is.logical(param$value) && length(param$value) == 1L && !is.na(param$value))
+      )
       expect_type(param$unit, "character")
       expect_type(param$description, "character")
     }
@@ -99,7 +109,10 @@ test_that("public definitions map to exact target functions", {
     bollinger_revert = "strat_bollinger_revert_tgt_pos",
     rsi_revert = "strat_rsi_revert_tgt_pos",
     vol_target = "strat_vol_target_tgt_pos",
-    regime_switch = "strat_regime_switch_tgt_pos"
+    regime_switch = "strat_regime_switch_tgt_pos",
+    equal_weight_rebalance = "strat_equal_weight_rebalance_target_weights",
+    inverse_volatility_allocation = "strat_inverse_volatility_allocation_target_weights",
+    cross_asset_trend_allocation = "strat_cross_asset_trend_allocation_target_weights"
   )
 
   actual <- vapply(public_definition_ids, function(id) {
@@ -119,6 +132,9 @@ test_that("public definitions precisely match executable target defaults", {
   expect_public_defaults_match_formals("rsi_revert", strat_rsi_revert_tgt_pos)
   expect_public_defaults_match_formals("vol_target", strat_vol_target_tgt_pos)
   expect_public_defaults_match_formals("regime_switch", strat_regime_switch_tgt_pos, excluded = c("DT", "breadth_col", "compute_features", "debug"))
+  expect_public_defaults_match_formals("equal_weight_rebalance", strat_equal_weight_rebalance_target_weights)
+  expect_public_defaults_match_formals("inverse_volatility_allocation", strat_inverse_volatility_allocation_target_weights)
+  expect_public_defaults_match_formals("cross_asset_trend_allocation", strat_cross_asset_trend_allocation_target_weights)
 })
 
 test_that("unbounded public parameters are explicitly nullable", {

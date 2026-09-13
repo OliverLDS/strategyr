@@ -148,7 +148,39 @@ portfolio_bt <- backtest_portfolio_weights(
 portfolio_bt$equity[, .(date, equity, gross_exposure, turnover, fee_paid)]
 ```
 
-### 5. Fixed-income carry/roll and hedge workflow
+### 5. Daily multi-asset allocation
+
+Daily allocation generators accept a long OHLC panel and return one target
+weight per asset-date. A target on date t was formed from the preceding
+completed bar and is therefore executable at date t open. Weights are
+long-only, finite, capped, and leave any unused exposure as cash.
+
+~~~r
+allocation_panel <- CJ(
+  date = as.Date("2020-01-01") + 0:79,
+  asset = c("AAA", "BBB", "CCC")
+)
+allocation_panel[, asset_idx := match(asset, c("AAA", "BBB", "CCC"))]
+allocation_panel[, close := 100 + asset_idx * 10 + as.integer(date - min(date)) * c(0.4, 0.2, -0.1)[asset_idx]]
+allocation_panel[, open := close - 0.1]
+allocation_panel[, high := close + 0.2]
+allocation_panel[, low := open - 0.2]
+allocation_panel[, asset_idx := NULL]
+
+targets <- strat_cross_asset_trend_allocation_target_weights(
+  allocation_panel,
+  trend_n = 20L,
+  vol_n = 10L,
+  min_obs = 20L,
+  rebalance_n = 5L,
+  gross_exposure = 1.0,
+  weight_cap = 0.5
+)
+
+backtest_portfolio_weights(targets, initial_equity = 100000, allow_short = FALSE)
+~~~
+
+### 6. Fixed-income carry/roll and hedge workflow
 
 ```r
 bond_dt <- data.table(
@@ -182,7 +214,7 @@ dv01_plan <- plan_duration_neutral_adjustment(
 )
 ```
 
-### 6. Option and volatility workflow
+### 7. Option and volatility workflow
 
 ```r
 option_chain <- CJ(
