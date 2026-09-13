@@ -64,9 +64,18 @@
   for (asset in assets) {
     rows <- which(as.character(DT[[asset_col]]) == asset)
     rows <- rows[order(DT[[date_col]][rows])]
-    histories[[asset]] <- list(date = DT[[date_col]][rows], close = DT[[close_col]][rows])
+    asset_dates <- DT[[date_col]][rows]
+    histories[[asset]] <- list(
+      date = asset_dates,
+      date_num = as.numeric(asset_dates),
+      close = DT[[close_col]][rows]
+    )
   }
   histories
+}
+
+.portfolio_history_index <- function(history, date_value) {
+  findInterval(as.numeric(date_value), history$date_num)
 }
 
 .portfolio_volatility <- function(close, idx, vol_n, min_obs, annualization) {
@@ -88,25 +97,27 @@
   data.table::setkeyv(work_dt, c(date_col, asset_col))
   dates <- sort(unique(work_dt[[date_col]]))
   assets <- sort(unique(as.character(work_dt[[asset_col]])))
+  date_run <- rle(match(work_dt[[date_col]], dates))
+  row_end <- cumsum(date_run$lengths)
+  row_start <- c(1L, head(row_end, -1L) + 1L)
   target_map <- stats::setNames(rep(0.0, length(assets)), assets)
   pending_rebalance <- FALSE
-  pending_signal_date <- dates[NA_integer_]
+  pending_signal_idx <- NA_integer_
 
   work_dt[, target_weight := 0.0]
   work_dt[, eligible := FALSE]
   work_dt[, rebalance_due := FALSE]
-  signal_date <- work_dt[[date_col]]
-  signal_date[] <- NA
+  signal_idx <- rep(NA_integer_, nrow(work_dt))
 
   for (date_idx in seq_along(dates)) {
     date_value <- dates[[date_idx]]
-    day_rows <- which(work_dt[[date_col]] == date_value)
+    day_rows <- row_start[[date_idx]]:row_end[[date_idx]]
     day_assets <- as.character(work_dt[[asset_col]][day_rows])
 
     # Targets set from yesterday's completed bar execute at today's open.
-    work_dt$target_weight[day_rows] <- target_map[day_assets]
-    work_dt$rebalance_due[day_rows] <- pending_rebalance
-    signal_date[day_rows] <- pending_signal_date
+    data.table::set(work_dt, i = day_rows, j = "target_weight", value = unname(target_map[day_assets]))
+    data.table::set(work_dt, i = day_rows, j = "rebalance_due", value = pending_rebalance)
+    signal_idx[day_rows] <- pending_signal_idx
 
     # Missing rows represent unavailable assets; do not revive stale targets.
     target_map[setdiff(names(target_map), day_assets)] <- 0.0
@@ -117,15 +128,15 @@
       next
     }
 
-    signal <- signal_fun(work_dt[day_rows], date_value)
+    signal <- signal_fun(day_assets, date_value)
     target_map[] <- 0.0
     target_map[day_assets] <- signal$weight
-    work_dt$eligible[day_rows] <- signal$eligible
+    data.table::set(work_dt, i = day_rows, j = "eligible", value = signal$eligible)
     pending_rebalance <- TRUE
-    pending_signal_date <- date_value
+    pending_signal_idx <- date_idx
   }
 
-  work_dt[, signal_date := signal_date]
+  data.table::set(work_dt, j = "signal_date", value = dates[signal_idx])
   work_dt[, target_weight := as.numeric(target_weight)]
   if (any(!is.finite(work_dt$target_weight))) {
     stop("Portfolio strategy generated non-finite target weights.", call. = FALSE)
@@ -166,9 +177,8 @@ strat_equal_weight_rebalance_target_weights <- function(DT, date_col = "date", a
   .validate_portfolio_allocation_parameters(rebalance_n, min_obs, gross_exposure, weight_cap)
   history <- .portfolio_asset_history(DT, date_col, asset_col, close_col)
 
-  .portfolio_allocation_path(DT, date_col, asset_col, function(day_dt, date_value) {
-    day_assets <- as.character(day_dt[[asset_col]])
-    eligible <- vapply(day_assets, function(asset) sum(history[[asset]]$date <= date_value) >= min_obs, logical(1L))
+  .portfolio_allocation_path(DT, date_col, asset_col, function(day_assets, date_value) {
+    eligible <- vapply(day_assets, function(asset) .portfolio_history_index(history[[asset]], date_value) >= min_obs, logical(1L))
     list(weight = .capped_long_weights(as.numeric(eligible), gross_exposure, weight_cap), eligible = eligible)
   }, rebalance_n)
 }
@@ -192,11 +202,10 @@ strat_inverse_volatility_allocation_target_weights <- function(DT, date_col = "d
   stopifnot(length(annualization) == 1L, is.finite(annualization), annualization > 0)
   history <- .portfolio_asset_history(DT, date_col, asset_col, close_col)
 
-  .portfolio_allocation_path(DT, date_col, asset_col, function(day_dt, date_value) {
-    day_assets <- as.character(day_dt[[asset_col]])
+  .portfolio_allocation_path(DT, date_col, asset_col, function(day_assets, date_value) {
     score <- vapply(day_assets, function(asset) {
       h <- history[[asset]]
-      idx <- sum(h$date <= date_value)
+      idx <- .portfolio_history_index(h, date_value)
       if (idx < min_obs) return(NA_real_)
       vol <- .portfolio_volatility(h$close, idx, as.integer(vol_n), max(1L, as.integer(min_obs) - 1L), annualization)
       if (is.finite(vol) && vol > 0) 1 / vol else NA_real_
@@ -228,11 +237,10 @@ strat_cross_asset_trend_allocation_target_weights <- function(DT, date_col = "da
   history <- .portfolio_asset_history(DT, date_col, asset_col, close_col)
   required_obs <- max(as.integer(min_obs), as.integer(trend_n) + 1L)
 
-  .portfolio_allocation_path(DT, date_col, asset_col, function(day_dt, date_value) {
-    day_assets <- as.character(day_dt[[asset_col]])
+  .portfolio_allocation_path(DT, date_col, asset_col, function(day_assets, date_value) {
     score <- vapply(day_assets, function(asset) {
       h <- history[[asset]]
-      idx <- sum(h$date <= date_value)
+      idx <- .portfolio_history_index(h, date_value)
       if (idx < required_obs) return(NA_real_)
       momentum <- h$close[[idx]] / h$close[[idx - as.integer(trend_n)]] - 1
       if (!is.finite(momentum) || momentum <= 0) return(NA_real_)
