@@ -16,6 +16,16 @@ make_daily_portfolio_backtest_ohlc <- function(n_dates = 40L, assets = c("AAA", 
   out[]
 }
 
+expect_portfolio_backtest_native_parity <- function(DT, targets, ...) {
+  reference <- strategyr:::.strat_portfolio_daily_backtest_reference(DT, targets, ...)
+  native <- strat_portfolio_daily_backtest(DT, targets, ...)
+  expect_equal(native$equity[, !c("cash", "cash_weight")], reference$equity[, !c("cash", "cash_weight")], tolerance = 1e-12)
+  expect_lte(max(abs(native$equity$cash - reference$equity$cash)), 1e-7)
+  expect_lte(max(abs(native$equity$cash_weight - reference$equity$cash_weight)), 1e-12)
+  expect_equal(native$weights, reference$weights, tolerance = 1e-12)
+  expect_equal(native$rebalances, reference$rebalances, tolerance = 1e-12)
+}
+
 test_that("daily portfolio backtest executes an eligible target at that open", {
   DT <- make_daily_portfolio_backtest_ohlc(n_dates = 3L, assets = c("AAA", "BBB"))
   DT[asset == "AAA", `:=`(open = c(100, 110, 121), close = c(100, 121, 133.1))]
@@ -88,6 +98,50 @@ test_that("daily portfolio backtest is deterministic and validates target panels
   expect_error(
     strat_portfolio_daily_backtest(DT, targets),
     "finite"
+  )
+})
+
+test_that("native portfolio backtest matches the reference path for all allocation generators", {
+  DT <- make_daily_portfolio_backtest_ohlc()
+  target_sets <- list(
+    strat_equal_weight_rebalance_target_weights(DT, rebalance_n = 5L),
+    strat_inverse_volatility_allocation_target_weights(DT, vol_n = 5L, min_obs = 5L, rebalance_n = 5L),
+    strat_cross_asset_trend_allocation_target_weights(DT, trend_n = 5L, vol_n = 3L, min_obs = 5L, rebalance_n = 5L)
+  )
+
+  for (targets in target_sets) {
+    expect_portfolio_backtest_native_parity(DT, targets, initial_cash = 100000, fee_rt = 0.0005)
+  }
+})
+
+test_that("native portfolio backtest preserves unavailable and stale-valuation states", {
+  DT <- make_daily_portfolio_backtest_ohlc(n_dates = 14L, assets = c("AAA", "BBB"))
+  DT <- DT[!(asset == "BBB" & date %in% (min(date) + 5:7))]
+  targets <- strat_equal_weight_rebalance_target_weights(DT, rebalance_n = 1L)
+
+  expect_portfolio_backtest_native_parity(DT, targets, initial_cash = 10000, fee_rt = 0.0005)
+  out <- strat_portfolio_daily_backtest(DT, targets, initial_cash = 10000, fee_rt = 0.0005)
+  gap <- out$weights[asset == "BBB" & date %in% (min(date) + 5:7)]
+  expect_true(all(gap$availability == "unavailable"))
+  expect_true(all(gap$stale_valuation))
+  expect_true(all(gap$units > 0))
+})
+
+test_that("native portfolio backtest preserves fee, tolerance, and cadence behavior", {
+  DT <- make_daily_portfolio_backtest_ohlc(n_dates = 8L, assets = c("AAA", "BBB"))
+  targets <- DT[, .(
+    date,
+    asset,
+    target_weight = data.table::fifelse(asset == "AAA", 0.8, 0.2),
+    rebalance_due = date %in% c(min(date) + 1L, min(date) + 4L)
+  )]
+
+  expect_portfolio_backtest_native_parity(
+    DT,
+    targets,
+    initial_cash = 10000,
+    fee_rt = 0.001,
+    rebalance_tolerance = 0.02
   )
 })
 

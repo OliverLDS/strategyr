@@ -117,6 +117,10 @@ backtest_portfolio_weights_core_cpp <- function(date_id, asset_id, open, close, 
     .Call(`_strategyr_backtest_portfolio_weights_core_cpp`, date_id, asset_id, open, close, target_weight, contract_size, initial_equity, fee_rt, rebalance_tol_weight, n_assets)
 }
 
+strat_portfolio_daily_backtest_core_cpp <- function(date_id, asset_id, open, close, target_weight, rebalance_eligible, n_dates, n_assets, initial_cash, fee_rt, rebalance_tolerance) {
+    .Call(`_strategyr_strat_portfolio_daily_backtest_core_cpp`, date_id, asset_id, open, close, target_weight, rebalance_eligible, n_dates, n_assets, initial_cash, fee_rt, rebalance_tolerance)
+}
+
 aroon_up_pct_cpp <- function(high, n) {
     .Call(`_strategyr_aroon_up_pct_cpp`, high, n)
 }

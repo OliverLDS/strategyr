@@ -423,6 +423,27 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// strat_portfolio_daily_backtest_core_cpp
+Rcpp::List strat_portfolio_daily_backtest_core_cpp(const Rcpp::IntegerVector& date_id, const Rcpp::IntegerVector& asset_id, const Rcpp::NumericVector& open, const Rcpp::NumericVector& close, const Rcpp::NumericVector& target_weight, const Rcpp::LogicalVector& rebalance_eligible, int n_dates, int n_assets, double initial_cash, double fee_rt, double rebalance_tolerance);
+RcppExport SEXP _strategyr_strat_portfolio_daily_backtest_core_cpp(SEXP date_idSEXP, SEXP asset_idSEXP, SEXP openSEXP, SEXP closeSEXP, SEXP target_weightSEXP, SEXP rebalance_eligibleSEXP, SEXP n_datesSEXP, SEXP n_assetsSEXP, SEXP initial_cashSEXP, SEXP fee_rtSEXP, SEXP rebalance_toleranceSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Rcpp::IntegerVector& >::type date_id(date_idSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::IntegerVector& >::type asset_id(asset_idSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type open(openSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type close(closeSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type target_weight(target_weightSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::LogicalVector& >::type rebalance_eligible(rebalance_eligibleSEXP);
+    Rcpp::traits::input_parameter< int >::type n_dates(n_datesSEXP);
+    Rcpp::traits::input_parameter< int >::type n_assets(n_assetsSEXP);
+    Rcpp::traits::input_parameter< double >::type initial_cash(initial_cashSEXP);
+    Rcpp::traits::input_parameter< double >::type fee_rt(fee_rtSEXP);
+    Rcpp::traits::input_parameter< double >::type rebalance_tolerance(rebalance_toleranceSEXP);
+    rcpp_result_gen = Rcpp::wrap(strat_portfolio_daily_backtest_core_cpp(date_id, asset_id, open, close, target_weight, rebalance_eligible, n_dates, n_assets, initial_cash, fee_rt, rebalance_tolerance));
+    return rcpp_result_gen;
+END_RCPP
+}
 // aroon_up_pct_cpp
 Rcpp::NumericVector aroon_up_pct_cpp(const Rcpp::NumericVector& high, int n);
 RcppExport SEXP _strategyr_aroon_up_pct_cpp(SEXP highSEXP, SEXP nSEXP) {
@@ -491,6 +512,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_strategyr_strat_pair_spread_revert_signal_cpp", (DL_FUNC) &_strategyr_strat_pair_spread_revert_signal_cpp, 4},
     {"_strategyr_strat_rsi_divergence_signal_cpp", (DL_FUNC) &_strategyr_strat_rsi_divergence_signal_cpp, 6},
     {"_strategyr_backtest_portfolio_weights_core_cpp", (DL_FUNC) &_strategyr_backtest_portfolio_weights_core_cpp, 10},
+    {"_strategyr_strat_portfolio_daily_backtest_core_cpp", (DL_FUNC) &_strategyr_strat_portfolio_daily_backtest_core_cpp, 11},
     {"_strategyr_aroon_up_pct_cpp", (DL_FUNC) &_strategyr_aroon_up_pct_cpp, 2},
     {"_strategyr_aroon_dn_pct_cpp", (DL_FUNC) &_strategyr_aroon_dn_pct_cpp, 2},
     {"_strategyr_sar_cpp", (DL_FUNC) &_strategyr_sar_cpp, 3},

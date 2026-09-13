@@ -36,38 +36,7 @@
   }
 }
 
-#' Backtest Daily Portfolio Target Weights
-#'
-#' Executes a long-only daily target-weight panel with an explicit cash
-#' residual. A target row is executed at that row's open; target generators
-#' such as [strat_equal_weight_rebalance_target_weights()] already shift
-#' completed-bar signals to that next eligible open. Missing market rows are
-#' reported as unavailable, are never traded, and retain their last close only
-#' as an explicitly flagged stale valuation.
-#'
-#' @param ohlc Long daily OHLC `data.table` with one row per available
-#'   `date`-`asset` pair.
-#' @param target_weights Long target-weight `data.table` with exactly one row
-#'   for every available `date`-`asset` pair in `ohlc`.
-#' @param initial_cash Initial portfolio cash.
-#' @param fee_rt Proportional fee charged on traded notional.
-#' @param rebalance_tolerance Absolute weight difference below which an
-#'   otherwise eligible rebalance is skipped.
-#' @param date_col,asset_col Date and asset identifier column names.
-#' @param open_col,high_col,low_col,close_col Daily OHLC column names.
-#' @param target_weight_col Target-weight column name.
-#' @param rebalance_col Optional logical eligibility column in
-#'   `target_weights`. When it exists, only `TRUE` rows may rebalance; when it
-#'   is absent or `NULL`, every available target row is eligible.
-#'
-#' @return A named list of stable `data.table`s:
-#'   * `equity`: daily equity, return, cash, exposure, turnover, fees, and
-#'   availability counts;
-#'   * `weights`: daily target and realized weights for the full known universe,
-#'   with explicit `availability` and `stale_valuation` states;
-#'   * `rebalances`: daily public-safe rebalance and cost summary.
-#' @export
-strat_portfolio_daily_backtest <- function(
+.strat_portfolio_daily_backtest_reference <- function(
   ohlc,
   target_weights,
   initial_cash = 1000000,
@@ -221,4 +190,131 @@ strat_portfolio_daily_backtest <- function(
     weights = data.table::rbindlist(weight_rows),
     rebalances = data.table::rbindlist(rebalance_rows)
   )
+}
+
+#' Backtest Daily Portfolio Target Weights
+#'
+#' Executes a long-only daily target-weight panel with an explicit cash
+#' residual. A target row is executed at that row's open; target generators
+#' such as [strat_equal_weight_rebalance_target_weights()] already shift
+#' completed-bar signals to that next eligible open. Missing market rows are
+#' reported as unavailable, are never traded, and retain their last close only
+#' as an explicitly flagged stale valuation.
+#'
+#' @param ohlc Long daily OHLC `data.table` with one row per available
+#'   `date`-`asset` pair.
+#' @param target_weights Long target-weight `data.table` with exactly one row
+#'   for every available `date`-`asset` pair in `ohlc`.
+#' @param initial_cash Initial portfolio cash.
+#' @param fee_rt Proportional fee charged on traded notional.
+#' @param rebalance_tolerance Absolute weight difference below which an
+#'   otherwise eligible rebalance is skipped.
+#' @param date_col,asset_col Date and asset identifier column names.
+#' @param open_col,high_col,low_col,close_col Daily OHLC column names.
+#' @param target_weight_col Target-weight column name.
+#' @param rebalance_col Optional logical eligibility column in
+#'   `target_weights`. When it exists, only `TRUE` rows may rebalance; when it
+#'   is absent or `NULL`, every available target row is eligible.
+#'
+#' @return A named list of stable `data.table`s:
+#'   * `equity`: daily equity, return, cash, exposure, turnover, fees, and
+#'   availability counts;
+#'   * `weights`: daily target and realized weights for the full known universe,
+#'   with explicit `availability` and `stale_valuation` states;
+#'   * `rebalances`: daily public-safe rebalance and cost summary.
+#' @export
+strat_portfolio_daily_backtest <- function(
+  ohlc,
+  target_weights,
+  initial_cash = 1000000,
+  fee_rt = 0.0005,
+  rebalance_tolerance = 0,
+  date_col = "date",
+  asset_col = "asset",
+  open_col = "open",
+  high_col = "high",
+  low_col = "low",
+  close_col = "close",
+  target_weight_col = "target_weight",
+  rebalance_col = "rebalance_due"
+) {
+  stopifnot(length(initial_cash) == 1L, is.finite(initial_cash), initial_cash > 0)
+  stopifnot(length(fee_rt) == 1L, is.finite(fee_rt), fee_rt >= 0)
+  stopifnot(length(rebalance_tolerance) == 1L, is.finite(rebalance_tolerance), rebalance_tolerance >= 0)
+  stopifnot(is.null(rebalance_col) || (is.character(rebalance_col) && length(rebalance_col) == 1L))
+  .validate_portfolio_daily_target_input(
+    ohlc, target_weights, date_col, asset_col, open_col, high_col, low_col,
+    close_col, target_weight_col, rebalance_col
+  )
+
+  market_dt <- data.table::copy(ohlc)
+  target_dt <- data.table::copy(target_weights)
+  data.table::setnames(market_dt, c(date_col, asset_col, open_col, close_col), c(".date", ".asset", ".open", ".close"))
+  data.table::setnames(target_dt, c(date_col, asset_col, target_weight_col), c(".date", ".asset", ".target_weight"))
+  target_keep <- c(".date", ".asset", ".target_weight")
+  use_rebalance_col <- !is.null(rebalance_col) && rebalance_col %in% names(target_dt)
+  if (use_rebalance_col) {
+    data.table::setnames(target_dt, rebalance_col, ".rebalance_eligible")
+    target_keep <- c(target_keep, ".rebalance_eligible")
+  }
+  work_dt <- merge(market_dt, target_dt[, ..target_keep], by = c(".date", ".asset"), all = FALSE, sort = TRUE)
+  if (!use_rebalance_col) {
+    data.table::set(work_dt, j = ".rebalance_eligible", value = TRUE)
+  }
+
+  dates <- sort(unique(work_dt$.date))
+  assets <- sort(unique(as.character(work_dt$.asset)))
+  core <- strat_portfolio_daily_backtest_core_cpp(
+    date_id = match(work_dt$.date, dates),
+    asset_id = match(as.character(work_dt$.asset), assets),
+    open = work_dt$.open,
+    close = work_dt$.close,
+    target_weight = work_dt$.target_weight,
+    rebalance_eligible = work_dt$.rebalance_eligible,
+    n_dates = length(dates),
+    n_assets = length(assets),
+    initial_cash = initial_cash,
+    fee_rt = fee_rt,
+    rebalance_tolerance = rebalance_tolerance
+  )
+
+  equity_dt <- data.table::data.table(
+    date = dates,
+    equity = core$equity,
+    cash = core$cash,
+    cash_weight = core$cash_weight,
+    gross_exposure = core$gross_exposure,
+    net_exposure = core$net_exposure,
+    turnover = core$turnover,
+    fee_paid = core$fee_paid,
+    available_assets = core$available_assets,
+    unavailable_assets = core$unavailable_assets
+  )
+  equity_dt[, daily_return := c(0.0, equity[-1L] / equity[-.N] - 1)]
+  data.table::setcolorder(equity_dt, c("date", "equity", "daily_return", setdiff(names(equity_dt), c("date", "equity", "daily_return"))))
+
+  date_index <- rep(seq_along(dates), each = length(assets))
+  asset_index <- rep(seq_along(assets), times = length(dates))
+  weights_dt <- data.table::data.table(
+    date = dates[date_index],
+    asset = assets[asset_index],
+    target_weight = core$target_weight,
+    realized_weight = core$realized_weight,
+    units = core$units,
+    valuation_price = core$valuation_price,
+    availability = ifelse(as.logical(core$available), "available", "unavailable"),
+    stale_valuation = as.logical(core$stale_valuation),
+    rebalance_eligible = as.logical(core$rebalance_eligible)
+  )
+  rebalances_dt <- data.table::data.table(
+    date = dates,
+    rebalance_eligible = as.logical(core$rebalance_due),
+    traded_assets = core$traded_assets,
+    traded_notional = core$traded_notional,
+    turnover = core$turnover,
+    fee_paid = core$fee_paid,
+    buy_scale = core$buy_scale,
+    unavailable_assets = core$unavailable_assets
+  )
+  list(equity = equity_dt, weights = weights_dt, rebalances = rebalances_dt)
 }

@@ -220,9 +220,11 @@ trailing stop, pair-spread reversion, and RSI divergence. The R wrappers remain
 the public API and still own feature construction, documentation, testing, and
 action-plan integration.
 
-The portfolio backtest has a native accounting core for the standard
-target-weight path. The R wrapper remains authoritative while the API is still
-evolving; position-path reporting currently stays in R for readability.
+The portfolio backtest has a native accounting core for both the standard
+target-weight path and the daily Strategy Library path. The R wrapper remains
+authoritative for validation, alignment, and stable public `data.table`
+formatting; the daily R accounting implementation is retained internally as a
+native-parity reference.
 
 ## Execution Timing
 
