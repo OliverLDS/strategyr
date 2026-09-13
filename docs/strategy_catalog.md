@@ -23,9 +23,10 @@ Portfolio-level families return target weights and route through
 ## Daily Portfolio Allocation
 
 These public strategies return a long target-weight panel that can be passed
-directly to backtest_portfolio_weights(). The row for date t is formed from
-data completed on date t - 1 and is eligible at date t open. Weights are
-long-only and finite; unused gross exposure remains cash.
+directly to `strat_portfolio_daily_backtest()`. The row for date t is formed
+from data completed on date t - 1 and is eligible at date t open. Weights are
+long-only and finite; unused gross exposure remains cash. The backtest returns
+explicit unavailable-asset states rather than filling absent market history.
 
 | Strategy family | Category | Main inputs | Level | Default strat_id |
 |---|---|---|---|---:|

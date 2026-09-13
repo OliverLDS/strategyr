@@ -131,6 +131,12 @@ flowchart LR
   D --> E[Equity and exposure path]
 ```
 
+For daily Strategy Library allocations, use
+`strat_portfolio_daily_backtest(ohlc, target_weights)`. It executes the
+already shifted target row at that date's open and returns stable equity,
+date-asset weight, and rebalance tables. An unavailable asset is explicitly
+reported and cannot trade; any carried valuation is flagged as stale.
+
 For fixed-income hedge workflows, the current minimal path is:
 
 ```mermaid

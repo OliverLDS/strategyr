@@ -177,7 +177,15 @@ targets <- strat_cross_asset_trend_allocation_target_weights(
   weight_cap = 0.5
 )
 
-backtest_portfolio_weights(targets, initial_equity = 100000, allow_short = FALSE)
+portfolio_result <- strat_portfolio_daily_backtest(
+  allocation_panel,
+  targets,
+  initial_cash = 100000,
+  fee_rt = 0.0005
+)
+
+portfolio_result$equity
+portfolio_result$weights
 ~~~
 
 ### 6. Fixed-income carry/roll and hedge workflow

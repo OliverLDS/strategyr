@@ -51,6 +51,7 @@ Collate:
     'calc_ladder_index.R'
     'portfolio_adjustment.R'
     'portfolio_backtest.R'
+    'strat_portfolio_daily_backtest.R'
     'portfolio_fixed_income.R'
     'portfolio_options.R'
     'strat_portfolio_daily_allocation.R'

@@ -54,13 +54,13 @@ targets <- strat_cross_asset_trend_allocation_target_weights(
   weight_cap = 0.4
 )
 
-result <- backtest_portfolio_weights(
+result <- strat_portfolio_daily_backtest(
+  panel,
   targets,
-  initial_equity = 100000,
-  fee_rt = 0.0005,
-  allow_short = FALSE,
-  keep_positions = TRUE
+  initial_cash = 100000,
+  fee_rt = 0.0005
 )
 
 print(targets[date == max(date), .(asset, target_weight, eligible, rebalance_due, signal_date)])
 print(result$equity)
+print(result$weights[date == max(date)])
