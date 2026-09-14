@@ -187,10 +187,10 @@
       display_name = "Equal Weight Rebalance",
       target_function = "strat_equal_weight_rebalance_target_weights",
       summary = "Allocates equally across eligible daily instruments on a fixed cadence.",
-      signal_rule = "At each rebalance signal, divide the allowed gross exposure equally across eligible assets and hold the resulting targets until the next eligible open.",
+      signal_rule = "At each rebalance signal, divide the allowed gross exposure equally across eligible assets and hold the resulting targets until the next complete shared-asset open by default.",
       position_semantics = "Weights are long-only portfolio fractions; unallocated equity remains cash.",
       data_requirements = c("daily OHLC open", "daily OHLC high", "daily OHLC low", "daily OHLC close", "asset identifier", "date"),
-      rebalance_rule = "Signals use completed bars and targets execute at the next eligible open.",
+      rebalance_rule = "Signals use completed bars and targets execute at the next complete shared-asset open by default.",
       parameters = list(
         .strategy_public_parameter("date_col", "date", "column name", "Date column name."),
         .strategy_public_parameter("asset_col", "asset", "column name", "Asset identifier column name."),
@@ -201,7 +201,8 @@
         .strategy_public_parameter("rebalance_n", 21L, "bars", "Completed daily bars between rebalance signals."),
         .strategy_public_parameter("min_obs", 1L, "observations", "Minimum observed closes required for eligibility."),
         .strategy_public_parameter("gross_exposure", 1.0, "portfolio weight", "Maximum long gross exposure; residual remains cash."),
-        .strategy_public_parameter("weight_cap", 1.0, "portfolio weight", "Maximum target weight for one asset.")
+        .strategy_public_parameter("weight_cap", 1.0, "portfolio weight", "Maximum target weight for one asset."),
+        .strategy_public_parameter("rebalance_calendar", "shared", "calendar mode", "Use complete shared asset boundaries; use available only for an explicit variable-universe schedule.")
       )
     ),
     inverse_volatility_allocation = list(
@@ -210,10 +211,10 @@
       display_name = "Inverse Volatility Allocation",
       target_function = "strat_inverse_volatility_allocation_target_weights",
       summary = "Allocates across eligible daily instruments in inverse proportion to realized volatility.",
-      signal_rule = "At each rebalance signal, allocate the allowed gross exposure by inverse realized volatility and hold targets until the next eligible open.",
+      signal_rule = "At each rebalance signal, allocate the allowed gross exposure by inverse realized volatility and hold targets until the next complete shared-asset open by default.",
       position_semantics = "Weights are long-only portfolio fractions; unallocated equity remains cash.",
       data_requirements = c("daily OHLC open", "daily OHLC high", "daily OHLC low", "daily OHLC close", "asset identifier", "date"),
-      rebalance_rule = "Signals use completed bars and targets execute at the next eligible open.",
+      rebalance_rule = "Signals use completed bars and targets execute at the next complete shared-asset open by default.",
       parameters = list(
         .strategy_public_parameter("date_col", "date", "column name", "Date column name."),
         .strategy_public_parameter("asset_col", "asset", "column name", "Asset identifier column name."),
@@ -226,7 +227,8 @@
         .strategy_public_parameter("annualization", 252, "bars per year", "Annualization factor for realized volatility."),
         .strategy_public_parameter("rebalance_n", 21L, "bars", "Completed daily bars between rebalance signals."),
         .strategy_public_parameter("gross_exposure", 1.0, "portfolio weight", "Maximum long gross exposure; residual remains cash."),
-        .strategy_public_parameter("weight_cap", 0.4, "portfolio weight", "Maximum target weight for one asset.")
+        .strategy_public_parameter("weight_cap", 0.4, "portfolio weight", "Maximum target weight for one asset."),
+        .strategy_public_parameter("rebalance_calendar", "shared", "calendar mode", "Use complete shared asset boundaries; use available only for an explicit variable-universe schedule.")
       )
     ),
     cross_asset_trend_allocation = list(
@@ -235,10 +237,10 @@
       display_name = "Cross-Asset Trend Allocation",
       target_function = "strat_cross_asset_trend_allocation_target_weights",
       summary = "Allocates across assets with positive medium-term momentum and otherwise remains in cash.",
-      signal_rule = "At each rebalance signal, include only assets with positive completed-bar momentum and allocate by equal or inverse-volatility weights.",
+      signal_rule = "At each rebalance signal, include only assets with positive completed-bar momentum and allocate by equal or inverse-volatility weights for the next complete shared-asset open by default.",
       position_semantics = "Weights are long-only portfolio fractions; unallocated equity remains cash.",
       data_requirements = c("daily OHLC open", "daily OHLC high", "daily OHLC low", "daily OHLC close", "asset identifier", "date"),
-      rebalance_rule = "Signals use completed bars and targets execute at the next eligible open.",
+      rebalance_rule = "Signals use completed bars and targets execute at the next complete shared-asset open by default.",
       parameters = list(
         .strategy_public_parameter("date_col", "date", "column name", "Date column name."),
         .strategy_public_parameter("asset_col", "asset", "column name", "Asset identifier column name."),
@@ -253,7 +255,8 @@
         .strategy_public_parameter("volatility_scale", TRUE, "logical", "Use inverse realized-volatility scaling after the trend filter."),
         .strategy_public_parameter("rebalance_n", 21L, "bars", "Completed daily bars between rebalance signals."),
         .strategy_public_parameter("gross_exposure", 1.0, "portfolio weight", "Maximum long gross exposure; residual remains cash."),
-        .strategy_public_parameter("weight_cap", 0.4, "portfolio weight", "Maximum target weight for one asset.")
+        .strategy_public_parameter("weight_cap", 0.4, "portfolio weight", "Maximum target weight for one asset."),
+        .strategy_public_parameter("rebalance_calendar", "shared", "calendar mode", "Use complete shared asset boundaries; use available only for an explicit variable-universe schedule.")
       )
     )
   )

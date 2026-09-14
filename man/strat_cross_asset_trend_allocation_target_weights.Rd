@@ -19,7 +19,8 @@ strat_cross_asset_trend_allocation_target_weights(
   volatility_scale = TRUE,
   rebalance_n = 21L,
   gross_exposure = 1,
-  weight_cap = 0.4
+  weight_cap = 0.4,
+  rebalance_calendar = "shared"
 )
 }
 \arguments{
@@ -53,6 +54,11 @@ proportional to inverse realized volatility.}
 \item{gross_exposure}{Maximum long gross exposure. Residual equity remains cash.}
 
 \item{weight_cap}{Maximum weight assigned to one asset.}
+
+\item{rebalance_calendar}{Rebalance boundary mode. `"shared"` requires a
+completed bar for every configured asset and is the default for portfolio
+execution. `"available"` preserves variable-universe scheduling across
+all available dates.}
 }
 \value{
 A copy of `DT` with portfolio target-weight contract columns.
@@ -60,5 +66,6 @@ A copy of `DT` with portfolio target-weight contract columns.
 \description{
 Allocates across assets with positive medium-term momentum. Optional inverse
 volatility scaling is applied only after the positive-trend filter. Signals
-are formed from completed bars and shifted one eligible open forward.
+are formed from completed bars and shifted to the next complete shared-asset
+open by default.
 }

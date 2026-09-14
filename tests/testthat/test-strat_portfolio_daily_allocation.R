@@ -11,6 +11,28 @@ make_test_daily_portfolio_ohlc <- function(n_dates = 12L, assets = c("AAA", "BBB
   out[]
 }
 
+make_test_mixed_calendar_arena_ohlc <- function(n_days = 42L) {
+  assets <- c("SPY", "AGG", "IAU", "USO", "UUP", "TLT", "GLD", "IBIT")
+  dates <- as.Date("2024-01-01") + seq_len(n_days) - 1L
+  exchange_dates <- dates[as.POSIXlt(dates)$wday %in% 1:5]
+  out <- data.table::rbindlist(lapply(assets, function(asset) {
+    asset_dates <- if (identical(asset, "IBIT")) dates else exchange_dates
+    day_idx <- seq_along(asset_dates)
+    asset_idx <- match(asset, assets)
+    close <- 100 + asset_idx + day_idx * (0.2 + asset_idx / 100)
+    data.table::data.table(
+      date = asset_dates,
+      asset = asset,
+      open = close - 0.1,
+      high = close + 0.2,
+      low = close - 0.3,
+      close = close
+    )
+  }))
+  data.table::setorderv(out, c("date", "asset"))
+  out[]
+}
+
 test_that("equal-weight targets are aligned for next-open execution", {
   DT <- make_test_daily_portfolio_ohlc()
   out <- strat_equal_weight_rebalance_target_weights(DT, rebalance_n = 3L, min_obs = 1L)
@@ -99,4 +121,59 @@ test_that("portfolio allocation caps gross and per-asset weights deterministical
   expect_true(all(out[, sum(abs(target_weight)), by = date][["V1"]] <= 0.9 + 1e-12))
   expect_equal(out, repeat_out)
   expect_silent(backtest_portfolio_weights(out, allow_short = FALSE))
+})
+
+test_that("shared-calendar portfolio targets use complete Arena asset boundaries", {
+  DT <- make_test_mixed_calendar_arena_ohlc()
+  out <- strat_equal_weight_rebalance_target_weights(
+    DT,
+    rebalance_n = 2L,
+    min_obs = 1L,
+    gross_exposure = 0.9,
+    weight_cap = 0.2
+  )
+  due <- out[rebalance_due == TRUE]
+
+  expect_gt(nrow(due), 0L)
+  expect_true(all(due[, .N, by = date][["N"]] == 8L))
+  expect_true(all(due[, data.table::uniqueN(asset), by = date][["V1"]] == 8L))
+  expect_true(all(due$target_weight >= 0))
+  expect_true(all(due$target_weight <= 0.2 + 1e-12))
+  expect_true(all(due[, sum(target_weight), by = date][["V1"]] <= 0.9 + 1e-12))
+  expect_true(all(out[rebalance_due == FALSE, target_weight] == 0))
+  expect_true(all(out[rebalance_due == TRUE, signal_date < date]))
+})
+
+test_that("available-calendar scheduling remains an explicit variable-universe option", {
+  DT <- make_test_mixed_calendar_arena_ohlc()
+  shared <- strat_equal_weight_rebalance_target_weights(DT, rebalance_n = 5L)
+  available <- strat_equal_weight_rebalance_target_weights(
+    DT,
+    rebalance_n = 5L,
+    rebalance_calendar = "available"
+  )
+
+  expect_true(all(shared[rebalance_due == TRUE, .N, by = date][["N"]] == 8L))
+  expect_true(any(available[rebalance_due == TRUE, .N, by = date][["N"]] < 8L))
+})
+
+test_that("cross-asset trend creates capped executable positive shared groups", {
+  DT <- make_test_mixed_calendar_arena_ohlc()
+  out <- strat_cross_asset_trend_allocation_target_weights(
+    DT,
+    trend_n = 5L,
+    vol_n = 3L,
+    min_obs = 5L,
+    rebalance_n = 2L,
+    gross_exposure = 0.8,
+    weight_cap = 0.2
+  )
+  due <- out[rebalance_due == TRUE]
+
+  expect_gt(nrow(due), 0L)
+  expect_true(all(due[, .N, by = date][["N"]] == 8L))
+  expect_true(any(due[, sum(target_weight), by = date][["V1"]] > 0))
+  expect_true(all(due$target_weight >= 0))
+  expect_true(all(due$target_weight <= 0.2 + 1e-12))
+  expect_true(all(due[, sum(target_weight), by = date][["V1"]] <= 0.8 + 1e-12))
 })

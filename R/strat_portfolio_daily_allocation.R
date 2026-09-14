@@ -92,7 +92,7 @@
   if (is.finite(value) && value > 0) value else NA_real_
 }
 
-.portfolio_allocation_path <- function(DT, date_col, asset_col, signal_fun, rebalance_n) {
+.portfolio_allocation_path_available <- function(DT, date_col, asset_col, signal_fun, rebalance_n) {
   work_dt <- data.table::copy(DT)
   data.table::setkeyv(work_dt, c(date_col, asset_col))
   dates <- sort(unique(work_dt[[date_col]]))
@@ -151,11 +151,78 @@
   work_dt[]
 }
 
+.portfolio_allocation_path_shared <- function(DT, date_col, asset_col, signal_fun, rebalance_n) {
+  work_dt <- data.table::copy(DT)
+  data.table::setkeyv(work_dt, c(date_col, asset_col))
+  dates <- sort(unique(work_dt[[date_col]]))
+  assets <- sort(unique(as.character(work_dt[[asset_col]])))
+  date_run <- rle(match(work_dt[[date_col]], dates))
+  row_end <- cumsum(date_run$lengths)
+  row_start <- c(1L, head(row_end, -1L) + 1L)
+  shared_idx <- which(date_run$lengths == length(assets))
+  signal_idx <- shared_idx[seq.int(1L, length(shared_idx), by = as.integer(rebalance_n))]
+  target_map <- stats::setNames(rep(0.0, length(assets)), assets)
+  pending_signal_idx <- NA_integer_
+
+  work_dt[, target_weight := 0.0]
+  work_dt[, eligible := FALSE]
+  work_dt[, rebalance_due := FALSE]
+  output_signal_idx <- rep(NA_integer_, nrow(work_dt))
+
+  for (date_idx in shared_idx) {
+    day_rows <- row_start[[date_idx]]:row_end[[date_idx]]
+    day_assets <- as.character(work_dt[[asset_col]][day_rows])
+
+    # A completed shared bar forms a portfolio signal that can trade only at
+    # the following shared boundary, where every configured asset has an open.
+    if (!is.na(pending_signal_idx)) {
+      data.table::set(work_dt, i = day_rows, j = "target_weight", value = unname(target_map[day_assets]))
+      data.table::set(work_dt, i = day_rows, j = "rebalance_due", value = TRUE)
+      output_signal_idx[day_rows] <- pending_signal_idx
+      pending_signal_idx <- NA_integer_
+    }
+
+    if (!(date_idx %in% signal_idx)) {
+      next
+    }
+
+    signal <- signal_fun(day_assets, dates[[date_idx]])
+    target_map[] <- 0.0
+    target_map[day_assets] <- signal$weight
+    data.table::set(work_dt, i = day_rows, j = "eligible", value = signal$eligible)
+    pending_signal_idx <- date_idx
+  }
+
+  data.table::set(work_dt, j = "signal_date", value = dates[output_signal_idx])
+  work_dt[]
+}
+
+.portfolio_allocation_path <- function(DT, date_col, asset_col, signal_fun, rebalance_n, rebalance_calendar = "shared") {
+  rebalance_calendar <- match.arg(rebalance_calendar, c("shared", "available"))
+  if (identical(rebalance_calendar, "available")) {
+    return(.portfolio_allocation_path_available(DT, date_col, asset_col, signal_fun, rebalance_n))
+  }
+
+  work_dt <- .portfolio_allocation_path_shared(DT, date_col, asset_col, signal_fun, rebalance_n)
+  work_dt[, target_weight := as.numeric(target_weight)]
+  if (any(!is.finite(work_dt$target_weight))) {
+    stop("Portfolio strategy generated non-finite target weights.", call. = FALSE)
+  }
+  if (any(work_dt$target_weight < 0) || any(work_dt$target_weight > 1)) {
+    stop("Portfolio strategy generated invalid long-only target weights.", call. = FALSE)
+  }
+  gross_by_date <- work_dt[, sum(abs(target_weight)), by = date_col][["V1"]]
+  if (any(gross_by_date > 1 + 1e-12)) {
+    stop("Portfolio strategy exceeded unit gross exposure.", call. = FALSE)
+  }
+  work_dt[]
+}
+
 #' Equal-Weight-Rebalance Target Weights
 #'
 #' Generates a long-only daily portfolio target-weight path that allocates
 #' equally across assets with enough observed history. Signals are formed from
-#' completed bars and shifted one eligible open forward for execution.
+#' completed bars and shifted to the next complete shared-asset open by default.
 #'
 #' @param DT Long daily OHLC `data.table` with one row per date and asset.
 #' @param date_col Date column name.
@@ -168,11 +235,15 @@
 #' @param min_obs Minimum observed closes required for eligibility.
 #' @param gross_exposure Maximum long gross exposure. Residual equity remains cash.
 #' @param weight_cap Maximum weight assigned to one asset.
+#' @param rebalance_calendar Rebalance boundary mode. `"shared"` requires a
+#'   completed bar for every configured asset and is the default for portfolio
+#'   execution. `"available"` preserves variable-universe scheduling across
+#'   all available dates.
 #'
 #' @return A copy of `DT` with `target_weight`, `eligible`, `rebalance_due`,
 #'   and `signal_date`. Each row's target is executable at that row's open.
 #' @export
-strat_equal_weight_rebalance_target_weights <- function(DT, date_col = "date", asset_col = "asset", open_col = "open", high_col = "high", low_col = "low", close_col = "close", rebalance_n = 21L, min_obs = 1L, gross_exposure = 1.0, weight_cap = 1.0) {
+strat_equal_weight_rebalance_target_weights <- function(DT, date_col = "date", asset_col = "asset", open_col = "open", high_col = "high", low_col = "low", close_col = "close", rebalance_n = 21L, min_obs = 1L, gross_exposure = 1.0, weight_cap = 1.0, rebalance_calendar = "shared") {
   .validate_portfolio_daily_ohlc(DT, date_col, asset_col, open_col, high_col, low_col, close_col)
   .validate_portfolio_allocation_parameters(rebalance_n, min_obs, gross_exposure, weight_cap)
   history <- .portfolio_asset_history(DT, date_col, asset_col, close_col)
@@ -180,14 +251,14 @@ strat_equal_weight_rebalance_target_weights <- function(DT, date_col = "date", a
   .portfolio_allocation_path(DT, date_col, asset_col, function(day_assets, date_value) {
     eligible <- vapply(day_assets, function(asset) .portfolio_history_index(history[[asset]], date_value) >= min_obs, logical(1L))
     list(weight = .capped_long_weights(as.numeric(eligible), gross_exposure, weight_cap), eligible = eligible)
-  }, rebalance_n)
+  }, rebalance_n, rebalance_calendar)
 }
 
 #' Inverse-Volatility-Allocation Target Weights
 #'
 #' Generates long-only daily portfolio targets proportional to inverse realized
 #' volatility. Signals are formed from completed bars and shifted one eligible
-#' open forward for execution.
+#' shared-asset open forward for execution by default.
 #'
 #' @inheritParams strat_equal_weight_rebalance_target_weights
 #' @param vol_n Realized-volatility lookback in daily returns.
@@ -195,7 +266,7 @@ strat_equal_weight_rebalance_target_weights <- function(DT, date_col = "date", a
 #'
 #' @return A copy of `DT` with portfolio target-weight contract columns.
 #' @export
-strat_inverse_volatility_allocation_target_weights <- function(DT, date_col = "date", asset_col = "asset", open_col = "open", high_col = "high", low_col = "low", close_col = "close", vol_n = 20L, min_obs = 20L, annualization = 252, rebalance_n = 21L, gross_exposure = 1.0, weight_cap = 0.4) {
+strat_inverse_volatility_allocation_target_weights <- function(DT, date_col = "date", asset_col = "asset", open_col = "open", high_col = "high", low_col = "low", close_col = "close", vol_n = 20L, min_obs = 20L, annualization = 252, rebalance_n = 21L, gross_exposure = 1.0, weight_cap = 0.4, rebalance_calendar = "shared") {
   .validate_portfolio_daily_ohlc(DT, date_col, asset_col, open_col, high_col, low_col, close_col)
   .validate_portfolio_allocation_parameters(rebalance_n, min_obs, gross_exposure, weight_cap)
   stopifnot(length(vol_n) == 1L, is.finite(vol_n), vol_n >= 1, vol_n == as.integer(vol_n))
@@ -211,14 +282,15 @@ strat_inverse_volatility_allocation_target_weights <- function(DT, date_col = "d
       if (is.finite(vol) && vol > 0) 1 / vol else NA_real_
     }, numeric(1L))
     list(weight = .capped_long_weights(score, gross_exposure, weight_cap), eligible = is.finite(score))
-  }, rebalance_n)
+  }, rebalance_n, rebalance_calendar)
 }
 
 #' Cross-Asset-Trend-Allocation Target Weights
 #'
 #' Allocates across assets with positive medium-term momentum. Optional inverse
 #' volatility scaling is applied only after the positive-trend filter. Signals
-#' are formed from completed bars and shifted one eligible open forward.
+#' are formed from completed bars and shifted to the next complete shared-asset
+#' open by default.
 #'
 #' @inheritParams strat_inverse_volatility_allocation_target_weights
 #' @param trend_n Medium-term momentum lookback in daily bars.
@@ -227,7 +299,7 @@ strat_inverse_volatility_allocation_target_weights <- function(DT, date_col = "d
 #'
 #' @return A copy of `DT` with portfolio target-weight contract columns.
 #' @export
-strat_cross_asset_trend_allocation_target_weights <- function(DT, date_col = "date", asset_col = "asset", open_col = "open", high_col = "high", low_col = "low", close_col = "close", trend_n = 126L, vol_n = 20L, min_obs = 126L, annualization = 252, volatility_scale = TRUE, rebalance_n = 21L, gross_exposure = 1.0, weight_cap = 0.4) {
+strat_cross_asset_trend_allocation_target_weights <- function(DT, date_col = "date", asset_col = "asset", open_col = "open", high_col = "high", low_col = "low", close_col = "close", trend_n = 126L, vol_n = 20L, min_obs = 126L, annualization = 252, volatility_scale = TRUE, rebalance_n = 21L, gross_exposure = 1.0, weight_cap = 0.4, rebalance_calendar = "shared") {
   .validate_portfolio_daily_ohlc(DT, date_col, asset_col, open_col, high_col, low_col, close_col)
   .validate_portfolio_allocation_parameters(rebalance_n, min_obs, gross_exposure, weight_cap)
   stopifnot(length(trend_n) == 1L, is.finite(trend_n), trend_n >= 1, trend_n == as.integer(trend_n))
@@ -249,5 +321,5 @@ strat_cross_asset_trend_allocation_target_weights <- function(DT, date_col = "da
       if (is.finite(vol) && vol > 0) 1 / vol else NA_real_
     }, numeric(1L))
     list(weight = .capped_long_weights(score, gross_exposure, weight_cap), eligible = is.finite(score))
-  }, rebalance_n)
+  }, rebalance_n, rebalance_calendar)
 }

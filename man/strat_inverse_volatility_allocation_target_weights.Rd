@@ -17,7 +17,8 @@ strat_inverse_volatility_allocation_target_weights(
   annualization = 252,
   rebalance_n = 21L,
   gross_exposure = 1,
-  weight_cap = 0.4
+  weight_cap = 0.4,
+  rebalance_calendar = "shared"
 )
 }
 \arguments{
@@ -46,6 +47,11 @@ strat_inverse_volatility_allocation_target_weights(
 \item{gross_exposure}{Maximum long gross exposure. Residual equity remains cash.}
 
 \item{weight_cap}{Maximum weight assigned to one asset.}
+
+\item{rebalance_calendar}{Rebalance boundary mode. `"shared"` requires a
+completed bar for every configured asset and is the default for portfolio
+execution. `"available"` preserves variable-universe scheduling across
+all available dates.}
 }
 \value{
 A copy of `DT` with portfolio target-weight contract columns.
@@ -53,5 +59,5 @@ A copy of `DT` with portfolio target-weight contract columns.
 \description{
 Generates long-only daily portfolio targets proportional to inverse realized
 volatility. Signals are formed from completed bars and shifted one eligible
-open forward for execution.
+shared-asset open forward for execution by default.
 }

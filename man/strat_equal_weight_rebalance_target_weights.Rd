@@ -15,7 +15,8 @@ strat_equal_weight_rebalance_target_weights(
   rebalance_n = 21L,
   min_obs = 1L,
   gross_exposure = 1,
-  weight_cap = 1
+  weight_cap = 1,
+  rebalance_calendar = "shared"
 )
 }
 \arguments{
@@ -40,6 +41,11 @@ strat_equal_weight_rebalance_target_weights(
 \item{gross_exposure}{Maximum long gross exposure. Residual equity remains cash.}
 
 \item{weight_cap}{Maximum weight assigned to one asset.}
+
+\item{rebalance_calendar}{Rebalance boundary mode. `"shared"` requires a
+completed bar for every configured asset and is the default for portfolio
+execution. `"available"` preserves variable-universe scheduling across
+all available dates.}
 }
 \value{
 A copy of `DT` with `target_weight`, `eligible`, `rebalance_due`,
@@ -48,5 +54,5 @@ A copy of `DT` with `target_weight`, `eligible`, `rebalance_due`,
 \description{
 Generates a long-only daily portfolio target-weight path that allocates
 equally across assets with enough observed history. Signals are formed from
-completed bars and shifted one eligible open forward for execution.
+completed bars and shifted to the next complete shared-asset open by default.
 }
